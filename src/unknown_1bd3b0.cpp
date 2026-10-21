@@ -474,6 +474,9 @@ struct s_1bde80_joint
 
 /* invites the clump members within 10 of the joint's object, the nearest
    first */
+// score 59 (was 59): retail loads the two float constants before the index is
+// scaled, ours
+// loads them after it, so the loop preamble is a different length.
 // @retail 0x1bde80
 short __stdcall function_1bde80(long actor_index, long joint_index, long a, long b)
 {

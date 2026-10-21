@@ -21,8 +21,6 @@ union s_6ec80
 #pragma pack(push, 1)
 struct s_6ec81
 {
-    s_unknown_108 *field_0;
-    union { long field_0; short field_1; } field_4;
     byte *field_8;
     byte *field_c;
     long field_10;
@@ -50,6 +48,8 @@ struct s_6ec83
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {
     /* the session's settings, gathered in one block before the options are built */
+    s_unknown_108 *local_2;
+    short local_3;
     s_6ec83 local_26;
     bool local_0 = false;
     bool local_1 = true;
@@ -69,20 +69,20 @@ bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
     local_26.field_0.field_8 = 0;
     if (arg_0->state > 2 && arg_0->state <= 8)
         local_26.field_0.field_8 = arg_0->data4db0;
-    local_26.field_0.field_4.field_0 = NONE;
+    local_3 = NONE;
     if (arg_0->state > 2 && arg_0->state <= 8)
-        local_26.field_0.field_4.field_1 = arg_0->value5dd0;
+        local_3 = arg_0->value5dd0;
     local_26.field_0.field_10 = NONE;
     if (arg_0->state > 2 && arg_0->state <= 8)
         local_26.field_0.field_10 = arg_0->value4dac;
     local_26.field_0.field_20 = NONE;
     local_26.field_3c = arg_0->value18;
     arg_0->get_values_4d08(&local_26.field_0.field_1c, &local_26.field_0.field_14, &local_26.field_0.field_c);
-    local_26.field_0.field_0 = 0;
+    local_2 = 0;
     local_26.field_0.field_18 = 0;
     if (arg_0->state > 2 && arg_0->state <= 8 && arg_0->flag4f20)
     {
-        local_26.field_0.field_0 = &arg_0->data4f24;
+        local_2 = &arg_0->data4f24;
         local_26.field_0.field_18 = &arg_0->data4f90;
     }
     if (arg_1)
@@ -98,7 +98,7 @@ bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
     if (!local_26.field_0.field_8)
         local_1 = false;
     dword local_14 = 0;
-    if (local_26.field_0.field_0 && local_26.field_0.field_18)
+    if (local_2 && local_26.field_0.field_18)
     {
         long local_15 = 0;
         do
@@ -107,7 +107,7 @@ bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
                 local_14 |= 1 << local_15;
             local_15++;
         } while (local_15 < 16);
-        if (!local_26.field_0.field_0->data[0] || !local_14)
+        if (!local_2->data[0] || !local_14)
             local_1 = false;
     }
     else
@@ -119,7 +119,7 @@ bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
         const s_session_member *member = &arg_0->members[arg_0->current_member];
         long local_18 = arg_0->member_count;
         local_26.field_34 = *(const s_session_machine *)((const byte *)member + 0xa);
-        if (local_26.field_0.field_4.field_1 != NONE)
+        if (local_3 != NONE)
         {
             if (local_17 > 2)
                 local_1 = false;
@@ -153,10 +153,10 @@ bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
             *(long *)(local_21.field_1 + 8) = local_26.field_0.field_28[0];
             *(long *)(local_21.field_1 + 0xc) = local_26.field_0.field_28[1];
             *(long *)(local_21.field_1 + 0x10) = local_26.field_0.field_24;
-            if (local_26.field_0.field_4.field_1 != NONE)
+            if (local_3 != NONE)
             {
                 local_22->type = 1;
-                local_22->unknown12a = local_26.field_0.field_4.field_1;
+                local_22->unknown12a = local_3;
                 local_22->unknown12c = local_17 > 1;
                 local_22->unknown12d[0] = 0;
             }
@@ -166,7 +166,7 @@ bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
                 memcpy(local_22->unknown134, local_26.field_0.field_8, sizeof(local_22->unknown134));
                 *(long *)(local_21.field_1 + 0x130) = local_26.field_0.field_20;
             }
-            memcpy(&local_22->machine_mask, local_26.field_0.field_0, sizeof(*local_26.field_0.field_0));
+            memcpy(&local_22->machine_mask, local_2, sizeof(*local_2));
             memcpy(local_22->players, local_26.field_0.field_18, sizeof(*local_26.field_0.field_18));
             local_22->local_machine_valid = true;
             local_22->local_machine = local_26.field_34;

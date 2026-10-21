@@ -111,6 +111,10 @@ bytes_2e1be0::~bytes_2e1be0()
 
 static __declspec(align(16)) const unsigned long sign_mask_2e1d10[4] = {0x80000000, 0x80000000, 0x80000000, 0x80000000};
 
+// score 281 (was 281): retail keeps &axes[0] in edi and &elements in ebx
+// across the body and rematerializes zeros, here the elements in edi and a
+// zero in ebx; retail also compares the quantized level as 32 bits (movzx,
+// or, cmp eax, 12), which every form tried here narrows to cmp cx, 12.
 // the sweep over the box from the corner at `arg_0` to the corner at
 // `arg_1`, with a grid of 2 to the power `bits`, less one, cells: the
 // quantizing scale and offsets, the largest value that still quantizes below

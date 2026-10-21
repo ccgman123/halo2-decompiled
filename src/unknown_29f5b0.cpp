@@ -536,15 +536,14 @@ bool function_11c470(long trigger_volume_index, point3f const *point);
 bool function_29f6c0(long list_index, short trigger_volume_index, bool all)
 {
 	bool result = all;
-	s_record_pool *local_1;
 	long reference_index;
 	long object_index = object_list_get_first_inlined(list_index, &reference_index);
 	if (object_index == NONE)
 		goto done;
-	local_1 = g_4e0300;
 	while (object_index != NONE)
 	{
-		if (function_11c470(trigger_volume_index, &((s_object_header *)local_1->data)[object_index & 0xffff].object->center))
+		point3f const *center = object_index == NONE ? NULL : &object_get(object_index)->center;
+		if (function_11c470(trigger_volume_index, center))
 		{
 			if (!all)
 				{ result = true; break; }

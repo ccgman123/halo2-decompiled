@@ -722,7 +722,8 @@ void __stdcall function_187510(long player_index, real yaw_delta, real pitch_del
 			real range = control_turn_difference(upper, lower);
 			real to_upper = control_turn_difference(upper, entry->facing.yaw);
 			real from_lower = control_turn_difference(entry->facing.yaw, lower);
-			real positive_range = range < 0.0f ? range + 6.2831855f : range;
+			real positive_range = range + 6.2831855f;
+			if (!(range < 0.0f)) positive_range = range;
 			if (!(to_upper >= 0.0f && positive_range > to_upper) &&
 				!(from_lower >= 0.0f && positive_range > from_lower))
 				entry->facing.yaw = fabs(to_upper) > fabs(from_lower) ? lower : upper;

@@ -4340,14 +4340,14 @@ void __stdcall function_15bb20(long player_index)
     }
 }
 
-long function_23f360(long mode, long team);
+long function_23f360(long team, long mode);
 long function_23f260(long mode, long player_index, long value);
 
 // @retail 0x158e90
 long function_158e90(long team)
 {
     bool flag = g_4e6948->flag1128;
-    return function_23f360(flag != 0, team) / 2;
+    return function_23f360(team, flag != 0) / 2;
 }
 
 // @retail 0x158eb0

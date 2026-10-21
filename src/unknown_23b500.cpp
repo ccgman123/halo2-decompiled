@@ -371,11 +371,12 @@ void function_23b170(long player_index, s_spawn_influence_list *list)
 	s_spawn_scenario_23aea0 *scenario = (s_spawn_scenario_23aea0 *)g_4e0350;
 	if (scenario->count > 0)
 	{
+		byte *settings = (byte *)scenario->settings;
 		s_spawn_zone_block_23b170 *block;
 		if (player->unknown000[2] & 8)
-			block = (s_spawn_zone_block_23b170 *)((byte *)scenario->settings + 0x58);
+			block = (s_spawn_zone_block_23b170 *)(settings + 0x58);
 		else
-			block = (s_spawn_zone_block_23b170 *)((byte *)scenario->settings + 0x50);
+			block = (s_spawn_zone_block_23b170 *)(settings + 0x50);
 		for (long i = 0; i < block->count; i++)
 		{
 			s_spawn_zone_23b170 *zone = &block->zones[i];

@@ -107,6 +107,19 @@ struct s_311100
 	float field_4;
 };
 
+struct step_terms_311100;
+
+// the terms a step's terms give: their two scaled terms and two products
+struct step_products_311100
+{
+	float scaled_delta;
+	float scaled_field_4;
+	float field_8;
+	float field_c;
+
+	inline void set_from(step_terms_311100 const *terms);
+};
+
 // the terms a step works out from its length (at 0x170 in the world)
 struct step_terms_311100
 {
@@ -116,26 +129,25 @@ struct step_terms_311100
 	long field_c;
 	float field_10;
 	char unknown14[0x28 - 0x14];
-	float field_28;
-	float field_2c;
-	float field_30;
-	float field_34;
+	step_products_311100 products;
 
 	void scale_by(s_311100 const *description)
 	{
 		scaled_delta = description->delta * field_10;
 		scaled_field_4 = field_c * description->field_4;
-		set_products();
-	}
-
-	void set_products()
-	{
-		field_28 = scaled_delta;
-		field_2c = scaled_field_4;
-		field_30 = field_c * scaled_delta;
-		field_34 = field_10 * scaled_field_4;
+		products.set_from(this);
 	}
 };
+
+// the two scaled terms, and each multiplied by the other term's factor (read
+// through the terms' pointer, so after each store)
+inline void step_products_311100::set_from(step_terms_311100 const *terms)
+{
+	scaled_delta = terms->scaled_delta;
+	scaled_field_4 = terms->scaled_field_4;
+	field_8 = terms->field_c * terms->scaled_delta;
+	field_c = terms->field_10 * terms->scaled_field_4;
+}
 struct step_info_311100
 {
 	long field_0;
@@ -238,6 +250,10 @@ public:
 	void function_30e720();
 };
 
+// score 5 (was 110): retail loads info before description_, and its last
+// product loads field_10 first (fld field_10, fmul scaled_field_4); 0x30fef0
+// matches with the same inline. Copy orders, an explicit scale and two
+// anneals found nothing better.
 // runs the collision part of a world's step: the step's terms set from the
 // description, each island's contacts worked out and the island listeners
 // told, the pending removals and other work flushed, and the post-collide

@@ -135,6 +135,11 @@ inline float dot3_2fe830(__m128 const &a, __m128 const &b)
 	return result;
 }
 
+// score 207 (was 207): the code matches retail but for the stack layout
+// (retail closest collector at esp+0x30 and the cast result at esp+0x60, here
+// the reverse) and esi and edi holding the first body and the input the other
+// way round; renaming the result and declaring the input first do not change
+// either.
 // @retail 0x2fe830
 void __cdecl function_2fe830(void const *a_, void const *b_, void const *input_, void *collector_, void *second_collector_)
 {
@@ -250,6 +255,10 @@ public:
 	virtual void get_closest(body_2fe830 const *a, body_2fe830 const *b, query_header_2fe830 const *header, closest_collector_2fe830 *collector) {}
 };
 
+// score 190 (was 190): stack layout: retail puts closest at esp+0x30 and
+// result at 0x60, ours the reverse (declaration order, scopes and names do
+// not move them); retail also resets moved_closest before it moves the body
+// in the loop, which here scores 197.
 // the same cast, the closest points found by the object itself; a move that
 // finds no closest points passes on the last hit
 // @retail 0x2fec10

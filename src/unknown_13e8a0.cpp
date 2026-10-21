@@ -654,28 +654,18 @@ void __stdcall function_13f0e0(text_glyph_callback callback, short_rectangle2d c
 	long wrapped_line = 0;
 	point2f position = { (real)bounds->left, (real)bounds->top };
 	s_text_iterator iterator;
-	if (function_13f470(&iterator, g_4e73a0.font, (short)g_4e73a0.justification, text,
+	if (!function_13f470(&iterator, g_4e73a0.font, (short)g_4e73a0.justification, text,
 		(short)g_4e73a0.style, &g_4e73a0.color, &g_4e73a0.shadow, &g_4e73a0.field_24))
+		goto done;
+	do
 	{
-		for (;;)
+		long first = iterator.index;
+		long justification = iterator.justification;
+		box2f line_bounds = { (real)bounds->left, (real)bounds->right, (real)bounds->top, (real)bounds->bottom };
+		if (g_4e73a0.tab_stop_count > 0)
 		{
-			long first = iterator.index;
-			long justification = iterator.justification;
-			box2f line_bounds = { (real)bounds->left, (real)bounds->right, (real)bounds->top, (real)bounds->bottom };
-			if (g_4e73a0.tab_stop_count > 0)
-			{
-				if ((short)tab != 0)
-					line_bounds.x0 = g_4e73a0.tab_stops[(short)tab - 1] * scale;
-				else
-				{
-					if ((short)line == 0)
-						line_bounds.x0 += g_4e73a0.unknown5e * scale;
-					else
-						line_bounds.x0 += g_4e73a0.unknown60 * scale;
-				}
-				if ((short)tab < g_4e73a0.tab_stop_count)
-					line_bounds.x1 = g_4e73a0.tab_stops[(short)tab] * scale;
-			}
+			if ((short)tab != 0)
+				line_bounds.x0 = g_4e73a0.tab_stops[(short)tab - 1] * scale;
 			else
 			{
 				if ((short)line == 0)
@@ -683,64 +673,75 @@ void __stdcall function_13f0e0(text_glyph_callback callback, short_rectangle2d c
 				else
 					line_bounds.x0 += g_4e73a0.unknown60 * scale;
 			}
-			s_font_header *header = iterator.field_4_3;
-			position.x = *(short *)header->unknown0a * scale + line_bounds.x0;
-			position.y = (header->ascending_height +
-				(header->leading_height + line_gap + header->descending_height + header->ascending_height) * ((short)wrapped_line + (short)line)) * scale + line_bounds.y0;
-			s_text_line_measurement measured = function_13ef40(&iterator, &position, &line_bounds, scale);
-			header = iterator.field_4_3;
-			switch (justification)
-			{
-			case 1:
-				position.x = line_bounds.x1 - line_bounds.x0 + line_bounds.x0 - measured.width - *(short *)header->unknown0a;
-				break;
-			case 2:
-				position.x = (line_bounds.x1 - line_bounds.x0 - measured.width) * 0.5f + line_bounds.x0;
-				break;
-			}
-			if (line_bounds.y1 > position.y)
-			{
-				box2f clip_bounds;
-				box2f const *clipping = NULL;
-				if (clip)
-				{
-					clip_bounds.x0 = clip->left;
-					clip_bounds.x1 = clip->right;
-					clip_bounds.y0 = clip->top;
-					clip_bounds.y1 = clip->bottom;
-					clipping = &clip_bounds;
-				}
-				function_13f700(&line_bounds, clipping, (short)first, callback, &position, iterator.color, iterator.field_24, text, (short)measured.index, scale);
-			}
-			iterator.index = (short)measured.index;
-			switch (iterator.token)
-			{
-			case _text_token_end:
-				goto done;
-			case _text_token_newline:
-				line += maximum_lines + 1;
-				tab = 0;
-				maximum_lines = 0;
-				wrapped_line = 0;
-				break;
-			case _text_token_tab:
-				if ((short)tab < g_4e73a0.tab_stop_count)
-				{
-					tab++;
-					wrapped_line = 0;
-				}
-				break;
-			case _text_token_justification:
-				wrapped_line = 0;
-				break;
-			case _text_token_character:
-				wrapped_line++;
-				if ((short)wrapped_line > (short)maximum_lines)
-					maximum_lines = wrapped_line;
-				break;
-			}
+			if ((short)tab < g_4e73a0.tab_stop_count)
+				line_bounds.x1 = g_4e73a0.tab_stops[(short)tab] * scale;
 		}
-	}
+		else
+		{
+			if ((short)line == 0)
+				line_bounds.x0 += g_4e73a0.unknown5e * scale;
+			else
+				line_bounds.x0 += g_4e73a0.unknown60 * scale;
+		}
+		s_font_header *header = iterator.field_4_3;
+		position.x = *(short *)header->unknown0a * scale + line_bounds.x0;
+		position.y = (header->ascending_height +
+			(header->leading_height + line_gap + header->descending_height + header->ascending_height) * ((short)wrapped_line + (short)line)) * scale + line_bounds.y0;
+		s_text_line_measurement measured = function_13ef40(&iterator, &position, &line_bounds, scale);
+		header = iterator.field_4_3;
+		switch (justification)
+		{
+		case 1:
+			position.x = line_bounds.x1 - line_bounds.x0 + line_bounds.x0 - measured.width - *(short *)header->unknown0a;
+			break;
+		case 2:
+			position.x = (line_bounds.x1 - line_bounds.x0 - measured.width) * 0.5f + line_bounds.x0;
+			break;
+		}
+		if (line_bounds.y1 > position.y)
+		{
+			box2f clip_bounds;
+			box2f const *clipping;
+			if (clip)
+			{
+				clip_bounds.x0 = clip->left;
+				clip_bounds.x1 = clip->right;
+				clip_bounds.y0 = clip->top;
+				clip_bounds.y1 = clip->bottom;
+				clipping = &clip_bounds;
+			}
+			else
+				clipping = NULL;
+			function_13f700(&line_bounds, clipping, (short)first, callback, &position, iterator.color, iterator.field_24, text, (short)measured.index, scale);
+		}
+		iterator.index = (short)measured.index;
+		switch (iterator.token)
+		{
+		case _text_token_end:
+			goto done;
+		case _text_token_newline:
+			line += maximum_lines + 1;
+			tab = 0;
+			maximum_lines = 0;
+			wrapped_line = 0;
+			break;
+		case _text_token_tab:
+			if ((short)tab < g_4e73a0.tab_stop_count)
+			{
+				tab++;
+				wrapped_line = 0;
+			}
+			break;
+		case _text_token_justification:
+			wrapped_line = 0;
+			break;
+		case _text_token_character:
+			wrapped_line++;
+			if ((short)wrapped_line > (short)maximum_lines)
+				maximum_lines = wrapped_line;
+			break;
+		}
+	} while (iterator.token != _text_token_end);
 done:
 	if (arg_c5cac5)
 	{

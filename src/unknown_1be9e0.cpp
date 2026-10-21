@@ -52,10 +52,10 @@ bool function_1be9e0(long actor_index, long other_index, real *distance, short *
 
 PRIVATE __forceinline real function_1be9e2(point3f const *arg_1, point3f const *arg_0)
 {
-    real local_0 = arg_0->x - arg_1->x;
-    real local_1 = arg_0->y - arg_1->y;
-    real local_2 = arg_0->z - arg_1->z;
-    return (real)sqrt(local_0 * local_0 + local_1 * local_1 + local_2 * local_2);
+	vector3f v;
+
+	vector3d_from_points3d(arg_1, arg_0, &v);
+	return (real)sqrt(v.k * v.k + v.j * v.j + v.i * v.i);
 }
 
 // @retail 0x1be9e0
@@ -120,6 +120,9 @@ long __stdcall function_1bead0(long actor_index, s_slot *slot)
 /* invites the actor's clump members near enough, the nearest first */
 static __forceinline long real_to_long(real value);
 
+// score 88 (was 88): retail loads the pool pointer first and keeps the record
+// count in ECX,
+// ours reads a different global before the pool.
 // @retail 0x1beb70
 short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 {
@@ -185,6 +188,9 @@ short __stdcall function_1beb70(long actor_index, s_slot *slot, bool active)
 	return g_46fbe4;
 }
 
+// score 70 (was 70): the record count is loaded into EDX before the index is
+// masked here and
+// into EDI after it in retail, so the two blocks are out of step.
 // @retail 0x1bee40
 short __stdcall function_1bee40(long actor_index, long leader_index, long a, long b)
 {

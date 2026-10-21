@@ -69,6 +69,9 @@ PRIVATE inline void actor_point_target_position(s_actor_point_target const *targ
 	}
 }
 
+// score 300 (was 300): our stack frame is 4 bytes smaller than retail's, so
+// every local offset is shifted and the two nested zone loops are laid out
+// differently.
 // @retail 0x1c0b80
 bool function_1c0b80(long actor_index, long const *excluded, short excluded_count,
 	s_actor_point_target *target, long *unknown, long *reference)
@@ -216,6 +219,9 @@ short __stdcall function_1c10a0(long actor_index)
 	return result;
 }
 
+// score 2 (was 2): ours reads the actor pool through a second global before
+// the record count, retail reads the pool pointer and the count straight from
+// g_4f55f0.
 // @retail 0x1c10f0
 bool __stdcall function_1c10f0(long actor_index, s_slot *slot)
 {
@@ -240,6 +246,9 @@ bool __stdcall function_1c10f0(long actor_index, s_slot *slot)
 	return true;
 }
 
+// score 63 (was 63): g_46fbe8 and g_46fbe4 are read as bytes here but as
+// dwords in retail - they are declared short in include/globals.h, which is not
+// mine to change - and the actor is fetched in a different order.
 // @retail 0x1c1160
 short __stdcall function_1c1160(long actor_index, s_slot *slot, bool active)
 {

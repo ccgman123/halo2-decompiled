@@ -136,7 +136,10 @@ bool function_21e4b0(s_sound_driver_counts const *counts)
 					SOUND_DRIVER_GLOBALS->unknown1a0c[type] = SOUND_DRIVER_GLOBALS->channel_count;
 					SOUND_DRIVER_GLOBALS->channel_count += counts->channels[type];
 					for (long i = 0; result && i < counts->channels[type]; i++)
-						result = result && function_21f4e0(first + i, type);
+					{
+						bool channel_result = function_21f4e0(first + i, type);
+						result = result && channel_result;
+					}
 					SOUND_DRIVER_GLOBALS->unknown1a12[type] = SOUND_DRIVER_GLOBALS->channel_count - 1;
 				}
 				short voices = counts->voices;

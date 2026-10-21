@@ -332,26 +332,31 @@ void __stdcall function_b5a70(long player_index, long type, long count, long obj
 void __stdcall function_b5ba0(long player_index, long type, long count, long object_indices,
     long size, void const *data, long timeout)
 {
-    // Preserve NONE while reducing valid handles to their player slots.
-    player_index = player_index == NONE ? NONE : (player_index & 0xffff);
+    bool has_player = player_index != NONE;
+    long player_slot = player_index & 0xffff;
     long entities[2];
     s_world *world = (s_world *)g_4cf77c;
     long state = world->state;
     if (state == 4 || state == 5)
     {
         s_event_distribution *distribution = (s_event_distribution *)((byte *)world->data + 0xa0ac);
-        for (long i = 0; i < count; i++)
+        long i = 0;
+        if (count > 0)
         {
-            if (state != 3 && state != 5)
-                entities[i] = function_a5930(((long const *)object_indices)[i]);
-            else
-                entities[i] = function_a5980(((long const *)object_indices)[i]);
+            do
+            {
+                if (state != 3 && state != 5)
+                    entities[i] = function_a5930(((long const *)object_indices)[i]);
+                else
+                    entities[i] = function_a5980(((long const *)object_indices)[i]);
+                i++;
+            } while (i < count);
         }
         if (count <= 0 || entities[0] != NONE)
         {
-            if (state != 3 && state != 5 && player_index != NONE)
+            if (state != 3 && state != 5 && has_player)
             {
-                byte *player = g_4e8c24->data + (player_index & 0xffff) * 0x21c;
+                byte *player = g_4e8c24->data + player_slot * 0x21c;
                 short machine = *(short *)(player + 0x1a);
                 if (machine != NONE)
                 {

@@ -337,107 +337,108 @@ void function_23ac30(s_vertex_source_23ac30 const *source, long index,
 bool __stdcall function_14a8e0(s_structure_collision_result const *collision,
 	long model_index, s_structure_lightmap_triangle *triangle)
 {
-	triangle->unknown18 = NONE;
-	*(long *)((byte *)triangle + 8) = NONE;
-	*(long *)((byte *)triangle + 0x14) = NONE;
-	triangle->part_index = NONE;
-	triangle->part_offset = NONE;
-	triangle->lightmap_part_index = NONE;
-	*(long *)((byte *)triangle + 0xc) = NONE;
-	*(long *)((byte *)triangle + 0x10) = NONE;
-	byte *model = g_4e3b44[model_index & 0xffff].bytes;
-	byte *object = *(byte **)(g_4e0300->data + (COLLISION_OBJECT_14A8E0 & 0xffff) * 12 + 8);
-	signed char *regions = (signed char *)(object + *(short *)(object + 0x11a));
-	short region = *(short *)((byte const *)collision + 0x44);
-	short node = *(short *)((byte const *)collision + 0x46);
 	bool result = false;
-	if (regions[region] != -1)
 	{
-		byte *region_data = *(byte **)(model + 0x20) + region * 16;
-		*(long *)((byte *)triangle + 0x14) =
-			*(short *)(*(byte **)(region_data + 0xc) + regions[region] * 16 + 0xc);
-	}
-	else
-		*(long *)((byte *)triangle + 0x14) = 0xff;
-	long section_index = *(long *)((byte *)triangle + 0x14);
-	if (section_index == 0xff) return result;
-	byte *section = *(byte **)(model + 0x28) + section_index * 0x5c;
-	s_vertex_bounds_23ac30 const *bounds = *(s_vertex_bounds_23ac30 const **)(model + 0x18);
-	if (!function_12de70((s_geometry_block_info *)(section + 0x38), 3)) return result;
-	object = *(byte **)(g_4e0300->data + (COLLISION_OBJECT_14A8E0 & 0xffff) * 12 + 8);
-	point3f point = collision->point;
-	if ((unsigned long)*(short *)(object + 0x114) / 0x34 > 0)
-	{
-		transform4x3f *matrix = (transform4x3f *)(object + *(short *)(object + 0x116)) + node;
-		function_142700(matrix, &collision->point, &point);
-		matrix = (transform4x3f *)(*(byte **)(model + 0x4c) + node * 0x60 + 0x28);
-		function_142700(matrix, &point, &point);
-	}
-	s_lookup lookup;
-	if (!lookup.initialize(COLLISION_OBJECT_14A8E0)) return result;
-	byte *surface_set = (byte *)function_1efd80((s_table_holder *)&lookup,
-		*(dword *)((byte const *)collision + 0x48));
-	byte *section_mesh = *(byte **)(section + 0x34);
-	long node_count = *(long *)(section_mesh + 0x64);
-	if (node_count <= 0) return result;
-	byte *nodes = *(byte **)(section_mesh + 0x68);
-	long node_index;
-	for (node_index = 0; node_index < node_count; ++node_index)
-		if (nodes[node_index] == node) break;
-	if (node_index == node_count || node_index == NONE) return result;
-	byte *section_groups = *(byte **)(model + 0x80) + section_index * 8;
-	byte *surface_group = *(byte **)(section_groups + 4) + node_index * 16;
-	if (*(long *)surface_group != *(long *)(surface_set + 0x10)) return result;
-	s_structure_surface_range *range = (s_structure_surface_range *)*(byte **)(surface_group + 4)
-		+ collision->surface_range_index;
-	for (long reference_index = range->first; reference_index < range->first + range->count; ++reference_index)
-	{
-		if (reference_index < 0 || reference_index >= *(long *)(surface_group + 8)) continue;
-		s_structure_triangle_reference *reference =
-			(s_structure_triangle_reference *)*(byte **)(surface_group + 0xc) + reference_index;
-		long surface = reference->surface_index;
-		if (surface == NONE) return result;
-		if (surface >= *(long *)surface_set) continue;
-		byte *surfaces = *(byte **)(surface_set + 4);
-		if (*(word *)(surfaces + surface * 8) != (collision->plane_index & 0x7fff)) continue;
-		section_mesh = *(byte **)(section + 0x34);
-		word *indices = *(word **)(section_mesh + 0x24) + reference->first_index;
-		point3f vertices[3];
-		long vertex_node;
-		long vertex = 0;
-		do
+		triangle->unknown18 = NONE;
+		*(long *)((byte *)triangle + 8) = NONE;
+		*(long *)((byte *)triangle + 0x14) = NONE;
+		triangle->part_index = NONE;
+		triangle->part_offset = NONE;
+		triangle->lightmap_part_index = NONE;
+		*(long *)((byte *)triangle + 0xc) = NONE;
+		*(long *)((byte *)triangle + 0x10) = NONE;
+		byte *model = g_4e3b44[model_index & 0xffff].bytes;
+		byte *object = *(byte **)(g_4e0300->data + (COLLISION_OBJECT_14A8E0 & 0xffff) * 12 + 8);
+		signed char *regions = (signed char *)(object + *(short *)(object + 0x11a));
+		if (regions[(*(short *)((byte const *)collision + 0x44))] != -1)
 		{
-			function_23ac30((s_vertex_source_23ac30 const *)section_mesh, indices[vertex],
-				bounds, &vertices[vertex], &vertex_node);
-			++vertex;
-		} while (vertex < 3);
-		if (function_11e800(&vertices[0], &vertices[1], &vertices[2], &point, &triangle->u, &triangle->v))
+			byte *region_data = *(byte **)(model + 0x20) + (*(short *)((byte const *)collision + 0x44)) * 16;
+			*(long *)((byte *)triangle + 0x14) =
+				*(short *)(*(byte **)(region_data + 0xc) + regions[(*(short *)((byte const *)collision + 0x44))] * 16 + 0xc);
+		}
+		else
+			*(long *)((byte *)triangle + 0x14) = 0xff;
+		long section_index = *(long *)((byte *)triangle + 0x14);
+		if (section_index == 0xff) goto done;
+		byte *section = *(byte **)(model + 0x28) + section_index * 0x5c;
+		s_vertex_bounds_23ac30 const *bounds = *(s_vertex_bounds_23ac30 const **)(model + 0x18);
+		if (!function_12de70((s_geometry_block_info *)(section + 0x38), 3)) goto done;
+		object = *(byte **)(g_4e0300->data + (COLLISION_OBJECT_14A8E0 & 0xffff) * 12 + 8);
+		point3f point = collision->point;
+		if ((unsigned long)*(short *)(object + 0x114) / 0x34 > 0)
 		{
-			triangle->unknown18 = NONE;
-			*(long *)((byte *)triangle + 8) = COLLISION_OBJECT_14A8E0;
-			triangle->part_index = 0;
-			result = true;
-			long part_count = *(long *)section_mesh;
-			byte *parts = *(byte **)(section_mesh + 4);
-			long previous_index = triangle->part_offset;
-			for (long part = 0; part < part_count; ++part)
+			transform4x3f *matrix = (transform4x3f *)(object + *(short *)(object + 0x116)) + (*(short *)((byte const *)collision + 0x46));
+			function_142700(matrix, &collision->point, &point);
+			matrix = (transform4x3f *)(*(byte **)(model + 0x4c) + (*(short *)((byte const *)collision + 0x46)) * 0x60 + 0x28);
+			function_142700(matrix, &point, &point);
+		}
+		s_lookup lookup;
+		if (!lookup.initialize(COLLISION_OBJECT_14A8E0)) goto done;
+		byte *surface_set = (byte *)function_1efd80((s_table_holder *)&lookup,
+			*(dword *)((byte const *)collision + 0x48));
+		byte *section_mesh = *(byte **)(section + 0x34);
+		long node_count = *(long *)(section_mesh + 0x64);
+		if (node_count <= 0) goto done;
+		byte *nodes = *(byte **)(section_mesh + 0x68);
+		long node_index;
+		for (node_index = 0; node_index < node_count; ++node_index)
+			if (nodes[node_index] == (*(short *)((byte const *)collision + 0x46))) break;
+		if (node_index == node_count || node_index == NONE) goto done;
+		byte *section_groups = *(byte **)(model + 0x80) + *(long *)((byte *)triangle + 0x14) * 8;
+		byte *surface_group = *(byte **)(section_groups + 4) + node_index * 16;
+		if (*(long *)surface_group != *(long *)(surface_set + 0x10)) goto done;
+		s_structure_surface_range *range = (s_structure_surface_range *)*(byte **)(surface_group + 4)
+			+ collision->surface_range_index;
+		for (long reference_index = range->first; reference_index < range->first + range->count; ++reference_index)
+		{
+			if (reference_index < 0 || reference_index >= *(long *)(surface_group + 8)) continue;
+			s_structure_triangle_reference *reference =
+				(s_structure_triangle_reference *)*(byte **)(surface_group + 0xc) + reference_index;
+			long surface = reference->surface_index;
+			if (surface == NONE) goto done;
+			if (surface >= *(long *)surface_set) continue;
+			byte *surfaces = *(byte **)(surface_set + 4);
+			if (*(word *)(surfaces + surface * 8) != (collision->plane_index & 0x7fff)) continue;
+			section_mesh = *(byte **)(section + 0x34);
+			word *indices = *(word **)(section_mesh + 0x24) + reference->first_index;
+			point3f vertices[3];
+			long vertex_node;
+			long vertex = 0;
+			do
 			{
-				word first = *(word *)(parts + part * 0x48 + 6);
-				word count = *(word *)(parts + part * 0x48 + 8);
-				if (previous_index >= first && previous_index < first + count)
+				function_23ac30((s_vertex_source_23ac30 const *)section_mesh, indices[vertex],
+					bounds, &vertices[vertex], &vertex_node);
+				++vertex;
+			} while (vertex < 3);
+			if (function_11e800(&vertices[0], &vertices[1], &vertices[2], &point, &triangle->u, &triangle->v))
+			{
+				triangle->unknown18 = NONE;
+				*(long *)((byte *)triangle + 8) = COLLISION_OBJECT_14A8E0;
+				triangle->part_index = 0;
+				result = true;
+				long part_count = *(long *)section_mesh;
+				byte *parts = *(byte **)(section_mesh + 4);
+				long previous_index = triangle->part_offset;
+				for (long part = 0; part < part_count; ++part)
 				{
-					triangle->part_index = part;
-					break;
+					word first = *(word *)(parts + part * 0x48 + 6);
+					word count = *(word *)(parts + part * 0x48 + 8);
+					if (previous_index >= first && previous_index < first + count)
+					{
+						triangle->part_index = part;
+						break;
+					}
 				}
+				triangle->part_offset = reference->first_index;
+				triangle->lightmap_part_index = reference->part_index;
+				*(long *)((byte *)triangle + 0xc) = model_index;
+				*(long *)((byte *)triangle + 0x1c) = (*(short *)((byte const *)collision + 0x44));
+				*(long *)((byte *)triangle + 0x2c) = vertex_node;
+				goto done;
 			}
-			triangle->part_offset = reference->first_index;
-			triangle->lightmap_part_index = reference->part_index;
-			*(long *)((byte *)triangle + 0xc) = model_index;
-			*(long *)((byte *)triangle + 0x1c) = region;
-			*(long *)((byte *)triangle + 0x2c) = vertex_node;
-			return result;
 		}
 	}
+done:
 	return result;
 }
 

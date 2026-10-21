@@ -1,5 +1,6 @@
 // @flags /O2 /Gr /arch:SSE
 #include "unknown_044e90.h"
+#include "normalize3d.h"
 
 // @retail 0x44e90
 void __stdcall function_44e90(short entry_index, short section_index)
@@ -29,43 +30,7 @@ void __stdcall function_44e90(short entry_index, short section_index)
     }
     byte *views = *(byte **)g_4c0b78.state->unknown00;
     byte *view_ranges = views + section_index * 0x1a + 0xa6e;
-    if (!(*(long *)(geometry + 0x30) > 0)) {
-        byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
-        long object_index = **(long **)entry->unknown10;
-        byte *object = (byte *)((s_render_object_header *)g_4e0300->data)[object_index & 0xffff].object;
-        long node_count = *(short *)(object + 0x114) / sizeof(transform4x3f);
-        transform4x3f const *nodes = (transform4x3f *)(object + *(short *)(object + 0x116));
-        for (long i = 0; i < node_count; ++i)
-            function_142a60(&nodes[i], (transform4x3f *)(*(byte **)(tag + 0x4c) + i * 0x60 + 0x28), &workspace.transforms[i]);
-        dword *visible = *(dword **)(entry->unknown10 + 4);
-        for (long part = 0; part < *(long *)(geometry + 8); ++part)
-        {
-            dword bit = 1 << (part & 31);
-            if (!(visible[part >> 5] & bit))
-            {
-                word bound_index = *(word *)(*(byte **)(geometry + 0xc) + part * 8 + 4);
-                byte *bound = *(byte **)(geometry + 0x14) + bound_index * 20;
-                transform4x3f const *transform = &workspace.transforms[bound[0x10]];
-                point3f local = *(point3f *)bound;
-                if (transform->scale != 1.0f)
-                {
-                    local.x *= transform->scale;
-                    local.y *= transform->scale;
-                    local.z *= transform->scale;
-                }
-                point3f center;
-                center.x = transform->up.i * local.z + transform->left.i * local.y + transform->forward.i * local.x + transform->position.x;
-                center.y = transform->up.j * local.z + transform->left.j * local.y + transform->forward.j * local.x + transform->position.y;
-                center.z = transform->up.k * local.z + transform->left.k * local.y + transform->forward.k * local.x + transform->position.z;
-                bool contained = false;
-                if (function_165010((s_frustum_set_view *)views, section_index, &center, *(real *)(bound + 0xc), &contained))
-                {
-                    entry->unknown00 |= 1;
-                    visible[part >> 5] |= bit;
-                }
-            }
-        }
-    } else {
+    if (*(long *)(geometry + 0x30) > 0) {
         bool parts = !g_4c0b78.state->active && (entry->unknown00 & 0x1000) &&
             *(long *)(geometry + 0x30) > 2 * *(long *)(geometry + 8);
         byte *query_data = *(byte **)(geometry + 0x2c);
@@ -136,5 +101,39 @@ void __stdcall function_44e90(short entry_index, short section_index)
             g_480118->allocate((long)workspace.first.list.indices, (workspace.first.list.capacity & 0x7fffffff) * 4, 0x12);
         if (workspace.second.list.capacity >= 0)
             g_480118->allocate((long)workspace.second.list.indices, (workspace.second.list.capacity & 0x7fffffff) * 4, 0x12);
+    } else {
+        byte *tag = g_4e3b44[entry->tag & 0xffff].bytes;
+        long object_index = **(long **)entry->unknown10;
+        byte *object = (byte *)((s_render_object_header *)g_4e0300->data)[object_index & 0xffff].object;
+        long node_count = *(short *)(object + 0x114) / sizeof(transform4x3f);
+        transform4x3f const *nodes = (transform4x3f *)(object + *(short *)(object + 0x116));
+        for (long i = 0; i < node_count; ++i)
+            function_142a60(&nodes[i], (transform4x3f *)(*(byte **)(tag + 0x4c) + i * 0x60 + 0x28), &workspace.transforms[i]);
+        dword *visible = *(dword **)(entry->unknown10 + 4);
+        for (long part = 0; part < *(long *)(geometry + 8); ++part)
+        {
+            dword bit = 1 << (part & 31);
+            if (!(visible[part >> 5] & bit))
+            {
+                word bound_index = *(word *)(*(byte **)(geometry + 0xc) + part * 8 + 4);
+                byte *bound = *(byte **)(geometry + 0x14) + bound_index * 20;
+                transform4x3f const *transform = &workspace.transforms[bound[0x10]];
+                point3f local = *(point3f *)bound;
+                if (transform->scale != 1.0f)
+                {
+                    vector3f_scale((vector3f const *)&local, transform->scale, (vector3f *)&local);
+                }
+                point3f center;
+                center.x = transform->up.i * local.z + transform->left.i * local.y + transform->forward.i * local.x + transform->position.x;
+                center.y = transform->up.j * local.z + transform->left.j * local.y + transform->forward.j * local.x + transform->position.y;
+                center.z = transform->up.k * local.z + transform->left.k * local.y + transform->forward.k * local.x + transform->position.z;
+                bool contained = false;
+                if (function_165010((s_frustum_set_view *)views, section_index, &center, *(real *)(bound + 0xc), &contained))
+                {
+                    entry->unknown00 |= 1;
+                    visible[part >> 5] |= bit;
+                }
+            }
+        }
     }
 }

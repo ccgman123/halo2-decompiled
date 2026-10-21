@@ -58,6 +58,7 @@ convex_pair_2ee2e0::convex_pair_2ee2e0(description_2ed170 const *first, descript
 	{
 		state.start((convex_2fefd0 const *)first_shape, (convex_2fefd0 const *)second_shape, &transform);
 	}
-	field_18 = 0;
+	long &field_18_ref = field_18;
+	field_18_ref = 0;
 	field_2c = -1.0f;
 }

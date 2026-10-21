@@ -953,11 +953,7 @@ void function_3f2c0(s_planar_camera_source const *source, byte const *view, long
 			++list->count;
 		}
 	}
-	s_bit_vector_pool *current = (s_bit_vector_pool *)g_4c0b78.state;
-	function_2cb30();
-	function_133390(current);
-	function_133520(current);
-	function_133720(current, true);
+	function_2cbc0(true);
 	function_44720();
 }
 

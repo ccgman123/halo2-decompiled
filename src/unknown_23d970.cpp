@@ -7,6 +7,7 @@
 
 #include "unknown_11c920.h"
 #include "vector_angles.h"
+#include "vector_products.h"
 #include "frame_storage.h"
 #include <xtl.h>
 #include <math.h>
@@ -606,12 +607,8 @@ void __stdcall function_23de50(void *state, void *input, s_observer_command *out
 		command->distance = function_30bf0(&direction);
 		command->forward = direction;
 		vector3f right;
-		right.i = direction.k * previous_up.j - direction.j * previous_up.k;
-		right.j = direction.i * previous_up.k - direction.k * previous_up.i;
-		right.k = direction.j * previous_up.i - direction.i * previous_up.j;
-		command->up.i = right.k * direction.j - right.j * direction.k;
-		command->up.j = right.i * direction.k - right.k * direction.i;
-		command->up.k = right.j * direction.i - right.i * direction.j;
+		cross3f(&previous_up, &command->forward, &right);
+		cross3f(&command->forward, &right, &command->up);
 		function_30bf0(&command->up);
 		command->field_of_view = observer->field_of_view;
 		command->offset = *g_4687a4;

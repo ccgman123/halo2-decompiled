@@ -121,10 +121,11 @@ void class_2f7c40::function_2f7c40(void const *a, void const *b, void const *inp
 		}
 	}
 	long const sphere_count = spheres->count;
+	__m128 const *first_sphere = spheres->spheres;
 	__m128 centres[8];
 	{
 		c_query_transform const *frame = &side_a->placement->transform;
-		__m128 const *sphere = spheres->spheres;
+		__m128 const *sphere = first_sphere;
 		__m128 *placed = centres;
 		for (int i = sphere_count - 1; i >= 0; i--)
 		{
@@ -136,7 +137,7 @@ void class_2f7c40::function_2f7c40(void const *a, void const *b, void const *inp
 	results_2f7c40 *results = (results_2f7c40 *)collector;
 	__m128 const *centre = centres;
 	results->contacts->ensure_capacity(results->contacts->size + sphere_count);
-	__m128 const *sphere = spheres->spheres;
+	__m128 const *sphere = first_sphere;
 	for (int i = sphere_count - 1; i >= 0; i--)
 	{
 		float const radius = sphere->m128_f32[3];
@@ -146,17 +147,20 @@ void class_2f7c40::function_2f7c40(void const *a, void const *b, void const *inp
 		if (radii + ((input_2f7c40 const *)input)->tolerance > closest.distance)
 		{
 			contacts_2f7c40 *contacts = results->contacts;
-			contact_2f7c40 *contact = &contacts->data[contacts->size++];
+			int const index = contacts->size;
+			contacts->size = index + 1;
+			contact_2f7c40 *contact = &contacts->data[index];
 			__m128 const single = _mm_set_ss(-radius);
 			__m128 const scale = _mm_shuffle_ps(single, single, 0);
 			contact->position = _mm_add_ps(*centre, _mm_mul_ps(scale, closest.normal));
 			contact->normal = closest.normal;
 			contact->position_and_distance[3] = closest.distance - radii;
-			if (ids[i] == 0xffff)
+			unsigned short held = ids[i];
+			if (held == 0xffff)
 			{
-				ids[i] = owner->add_contact(a, b, input, contact);
+				held = owner->add_contact(a, b, input, contact);
+				ids[i] = held;
 			}
-			unsigned short const held = ids[i];
 			if (held != 0xffff)
 			{
 				contact->id = held;

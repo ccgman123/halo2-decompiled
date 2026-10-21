@@ -245,6 +245,9 @@ __forceinline __m128 inverse_sqrt_308d90(__m128 const &value)
 	return _mm_shuffle_ps(refined, refined, 0);
 }
 
+// score 116 (was 136): in the edge branch retail loads out before the
+// subtraction and stores the distance through a stack temporary after the
+// normal; a distance local, an out local or an inline helper all score 136.
 // 0 when the point lies over the triangle (the normal faces the point), 1
 // when it is nearest an edge or a corner
 // @retail 0x308d90
@@ -295,11 +298,8 @@ int __cdecl function_308d90(__m128 const *point, __m128 const *corners, float co
 		__m128 const squares = _mm_mul_ps(offset, offset);
 		__m128 const length_squared = _mm_add_ss(_mm_shuffle_ps(squares, squares, 0xaa), _mm_add_ss(_mm_shuffle_ps(squares, squares, 0x55), squares));
 		__m128 const inverse = inverse_sqrt_308d90(length_squared);
-		float distance;
-		_mm_store_ss(&distance, _mm_mul_ss(length_squared, inverse));
-		__m128 const normal = _mm_mul_ps(inverse, offset);
-		out->normal = normal;
-		out->distance = distance;
+		out->normal = _mm_mul_ps(inverse, offset);
+		_mm_store_ss(&out->distance, _mm_mul_ss(length_squared, inverse));
 		return 1;
 	}
 	__m128 first;

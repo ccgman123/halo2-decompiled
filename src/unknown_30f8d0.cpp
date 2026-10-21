@@ -166,25 +166,24 @@ bool_30f8d0 class_30e140::function_30f8d0(entity_316000 *entity)
 // the entity's island gives up to the world each constraint whose other
 // entity is fixed, and each action all of whose other entities are fixed;
 // then the entity is removed
-// score 149 (was 169): the constraint is now read once into a local, so the
-// loop matches retail's length; the registers are still swapped, ours keeps
-// the island in ebx and reloads the entity from the stack where retail keeps
-// the entity in ebx and the island in edi
+// score 23 (was 169): the constraint is read where it is used, and the one
+// that is moved is read before the list shrinks, so the loop uses the
+// registers retail uses; the last call still loads this after its arguments
+// instead of before them
 // @retail 0x30f960
 void class_30e140::function_30f960(entity_316000 *entity)
 {
 	constraint_owner_30f960 *island = entity->island;
 	for (int i = 0; i < island->constraints.size; i++)
 	{
-		constraint_30f960 *constraint = island->constraints.data[i];
-		if (constraint->type() != 11)
+		if (island->constraints.data[i]->type() != 11)
 		{
-		if ((constraint->first == entity && constraint->second->fixed) ||
-			(constraint->second == entity && constraint->first->fixed))
+		if ((island->constraints.data[i]->first == entity && island->constraints.data[i]->second->fixed) ||
+			(island->constraints.data[i]->second == entity && island->constraints.data[i]->first->fixed))
 		{
 			constraints_30f960 *constraints = &island->constraints;
+			constraint_30f960 *moved = island->constraints.data[i];
 			constraints->size--;
-			constraint_30f960 *moved = constraint;
 			for (int j = i; j < constraints->size; j++)
 			{
 				constraints->data[j] = constraints->data[j + 1];

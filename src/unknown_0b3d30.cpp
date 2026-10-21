@@ -282,9 +282,9 @@ static __forceinline long storage_error_ab(HRESULT error)
 long function_b4810(long kind, long controller, struct _XUID owner, wchar_t const *filename, char const *directory, long *task_out)
 {
     (void)&controller;
-    long facility = storage_facility_ab(kind);
-    long result = 1;
     *task_out = NONE;
+    long result = 1;
+    long facility = storage_facility_ab(kind);
     wchar_t path[0x100];
     dword path_size = 0x100;
     if (function_b4120(kind, owner, filename, path, &path_size))
@@ -297,15 +297,17 @@ long function_b4810(long kind, long controller, struct _XUID owner, wchar_t cons
             if (status >= 0)
             {
                 *task_out = task_index;
+                result = 0;
                 task->flags = 1;
                 task->type = 0x2c;
                 task->controller_index = controller;
-                return 0;
+                goto done;
             }
             result = storage_error_ab(status);
             function_6b640(task_index);
         }
     }
+done:
     return result;
 }
 

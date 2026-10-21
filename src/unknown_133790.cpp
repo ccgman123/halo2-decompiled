@@ -177,14 +177,18 @@ bool function_133790(s_bit_vector_pool *arg_1, short arg_2, bool arg_3, long *ar
     local_5.field_1e0 = 0.0f;
     *(long *)local_5.field_1a4 = 0;
     local_5.field_1be = NONE;
-    if (!(local_12 & 0x800) && local_2->field_14[local_11] != NONE)
+    local_5.field_1b0 = 1;
+    if (!(local_12 & 0x800))
     {
-        local_5.field_1be = local_2->field_14[local_11];
-        local_5.field_1b0 = 0x40;
+        short marker = local_2->field_14[local_11];
+        if (marker != NONE)
+        {
+            local_5.field_1be = marker;
+            local_5.field_1b0 = 0x40;
+        }
     }
-    else local_5.field_1b0 = 1;
     ((t_function_4b5d0_133790)function_4b5d0)(local_1, arg_1->mode, local_5.field_0, *(real *)local_5.field_1b8,
-        local_5.field_1b4, (s_133f70 *)((byte *)&local_5 + 4), &local_5.field_194, *(bool *)(local_5.field_1a4 + 4));
+        local_5.field_1b4, (s_133f70 *)((byte *)&local_5 + 4), &local_5.field_194, (local_12 & 0x200) != 0);
     local_5.field_1b0 |= 0x208;
     if (arg_3)
     {

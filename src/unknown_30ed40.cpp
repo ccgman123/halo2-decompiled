@@ -199,7 +199,6 @@ public:
 	void *function_30f030(void *island, void *other);
 };
 
-// score 2 (was 2): the values copy addresses its target as offset + data in retail, data + offset in ours.
 // `other` merged into `island`, both made active first; `other` is deleted
 // @retail 0x30f030
 void *class_30f030::function_30f030(void *island_, void *other_)
@@ -252,9 +251,10 @@ void *class_30f030::function_30f030(void *island_, void *other_)
 
 		int const first_value = island->values.size;
 		island->values.resize(first_value + other->values.size);
-		for (int i = 0; i < other->values.size; i++)
+		int destination_index = first_value;
+		for (int i = 0; i < other->values.size; i++, destination_index++)
 		{
-			island->values.data[first_value + i] = other->values.data[i];
+			island->values.data[destination_index] = other->values.data[i];
 		}
 
 		active_islands.data[other->index] = active_islands.data[active_islands.size - 1];

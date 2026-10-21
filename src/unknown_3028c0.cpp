@@ -95,6 +95,9 @@ public:
 	void function_3028c0(input_3028c0 const *input_, long arg_1, long arg_2);
 };
 
+// score 48 (was 59): ours hoists the two call arguments and rewrites the grid
+// pointer into the cells pointer, while retail keeps the grid pointer in eax
+// and pushes the arguments late.
 // @retail 0x3028c0
 void walker_3028c0::function_3028c0(input_3028c0 const *input_, long arg_1, long arg_2)
 {
@@ -105,17 +108,18 @@ void walker_3028c0::function_3028c0(input_3028c0 const *input_, long arg_1, long
 	count = (*input_->counted)->count();
 	field_1c = 1.0f;
 	field_20 = 1.0f;
-	grid_3028c0 const *cells = grid;
 	walk_3028c0 walk;
 	walk.field_0 = _mm_setzero_ps();
-	inverse_cell_size = 1.0f / cells->origin.m128_f32[3];
-	float const scale = cells->origin.m128_f32[3] * 1.52587890625e-05f;
+	inverse_cell_size = 1.0f / grid->origin.m128_f32[3];
+	float const scale = grid->origin.m128_f32[3] * 1.52587890625e-05f;
 	walk.scale = scale;
-	walk.direction = _mm_mul_ps(splat_3028c0(scale), input_->direction);
 	walk.length = sum_3028c0(input_->direction) * 3.0f;
+	walk.direction = _mm_mul_ps(splat_3028c0(scale), input_->direction);
 	segment_3028c0 segment;
-	segment.start = _mm_mul_ps(splat_3028c0(scale), _mm_sub_ps(input_->start, cells->origin));
-	segment.end = _mm_mul_ps(splat_3028c0(scale), _mm_sub_ps(input_->end, cells->origin));
+	__m128 const start = _mm_mul_ps(splat_3028c0(scale), _mm_sub_ps(input_->start, grid->origin));
+	__m128 const end = _mm_mul_ps(splat_3028c0(scale), _mm_sub_ps(input_->end, grid->origin));
+	segment.start = start;
+	segment.end = end;
 	walk.field_2c = 0;
 	walk.field_24 = 0;
 	walk.field_30 = 0;

@@ -70,7 +70,7 @@ bool function_1d48f0(point3f *arg_11, s_havok_component *arg_0, long arg_1, long
   ((c_contact_query_world *)g_51e9a4)->add(local_1);
   if (arg_10 != NONE) local_2 = havok_object_get(arg_10)->havok_component_index;
  }
- long local_6 = *(byte const volatile *)&arg_8 ? 27 : 18;
+ long local_6 = 18 + 9 * arg_8;
  bool local_0 = false;
  hkTransform local_7;
  c_contact_query_transform_volume *local_8;

@@ -40,6 +40,9 @@ void __stdcall actor_behavior_81_update48(long object_index, long unused);
 
 static __forceinline long real_to_long(real value);
 
+// score 81 (was 81): our stack frame is 16 bytes smaller than retail's, so
+// every local
+// offset is shifted and the loop is laid out differently.
 // @retail 0x1c19b0
 bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_type_f17a25 *path)
 {
@@ -123,6 +126,9 @@ bool __stdcall function_1c19b0(long actor_index, vector3f const *direction, s_ty
 	return false;
 }
 
+// score 80 (was 80): the actor index is taken from the stack into EDX in
+// retail and from a
+// global into ESI here, so the whole prologue is a different length.
 // @retail 0x1c1d50
 bool __stdcall function_1c1d50(long actor_index, s_type_f17a25 *path)
 {
@@ -241,6 +247,9 @@ bool __stdcall function_1c2120(long actor_index, s_slot *slot)
 	return true;
 }
 
+// score 64 (was 64): the object pointer is kept in ESI here and reloaded from
+// the stack
+// there, and the flag byte is written as a constant 0 here.
 // @retail 0x1c2130
 bool __stdcall function_1c2130(long actor_index, s_slot *slot)
 {

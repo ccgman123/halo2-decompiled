@@ -43,7 +43,7 @@ long function_19ec40(
 					key = key_c;
 					if (key == -1 || key == entry->key_c)
 					{
-						real distance_squared = 0.0f;
+						real distance_squared;
 
 						if (*point_reference)
 						{
@@ -54,6 +54,8 @@ long function_19ec40(
 							if (height > 0.0f && fabs(entry->position.z - point->z) > height)
 								goto next;
 						}
+						else
+							distance_squared = 0.0f;
 
 						if (count < maximum_count)
 							results[count++] = i;

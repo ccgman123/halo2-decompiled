@@ -213,6 +213,9 @@ bool function_1b8eb0(long actor_index, long object_index, short seat_index, bool
 	return result;
 }
 
+// score 117 (was 145): the loop body now matches (the seat array indexed by a
+// byte offset), but retail pushes ebp and esi after the loop's entry check and
+// keeps the actor pool in ecx, ours saves them in the prologue.
 // @retail 0x1b8f30
 bool function_1b8f30(long actor_index, long object_index)
 {
@@ -225,21 +228,19 @@ bool function_1b8f30(long actor_index, long object_index)
 	function_c8a40(object_index, seats, &count, 0x40);
 	for (short i = 0; i < count; i++)
 	{
-		s_object_seat *seat = &seats[i];
-		long seat_object_index = seat->object_index;
-		s_seat_definition_flags *definition = &seat->definition->flags;
+		s_seat_definition_flags *definition = &seats[i].definition->flags;
 
-		if (seat_object_index != last_object_index)
+		if (seats[i].object_index != last_object_index)
 		{
-			s_slot_object_view *object = object_get(seat_object_index);
+			s_slot_object_view *object = object_get(seats[i].object_index);
 
 			if (object->type == 1 && object->unknown3b4)
 				return false;
-			last_object_index = seat_object_index;
+			last_object_index = seats[i].object_index;
 		}
 		if (!TEST_FIELD_BIT(definition->bit11))
 		{
-			long occupant = function_c8f60(seat_object_index, seat->seat_index);
+			long occupant = function_c8f60(seats[i].object_index, seats[i].seat_index);
 
 			if (occupant != NONE)
 			{
@@ -248,8 +249,8 @@ bool function_1b8f30(long actor_index, long object_index)
 				if (team != actor->unknown024 && function_1df560(team, actor->unknown024))
 					return false;
 			}
-			else if (!function_1b8d80(actor_index, seat_object_index, seat->seat_index, false) &&
-				function_c8200(seat->object_index, seat->seat_index, actor->unknown018))
+			else if (!function_1b8d80(actor_index, seats[i].object_index, seats[i].seat_index, false) &&
+				function_c8200(seats[i].object_index, seats[i].seat_index, actor->unknown018))
 			{
 				result = true;
 			}
@@ -321,6 +322,9 @@ PRIVATE __forceinline void function_1b9201(long arg_0, vector3f *arg_1)
 		matrix_transform_vector(object_node_matrix(object_get(local_0->parent_index), local_0->parent_node), &local_0->forward, arg_1);
 }
 
+// score 11 (was 11): the seat loop keeps the seat count in EBP and the index
+// in ESI here, retail keeps the count in ESI and the index in EBP, so the loop
+// preamble is laid out differently.
 // @retail 0x1b9200
 bool function_1b9200(long object_index, long prop_index)
 {
@@ -370,6 +374,9 @@ bool function_1b9200(long object_index, long prop_index)
 	return result;
 }
 
+// score 32 (was 32): retail passes the child iterator in EBX, the register
+// argument of function_d0620 under LTCG, ours passes it on the stack; the
+// declaration in include/unknown_0d0690.h is not mine to change.
 // @retail 0x1b9420
 bool function_1b9420(long actor_index)
 {
@@ -528,6 +535,9 @@ void __stdcall function_1ba3f0(long actor_index, s_slot *slot, s_slot_target_lis
 
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// score 6 (was 6): retail loads the slot pointer into ECX before the actor
+// index is masked, ours loads it after the actor lookup, so the two blocks are
+// one instruction out of step.
 // @retail 0x1ba8c0
 void __stdcall function_1ba8c0(long actor_index, s_slot *slot, s_slot_target_list *list)
 {
@@ -665,6 +675,9 @@ long function_1e4a50(long character_index);
 void __stdcall function_26c2d0(long prop_index);
 void function_270590(s_path_source *source, s_type_c3b527 const *point, long node_index);
 
+// score 225 (was 225): ours sign extends g_46fbe4, which is declared short in
+// include/globals.h, where retail reads the same global as a dword; the frame
+// offsets differ as well.
 // @retail 0x1b99d0
 short __stdcall function_1b99d0(long actor_index, s_slot *slot)
 {
@@ -887,6 +900,9 @@ short __stdcall function_1b9890(long actor_index, s_slot *slot)
 
 /* invites the clump members to the joint, the nearest first, when the
    object has more than one seat to take */
+// score 17 (was 17): retail loads the element pool count into EDX before the
+// actor is fetched and keeps the element record in ECX, ours loads the count
+// later into ESI and the record in EAX.
 // @retail 0x1bb3a0
 short __stdcall function_1bb3a0(long actor_index, long joint_index, long a, long b)
 {
@@ -988,6 +1004,9 @@ s_slot_handler_2x g_47e9d0 =
 	1, 10, 1.5f, 0x5b
 };
 
+// score 47 (was 47): g_46fbe4 and g_46fbe8 are read as bytes here but as
+// dwords in retail; they are declared short in include/globals.h, which is not
+// mine to change.
 // @retail 0x1ba4e0
 short __stdcall function_1ba4e0(long actor_index, s_slot *slot, bool active)
 {
@@ -1043,6 +1062,9 @@ struct s_seat_approach_result
 	bool approaching;
 };
 
+// score 176 (was 176): our stack frame is 4 bytes smaller than retail's, so
+// every local offset is shifted and the branches over the distance computation
+// land in different places.
 // @retail 0x1baae0
 bool function_1baae0(long actor_index, long object_index, short seat_index, bool ignore_bonus,
 	bool ignore_reserved, bool vertical, s_seat_approach_result *out)
@@ -1132,8 +1154,8 @@ short function_1bb1d0(long actor_index, long object_index, s_object_seat const *
     }
     else
     {
-        real best_score = 0.0f;
         long best_object = NONE;
+        real best_score = 0.0f;
         short eligible = 0;
         s_seat_approach_result best;
         for (short i = 0; i < count; i++)
@@ -1142,7 +1164,7 @@ short function_1bb1d0(long actor_index, long object_index, s_object_seat const *
             if (!TEST_FIELD_BIT(seat->definition->flags.bit11))
             {
                 s_seat_approach_result approach;
-                long seat_index = seat->seat_index;
+                short seat_index = seat->seat_index;
                 if (function_1baae0(actor_index, seat->object_index, seat_index, false, false, false, &approach))
                 {
                     eligible++;
@@ -1231,6 +1253,9 @@ struct s_1ba091
     s_slot_entry_iterator field_4;
 };
 
+// score 198 (was 198): retail keeps the actor record count in ESI, loaded from
+// the pool at 0x4e0300 before the slot state is touched, ours reloads it from
+// the stack; the frame offsets differ as well.
 // @retail 0x1ba090
 long __stdcall function_1ba090(long actor_index, s_slot *slot)
 {
@@ -1336,6 +1361,9 @@ s_damage_object *function_d05c0(s_unit_child_iterator *iterator);
 void function_1e3400(long actor_index, long squad_index);
 void function_201ad0(long squad_index, long object_index);
 
+// score 218 (was 218): ours spills the cleared flag byte to a stack temporary
+// and branches around it, retail writes the byte straight into the actor, so
+// the whole chain of branches in this function is laid out differently.
 // @retail 0x1bb570
 void __stdcall function_1bb570(long vehicle_index, long actor_index)
 {

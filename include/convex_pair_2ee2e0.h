@@ -200,6 +200,12 @@ __forceinline __m128 transform_2ee8b0(c_query_transform const *m, __m128 const &
 	return _mm_add_ps(_mm_add_ps(x, y), z);
 }
 
+// a vector moved along a direction by a distance
+inline void add_scaled_2ee610(__m128 *value, float distance, __m128 const *direction)
+{
+	*value = _mm_add_ps(*value, _mm_mul_ps(splat_2ee8b0(distance), *direction));
+}
+
 struct kept_contact_2ee610
 {
 	contact_3032c0 found;
@@ -229,12 +235,10 @@ __forceinline found_2ee610 query_kept_2ee610(convex_pair_2ee2e0 *pair, body_2ee3
 	if (pair->separation.m128_f32[3] > 0.0f)
 	{
 		timer_add_2ebc80("StTim");
-		placement_2ee3f0 const *from = a->placement;
-		placement_2ee3f0 const *to = b->placement;
-		__m128 const moved = _mm_mul_ps(_mm_sub_ps(_mm_sub_ps(to->field_10, to->field_0), _mm_sub_ps(from->field_10, from->field_0)), pair->separation);
+		__m128 const moved = _mm_mul_ps(_mm_sub_ps(_mm_sub_ps(b->placement->field_10, b->placement->field_0), _mm_sub_ps(a->placement->field_10, a->placement->field_0)), pair->separation);
 		float along;
 		_mm_store_ss(&along, _mm_add_ss(_mm_shuffle_ps(moved, moved, 0xaa), _mm_add_ss(_mm_shuffle_ps(moved, moved, 0x55), moved)));
-		pair->separation.m128_f32[3] -= to->field_0.m128_f32[3] + from->field_0.m128_f32[3] + along;
+		pair->separation.m128_f32[3] -= b->placement->field_0.m128_f32[3] + a->placement->field_0.m128_f32[3] + along;
 		if (pair->separation.m128_f32[3] > 0.0f)
 		{
 			return found_2ee610(false);
@@ -257,7 +261,7 @@ __forceinline found_2ee610 query_kept_2ee610(convex_pair_2ee2e0 *pair, body_2ee3
 	out->found.distance = distance;
 	if (distance < input->tolerance)
 	{
-		out->found.point = _mm_add_ps(out->found.point, _mm_mul_ps(splat_2ee8b0(-first->radius), out->found.normal));
+		add_scaled_2ee610(&out->found.point, -first->radius, &out->found.normal);
 		__m128 const surface = _mm_add_ps(out->found.point, _mm_mul_ps(splat_2ee8b0(-distance), out->found.normal));
 		local_point_2ee8b0 local;
 		local.inverse_transform(&transform, surface);

@@ -342,6 +342,11 @@ static inline bool kind_moves_311e40(int kind)
 	return !(kind == 7 || kind == 6);
 }
 
+// score 103 (was 103): ours merges the delete that ends the kind-change
+// branch into the delete that ends the non-moving branch, where retail keeps
+// both (one through edx, one through eax); retail also allocates the
+// 0xd0-byte part before testing for kind 7 (a ternary for the two news scores
+// the same).
 // the body's part changed to one of another kind: a moving part is replaced
 // by one of the new kind built from its state, a part that does not move
 // gets a part of its own over the moving one, and leaving kind 6 or 7 goes

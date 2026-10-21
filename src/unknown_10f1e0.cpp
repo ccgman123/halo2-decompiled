@@ -2103,22 +2103,22 @@ void function_114c60(long arg_0)
             if ((short)local_11 > 0)
                 *(short *)(local_1 + 0x50) = (short)(local_11 - 1);
         }
-        if (*(short *)(local_1 + 0xc) > 0 && !*(short *)(local_1 + 0x4e) && !local_1[0x49])
+    }
+    if (*(short *)(local_1 + 0xc) > 0 && !*(short *)(local_1 + 0x4e) && !local_1[0x49])
+    {
+        function_20d570(*(short *)(local_1 + 0xe), *(long *)(local_1 + 0x1c), arg_0, local_1 + 0x20);
+        local_1[0x49] = true;
+    }
+    if (*(short *)(local_1 + 0xc) > 0 && !*(short *)(local_1 + 0x4c) && !*(short *)(local_1 + 0x50))
+    {
+        if (!local_1[0x49])
         {
             function_20d570(*(short *)(local_1 + 0xe), *(long *)(local_1 + 0x1c), arg_0, local_1 + 0x20);
             local_1[0x49] = true;
         }
-        if (*(short *)(local_1 + 0xc) > 0 && !*(short *)(local_1 + 0x4c) && !*(short *)(local_1 + 0x50))
-        {
-            if (!local_1[0x49])
-            {
-                function_20d570(*(short *)(local_1 + 0xe), *(long *)(local_1 + 0x1c), arg_0, local_1 + 0x20);
-                local_1[0x49] = true;
-            }
-            if (*(long *)(local_1 + 0x1c) != NONE)
-                function_20fd50(arg_0, *(long *)(local_1 + 0x1c));
-            *(short *)(local_1 + 0xc) = 0;
-        }
+        if (*(long *)(local_1 + 0x1c) != NONE)
+            function_20fd50(arg_0, *(long *)(local_1 + 0x1c));
+        *(short *)(local_1 + 0xc) = 0;
     }
     real local_12 = 0.0f - *(real *)((byte *)local_0 + 0x208);
     if (-0.1f > local_12)

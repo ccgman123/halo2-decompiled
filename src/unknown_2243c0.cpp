@@ -266,15 +266,15 @@ void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long a
 			}
 		}
 		local_0.field_4 = local_17;
-		if ((void *)arg_1 != local_1.field_48)
-		{
-			local_1.field_48 = (void *)arg_1;
-			local_1.field_44 &= 0xfffff98f;
-		}
 		if ((void *)arg_2 != local_1.field_4c)
 		{
 			local_1.field_4c = (void *)arg_2;
 			local_1.field_44 &= 0xfffecf7f;
+		}
+		if ((void *)arg_1 != local_1.field_48)
+		{
+			local_1.field_48 = (void *)arg_1;
+			local_1.field_44 &= 0xfffff98f;
 		}
 		function_173ba0(~local_1.field_44 & local_16, local_1.field_48, local_1.field_4c,
 			local_1.field_50, local_1.field_0);

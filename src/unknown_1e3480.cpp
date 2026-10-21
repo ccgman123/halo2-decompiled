@@ -41,13 +41,21 @@ long function_1e3480(long object_index)
 	{
 		result = object->actor_index;
 	}
-	else if (object->type == 12 && !object->unknown134)
+	else if (object->type == 12)
 	{
-		object = (s_actor_object *)((byte *)object + object->creature_offset);
-
-		if (object)
+		s_actor_creature *creature;
+		if (!object->unknown134)
 		{
-			result = ((s_actor_creature *)object)->actor_index;
+			creature = (s_actor_creature *)((byte *)object + object->creature_offset);
+		}
+		else
+		{
+			creature = NULL;
+		}
+
+		if (creature)
+		{
+			result = creature->actor_index;
 		}
 	}
 	return result;

@@ -10,6 +10,7 @@
 #include "unknown_0d0690.h"
 #include "unknown_1e1f20.h"
 #include "unknown_0259a0.h"
+#include "normalize3d.h"
 
 typedef bool (__stdcall *firing_position_evaluate_proc)(long, s_type_967e20 *, s_type_b36ac5 *);
 typedef void (__stdcall *firing_position_pre_evaluate_proc)(long, s_type_967e20 *, short, s_type_b36ac5 *);
@@ -271,9 +272,7 @@ void __stdcall function_25dd50(
 				{
 					vector3f movement;
 
-					movement.i = position->unknown1c.i * 3.f;
-					movement.j = position->unknown1c.j * 3.f;
-					movement.k = position->unknown1c.k * 3.f;
+					vector3f_scale(&position->unknown1c, 3.f, &movement);
 					if (length_sq3f(&movement) > 0.0001f)
 					{
 						radius = actor->unknown36c;

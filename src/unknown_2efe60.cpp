@@ -81,15 +81,16 @@ public:
 void sphere_contact_2efe60::function_2efe60(body_2efe60 const *a, body_2efe60 const *b, input_2efe60 const *input, results_2efe60 *results)
 {
 	timer_add_2ebc80("TtSphereSphere");
-	sphere_2efe60 const *b_shape = b->shape;
 	__m128 const *b_position = &b->motion->position;
-	__m128 offset = _mm_sub_ps(a->motion->position, *b_position);
+	sphere_2efe60 const *b_shape = b->shape;
 	sphere_2efe60 const *a_shape = a->shape;
+	__m128 offset = _mm_sub_ps(a->motion->position, *b_position);
 	float radius = input->tolerance + b_shape->radius + a_shape->radius;
+	float const radius_squared = radius * radius;
 	__m128 squares = _mm_mul_ps(offset, offset);
 	float distance_squared;
 	_mm_store_ss(&distance_squared, _mm_add_ss(_mm_shuffle_ps(squares, squares, 0xaa), _mm_add_ss(_mm_shuffle_ps(squares, squares, 0x55), squares)));
-	if (distance_squared < radius * radius)
+	if (distance_squared < radius_squared)
 	{
 		contacts_2efe60 *contacts = results->contacts;
 		contact_2efe60 *contact = &contacts->next_slot();

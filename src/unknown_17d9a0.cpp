@@ -113,7 +113,7 @@ struct s_decal_quad_17d9a0
 
 short function_120850(vector3f const *v);
 
-PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, real const &x, real const &y, s_decal_quad_17d9a0 *quad, point2f *out)
+PRIVATE inline void decal_project_corner_17d9a0(transform4x3f const *matrix, real x, real y, s_decal_quad_17d9a0 *quad, point2f *out)
 {
 	point3f point;
 	point.x = matrix->forward.i * x + matrix->left.i * y + matrix->position.x;

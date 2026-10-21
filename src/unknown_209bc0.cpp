@@ -60,161 +60,163 @@ void function_20a2e0(short global_index)
 		{
 		case _hs_type_boolean:
 			value->value.b = global->address ? *(byte *)global->address : (byte)0;
-			break;
+			goto done;
 		case _hs_type_real:
 			value->value.r = global->address ? *(real *)global->address : 0.f;
-			break;
+			goto done;
 		case _hs_type_short_integer:
 			value->value.s = global->address ? *(short *)global->address : (short)0;
-			break;
-		case _hs_type_string:
-			value->value.d = global->address ? *(dword *)global->address : (dword)g_470010;
-			break;
+			goto done;
 		case _hs_type_long_integer:
 			value->value.d = global->address ? *(dword *)global->address : 0;
-			break;
+			goto done;
+		case _hs_type_string:
+			value->value.d = global->address ? *(dword *)global->address : (dword)g_470010;
+			goto done;
 		case _hs_type_script:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_string_id:
 			value->value.d = global->address ? *(dword *)global->address : 0;
-			break;
+			goto done;
 		case _hs_type_unit_seat_mapping:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_trigger_volume:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_cutscene_flag:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_cutscene_camera_point:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_cutscene_title:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_cutscene_recording:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_device_group:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_ai:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_ai_command_list:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_ai_command_script:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_ai_behavior:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_ai_orders:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_starting_profile:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_conversation:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_structure_bsp:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_navpoint:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_point_reference:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_style:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_hud_message:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_object_list:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_sound:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_effect:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_damage:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_looping_sound:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_animation_graph:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_damage_effect:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_object_definition:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_bitmap:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_shader:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_render_model:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_structure_definition:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_lightmap_definition:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_game_difficulty:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_team:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_actor_type:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_hud_corner:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_model_state:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_network_event:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		case _hs_type_object:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_unit:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_vehicle:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_weapon:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_device:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_scenery:
 			value->value.d = global->address ? *(dword *)global->address : NONE;
-			break;
+			goto done;
 		case _hs_type_object_name:
 			value->value.s = global->address ? *(short *)global->address : (short)NONE;
-			break;
+			goto done;
 		}
+done:
+		;
 	}
 }
 

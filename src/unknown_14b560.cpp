@@ -1313,7 +1313,7 @@ bool __stdcall function_14f2e0(long player_index)
 			forward.i = (real)cos(facing);
 			forward.j = (real)sin(facing);
 			forward.k = 0.0f;
-			function_b75a0(globals->unknownac, &position, &forward, g_4687b0, NULL, false);
+			function_b75a0(players_globals_14f2e0()->unknownac, &position, &forward, g_4687b0, NULL, false);
 			globals = players_globals_14f2e0();
 			function_b9c60(globals->unknownac, false);
 			function_b7290(globals->unknownac);

@@ -375,7 +375,7 @@ bool session_summary_valid(const s_session_summary *summary)
 }
 
 // @retail 0x63510
-bool function_063510(void *a, void *p, long x)
+bool function_063510(void *p, void *a, long x)
 {
 	XUID *users = (XUID *)a;
 	bool found = false;
@@ -496,7 +496,7 @@ bool session_summary_add_machine(s_session_summary *summary, s_session_id *id, c
     bool local_0 = false;
 	if (summary->player_count + player_count > 16 || summary->machine_count >= 16)
 		goto local_1;
-	if (function_0632e0(summary, id) != NONE || function_063510(players, summary, player_count))
+	if (function_0632e0(summary, id) != NONE || function_063510(summary, players, player_count))
 		goto local_1;
 
 	for (long i = 0; i < player_count; i++)

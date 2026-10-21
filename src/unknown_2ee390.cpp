@@ -89,6 +89,7 @@ void __cdecl function_2ee8b0(void const *a_, void const *b_, void const *input, 
 	body_2ee3f0 const *b = (body_2ee3f0 const *)b_;
 	convex_2fefd0 const *first = a->shape;
 	convex_2fefd0 const *second = b->shape;
+	kept_contact_2ee610 kept;
 	c_query_transform transform;
 	transform.inverse_product(&a->placement->transform, &b->placement->transform);
 	pair_state_2fefd0 state;
@@ -104,28 +105,29 @@ void __cdecl function_2ee8b0(void const *a_, void const *b_, void const *input, 
 	second = b->shape;
 	class_3048a0 search;
 	search.field_c = false;
-	closest_3048a0 closest;
-	if (search.function_3048a0(first, second, &transform, &state, &closest) == 0)
 	{
-		contact_3032c0 found;
-		((source_3032c0 const *)&search)->function_3032c0(&state, (plane_3032c0 *)&closest, &found);
-		vector_2da6e0 normal;
-		normal.rotate(&a->placement->transform, &found.normal);
-		found.distance = found.distance - first->radius - second->radius;
-		float const distance = found.distance;
-		if (distance < ((input_2ee8b0 const *)input)->tolerance)
+		closest_3048a0 closest;
+		if (search.function_3048a0(first, second, &transform, &state, &closest) == 0)
 		{
-			found.point = _mm_add_ps(found.point, _mm_mul_ps(splat_2ee8b0(-first->radius), found.normal));
-			__m128 const surface = _mm_add_ps(found.point, _mm_mul_ps(splat_2ee8b0(-distance), found.normal));
-			local_point_2ee8b0 local;
-			local.inverse_transform(&transform, surface);
-			contact_2ee8b0 contact;
-			contact.a = a;
-			contact.b = b;
-			contact.point = transform_2ee8b0(&b->placement->transform, local.value);
-			contact.point.m128_f32[3] = distance;
-			contact.normal = normal.value;
-			((contact_collector_2ee8b0 *)collector)->add_contact(&contact);
+			((source_3032c0 const *)&search)->function_3032c0(&state, (plane_3032c0 *)&closest, &kept.found);
+			kept.normal.rotate(&a->placement->transform, &kept.found.normal);
+			float const distance = kept.found.distance - first->radius - second->radius;
+			kept.found.distance = distance;
+			if (distance < ((input_2ee8b0 const *)input)->tolerance)
+			{
+				kept.found.point = _mm_add_ps(kept.found.point, _mm_mul_ps(splat_2ee8b0(-first->radius), kept.found.normal));
+				__m128 const surface = _mm_add_ps(kept.found.point, _mm_mul_ps(splat_2ee8b0(-distance), kept.found.normal));
+				local_point_2ee8b0 local;
+				local.inverse_transform(&transform, surface);
+				kept.local_point = local.value;
+				contact_2ee8b0 contact;
+				contact.a = a;
+				contact.b = b;
+				contact.point = transform_2ee8b0(&b->placement->transform, kept.local_point);
+				contact.point.m128_f32[3] = distance;
+				contact.normal = kept.normal.value;
+				((contact_collector_2ee8b0 *)collector)->add_contact(&contact);
+			}
 		}
 	}
 	timer_add_2ebc80("lt");
@@ -145,6 +147,10 @@ void __cdecl function_302eb0(body_302eb0 const *a, body_302eb0 const *b, input_3
 	contact_302eb0 *contacts, int *count, world_contacts_302eb0 **out_list, id_owner_302eb0 *ids);
 void __cdecl function_3029d0(s_3029d0_entry *entries, int *count, class_3029d0_owner *owner);
 
+// score 14 (was 202): only the stack slots differ: retail keeps the kept
+// contact at esp+0x20 and the search's closest points at esp+0x70, here the
+// reverse; renaming either, a block scope around the search, and a pointer to
+// the contact do not move them.
 // the pair's kept contact points brought up to date: skipped, the points
 // given up, while the shapes' motion since the last query cannot have used
 // up the distance they were apart; else the search's contact, when within the

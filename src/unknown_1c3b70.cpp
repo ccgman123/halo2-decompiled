@@ -70,6 +70,9 @@ volatile byte g_47f06d = 1;
 c_shape_owner *function_1c3b20(c_havok_reference_counted *arg_0);
 void havok_entity_component_index_set(hkEntity *entity, s_havok_property_word component_index);
 
+// score 71 (was 71): the -1 is built with OR here and pushed as a constant
+// there, and the
+// global it is stored to is a different one.
 // @retail 0x1c3b70
 void function_1c3b70()
 {

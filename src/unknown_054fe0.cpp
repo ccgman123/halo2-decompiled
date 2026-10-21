@@ -1144,15 +1144,9 @@ void network_session_get_member_latency(s_session_member_latency *latency, c_cla
 	{
 		if (i != host)
 		{
-			if (i < 0 || i >= session->member_count)
+			s_qos_result qos;
+			if (!session_member_get_qos(observer, session, i, &qos))
 				continue;
-			s_network_session_member_state *member = &session->member_states[i];
-			if (!member->flag1 || member->unknown04 == NONE)
-				continue;
-			s_network_observer_channel *channel = &observer->channels[member->unknown04];
-			if (channel->state != 7 || !(channel->flags & 0x10))
-				continue;
-			s_qos_result qos = channel->field_x31a738;
 			long time = qos.rtt_median;
 			if (time < 50)
 				time = 50;

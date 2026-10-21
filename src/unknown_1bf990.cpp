@@ -278,6 +278,9 @@ bool __stdcall function_1badc0(long arg_0, long arg_1, point3f const *arg_2,
     s_type_c3b527 *arg_3, long *arg_4, bool arg_5, bool *arg_6);
 bool function_1f45c0(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool arg_3);
 
+// score 194 (was 194): the record count is loaded into EBX here and into ECX
+// in retail, and the
+// index is scaled after the mask in one and before it in the other.
 // @retail 0x1bff80
 bool __stdcall function_1bff80(long arg_0, s_slot *arg_1)
 {

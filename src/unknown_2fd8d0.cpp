@@ -93,6 +93,10 @@ public:
 	void function_2fd8d0(description_2fd8d0 *out) const;
 };
 
+// score 35 (was 112): register choice only: in the vertex loop retail keeps
+// the block offset in edx and blocks in eax and switches on eax, ours the
+// reverse, and the planes branch loads planes_wanted into eax and ecx where
+// ours uses ecx and edx.
 // @retail 0x2fd8d0
 void blocked_convex_2fd8d0::function_2fd8d0(description_2fd8d0 *out) const
 {
@@ -109,13 +113,12 @@ void blocked_convex_2fd8d0::function_2fd8d0(description_2fd8d0 *out) const
 	}
 	out->planes.size = planes_wanted;
 	copy_2fd8d0(out->planes.data, planes, planes_wanted);
-	vectors_2fd8d0 *vertices = &out->vertices;
-	vertices->resize(vertex_count);
+	out->vertices.resize(vertex_count);
 	for (int i = 0; i < vertex_count; i++)
 	{
-		vertex_block_2fd8d0 const *block = &blocks[i / 4];
 		int lane = i & 3;
+		vertex_block_2fd8d0 const *block = &blocks[i / 4];
 		point_2fd8d0 point(lane_2fd8d0(block->x, lane), lane_2fd8d0(block->y, lane), lane_2fd8d0(block->z, lane));
-		vertices->data[i] = point.quad;
+		out->vertices.data[i] = point.quad;
 	}
 }

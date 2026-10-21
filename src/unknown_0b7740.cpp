@@ -634,13 +634,13 @@ short __stdcall function_bb050(long mask, dword type_mask, void const *location,
     }
     ++g_4de2fc;
     g_4de2f8 = true;
-    for (short i = 0; i < cluster_count; ++i)
+    for (long i = 0; i < cluster_count; ++i)
     {
         short cluster = clusters[i];
         struct search_slots { s_object_cluster_reference *record; s_object_cluster_iterator second, first; } search;
-        search.record = 0;
         if (mask & 1)
         {
+            search.record = 0;
             s_object_cluster_iterator &iterator = search.first;
             for (long object = function_b8940(cluster, &search.record, &iterator); object != NONE;
                  object = object_cluster_next_ab((s_record_pool *)g_4de2e4, &iterator, &search.record))
@@ -653,9 +653,9 @@ short __stdcall function_bb050(long mask, dword type_mask, void const *location,
                 }
             }
         }
-        search.record = 0;
         if (mask & 2)
         {
+            search.record = 0;
             s_object_cluster_iterator &iterator = search.second;
             for (long object = function_b8a10(cluster, &search.record, &iterator); object != NONE;
                  object = object_cluster_next_ab((s_record_pool *)g_4de2d8, &iterator, &search.record))

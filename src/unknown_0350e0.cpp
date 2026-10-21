@@ -3392,8 +3392,8 @@ void function_4ff50(byte const *definition, byte const *state, bool facing, real
             if (*strength > 0.0f)
             {
                 point2f projected;
-                if (function_30830((point3f const *)(state + 8), NULL, (vector3f const *)(state + 0x14),
-                    NULL, true, true, &projected) && (projected.x != 0.0f || projected.y != 0.0f))
+                if (function_30830((point3f const *)(state + 8), &g_4b9e14, (vector3f const *)(state + 0x14),
+                    &g_4b9ecc, true, true, &projected) && (projected.x != 0.0f || projected.y != 0.0f))
                 {
                     double direction = atan2(projected.y, projected.x);
                     *horizontal = (real)cos(direction);

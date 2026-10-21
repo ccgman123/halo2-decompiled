@@ -132,7 +132,6 @@ s_lighting_record *function_3db00(long object_index, real priority)
 // @retail 0x3ddd0
 long __stdcall function_3ddd0(long object_index)
 {
-    (void)&object_index;
     byte *object = ((s_3dd10_object_header *)g_4e0300->data)[object_index & 0xffff].object;
     long cache_index = *(long *)(object + 0xcc);
     long result;
@@ -143,8 +142,9 @@ long __stdcall function_3ddd0(long object_index)
     }
     else
     {
-        result = record_pool_allocate(g_509434);
-        if (result == NONE)
+        cache_index = record_pool_allocate(g_509434);
+        result = cache_index;
+        if (cache_index == NONE)
         {
             real oldest = -3.402823466e+38f;
             long index = data_datum_index(g_509434, function_16bc00(g_509434, 0));

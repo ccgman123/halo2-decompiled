@@ -889,9 +889,7 @@ void function_1d1540(s_havok_component *component);
 // @retail 0x1d0cf0
 void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_component *component, hkTransform const *transform)
 {
-	hkTransform local;
-
-	local.set(*transform);
+	hkTransform local = *transform;
 	if (TEST_FIELD_BIT(component->transformed))
 	{
 		hkTransform inverse;
@@ -899,7 +897,7 @@ void havok_component_rigid_body_transform_set(long rigid_body_index, s_havok_com
 		inverse.transform_set_to_inverse(component->transform);
 		local.transform_compose_in_place(inverse);
 	}
-	if (havok_component_rigid_body_get(rigid_body_index, component)->m_fixed && TEST_FIELD_BIT(component->flag5))
+	if (TEST_FIELD_BIT(component->flag5) && havok_component_rigid_body_get(rigid_body_index, component)->m_fixed)
 	{
 		function_1d1260(component);
 		havok_component_rigid_body_get(rigid_body_index, component)->motion_transform_set(local);

@@ -83,6 +83,9 @@ void function_1c2690()
  g_5021bc.iterator.datum_index = NONE;
 }
 
+// score 4 (was 4): the pointer that is deleted is pushed between the two
+// writes of the
+// valid flag here, retail pushes it after both of them.
 // @retail 0x1c27a0
 void function_1c27a0()
 {

@@ -252,7 +252,7 @@ public:
 /* callees that are not decompiled yet */
 long __stdcall function_063190(void *p, long a);
 long __stdcall function_0632e0(void *p, void *q);
-bool function_063510(void *a, void *p, long x);
+bool function_063510(void *p, void *a, long x);
 void __stdcall function_06d380(c_session_client *client, const s_session_id *id);
 void __stdcall function_06dc60(c_session_client *client, long n);
 bool __stdcall function_07b140(void *x, long a, long ten, long twelve, void *local);

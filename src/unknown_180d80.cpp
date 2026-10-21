@@ -160,7 +160,8 @@ long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1
                         real local_15 = local_0[local_12].field_0.y - arg_3->point.y;
                         real local_16 = local_0[local_12].field_0.z - arg_3->point.z;
                         real local_18 = local_16 * local_16 + local_15 * local_15 + local_17 * local_17;
-                        if (local_12 == 0 || local_18 > local_9) local_9 = local_18;
+                        if (local_12 == 0) local_9 = local_18;
+                        else if (local_18 > local_9) local_9 = local_18;
                     }
                     *(point3f *)(local_7 + 0xc) = arg_3->point;
                     *(long *)(local_7 + 0x18) = g_510c54->game_time;

@@ -60,14 +60,16 @@ s_2dbe90_result class_2dbe90::function_2dbe90(long a, long b)
 }
 
 // @retail 0x2dbeb0
-// Still differs: retail keeps the member target in edx and copies it into ecx for the
-// virtual call, and stores the range's low half after the argument setup; ours reloads
-// the member and stores the range low half early.
+// score 10 (was 17): the query is passed to the target through the member of
+// this object rather than through the copy stored in the query, but retail
+// loads the target once into edx and reuses it for the call where ours loads
+// it twice, and retail stores the fields in the order q+8, q+0xc, q+0, q+4
+// where ours stores q+0, q+4, q+8, q+0xc.
 void class_2dbe90::function_2dbeb0(long a, const s_2dbe90_input *input, long c)
 {
 	s_2dbe90_query query;
 	query.target = target;
 	query.range = input->range;
 	query.input = input;
-	query.target->slot9(a, &query, c);
+	target->slot9(a, &query, c);
 }

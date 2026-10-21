@@ -58,6 +58,9 @@ point3f *function_b9dd0(long object_index, point3f *result);
 short __stdcall function_1c8df0(long object_index, point3f const *point, short team, short type,
 	void const *origin, long count, bool unknown, bool unknown2, bool unknown3, long *arg_9);
 
+// score 39 (was 39): retail keeps the actor pointer in EBX and the field it
+// tests in ECX,
+// ours keeps them in EBP and EDX.
 // @retail 0x1be120
 bool __stdcall function_1be120(long actor_index, s_slot *slot)
 {

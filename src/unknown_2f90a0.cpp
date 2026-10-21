@@ -63,6 +63,7 @@ struct ray_output_2f90a0
 struct hit_2f90a0
 {
 	bool value;
+	char unknown1[3];
 };
 
 class convex_2f90a0
@@ -134,6 +135,9 @@ inline __m128 transformed_2f90a0(c_query_transform const *transform, __m128 cons
 	return _mm_add_ps(_mm_add_ps(x, y), z);
 }
 
+// score 70 (was 99): retail keeps &entries[i] in the points slot at esp+0x1c
+// for the add-contact branch and tests valid through cl; written that way
+// here, esi and edi swap for the whole loop (135).
 // a contact point of the pair for one ray
 // @retail 0x2f90a0
 void class_2f90a0::function_2f90a0(void const *a_, void const *b_, void const *input, void *collector)
@@ -144,16 +148,16 @@ void class_2f90a0::function_2f90a0(void const *a_, void const *b_, void const *i
 	rays_shape_2f90a0 const *rays = (rays_shape_2f90a0 const *)a->shape;
 	convex_2f90a0 const *convex = (convex_2f90a0 const *)b->shape;
 	ray_input_2f90a0 ray;
-	ray_output_2f90a0 output;
 	c_query_transform transform;
 	transform.inverse_product(&b->motion->transform, &a->motion->transform);
+	int const count = rays->ray_count;
 	ray.field_24 = 0;
 	ray_2f90a0 const *each = rays->rays;
-	int const count = rays->ray_count;
 	for (int i = 0; i < count; i++)
 	{
 		ray.from = transformed_2f90a0(&transform, each->start);
 		ray.to = transformed_2f90a0(&transform, each->end);
+		ray_output_2f90a0 output;
 		output.fraction = 1.0f;
 		hit_2f90a0 hit = convex->cast_ray(&ray, &output);
 		if (!hit.value)

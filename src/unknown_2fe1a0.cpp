@@ -60,11 +60,16 @@ s_2fe1a0_result class_2fe1a0::function_2fe1a0(long a, long b)
 }
 
 // @retail 0x2fe1c0
+// score 10 (was 17): the query is passed to the target through the member of
+// this object rather than through the copy stored in the query, but retail
+// loads the target once into edx and reuses it for the call where ours loads
+// it twice, and retail stores the fields in the order q+8, q+0xc, q+0, q+4
+// where ours stores q+0, q+4, q+8, q+0xc.
 void class_2fe1a0::function_2fe1c0(long a, const s_2fe1a0_input *input, long c)
 {
 	s_2fe1a0_query query;
 	query.target = target;
 	query.range = input->range;
 	query.input = input;
-	query.target->slot9(a, &query, c);
+	target->slot9(a, &query, c);
 }

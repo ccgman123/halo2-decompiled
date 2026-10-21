@@ -141,23 +141,23 @@ void __cdecl function_2f8c20(void const *a_, void const *b_, void const *input, 
 	a_in_b.inverse_product(&b->placement->transform, &a->placement->transform);
 	long const ray_count = shape->ray_count;
 	ray_2f8c20 const *ray = shape->rays;
-	ray_input_2f8c20 local;
-	local.field_24 = 0;
 	hit_2f8c20 hit;
 	hit.a = a;
 	hit.b = b;
+	ray_input_2f8c20 input_ray;
+	input_ray.field_24 = 0;
 	for (long i = ray_count; i > 0; i--)
 	{
-		local.from = a_in_b.apply(ray->from);
-		local.to = a_in_b.apply(ray->to);
+		input_ray.from = a_in_b.apply(ray->from);
+		input_ray.to = a_in_b.apply(ray->to);
 		ray_output_2f8c20 output;
 		output.fraction = 1.0f;
-		answer_2f8c20 const result = convex->cast_ray(&local, &output);
+		answer_2f8c20 const result = convex->cast_ray(&input_ray, &output);
 		if (result.value)
 		{
 			float const fraction = output.fraction;
 			__m128 const along = _mm_set_ps1(fraction);
-			__m128 const point = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_ones_412420, along), local.from), _mm_mul_ps(along, local.to));
+			__m128 const point = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_ones_412420, along), input_ray.from), _mm_mul_ps(along, input_ray.to));
 			hit.point = b->placement->transform.apply(point);
 			hit.point.m128_f32[3] = (fraction - 1.0f) * ray->from.m128_f32[3];
 			hit.normal = b->placement->transform.rotate(output.normal);

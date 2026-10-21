@@ -87,6 +87,9 @@ void function_1bbc00(long player_index, long vehicle_index)
 
 static __forceinline long real_to_long(real value);
 
+// score 57 (was 57): the argument is passed in ESI here and in EBX in retail,
+// and the call
+// that follows takes its arguments in a different order.
 // @retail 0x1bbcc0
 void function_1bbcc0(long player_index, long vehicle_index, long seat_index)
 {
@@ -141,6 +144,9 @@ real function_204950(long actor_index, long squad_index, short mode);
 void function_26def0(long actor_index, long owner_index);
 __declspec(noinline) bool function_f5dc0(long object_index);
 
+// score 72 (was 72): retail compares the field against -1 directly and reads
+// it back as a
+// word, ours loads it into EAX first and tests EAX.
 // @retail 0x1bba70
 void function_1bba70(long actor_index, long vehicle_index, long seat_index)
 {

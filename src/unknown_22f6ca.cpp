@@ -117,14 +117,13 @@ void function_22fba9(c_class_1473c9 *screen)
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
 	s_screen_pane *pane = screen->get_current_pane();
+	long i = 0;
 
 	if (pane)
 	{
-		long i;
-
 		bool animating = function_22f0ff((c_widget *)screen);
 
-		for (i = 0; i < pane->bitmap_count; i++)
+		for (; i < pane->bitmap_count; i++)
 		{
 			c_class_1a2c81 *bitmap = function_22fa30(screen, &pane->bitmaps[i]);
 

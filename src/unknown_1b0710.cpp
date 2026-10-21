@@ -114,37 +114,34 @@ short __stdcall function_1b0780(long actor_index)
 	{
 		s_51e9d8_element *element = (s_51e9d8_element *)(g_51e9d8->data + (actor->unknown030 & 0xffff) * sizeof(s_51e9d8_element));
 
-		if (element->entry_index != NONE)
+		s_4e0350_entry *entry = element->entry_index != NONE ? &((s_4e0350_view *)g_4e0350)->entries[element->entry_index] : NULL;
+
+		if (entry && ((entry->flags & 0x10) || (entry->flags & 0x20) && entry->unknown4e != NONE) &&
+			element->unknown80 != NONE &&
+			!function_1df560(actor->unknown024, object_get(element->unknown80)->team))
 		{
-			s_4e0350_entry *entry = &((s_4e0350_view *)g_4e0350)->entries[element->entry_index];
+			real maximum_distance_squared;
+			point3f position;
 
-			if (entry && ((entry->flags & 0x10) || (entry->flags & 0x20) && entry->unknown4e != NONE) &&
-				element->unknown80 != NONE &&
-				!function_1df560(actor->unknown024, object_get(element->unknown80)->team))
+			function_1b0710(element->unknown80, actor_index, NULL, &maximum_distance_squared);
+			function_b9dd0(element->unknown80, &position);
+			vector3f offset;
+			vector3d_from_points3d(&position, &actor->position, &offset);
+			if (length_sq3f(&offset) > maximum_distance_squared &&
+				(*(long *)&actor->unknown418 == *(long *)&g_470fa0 || !actor->unknown5d0 ||
+				function_210b60((s_type_c3b527 *)function_262b40(actor->unknown418), &actor->position) > maximum_distance_squared))
 			{
-				real maximum_distance_squared;
-				point3f position;
+				s_261d20_entry entries[0x200];
+				short count = function_261d20(actor_index, entries, 0x200, NULL);
 
-				function_1b0710(element->unknown80, actor_index, NULL, &maximum_distance_squared);
-				function_b9dd0(element->unknown80, &position);
-				vector3f offset;
-				vector3d_from_points3d(&position, &actor->position, &offset);
-				if (length_sq3f(&offset) > maximum_distance_squared &&
-					(*(long *)&actor->unknown418 == *(long *)&g_470fa0 || !actor->unknown5d0 ||
-					function_210b60((s_type_c3b527 *)function_262b40(actor->unknown418), &actor->position) > maximum_distance_squared))
+				for (short i = 0; i < count; i++)
 				{
-					s_261d20_entry entries[0x200];
-					short count = function_261d20(actor_index, entries, 0x200, NULL);
-
-					for (short i = 0; i < count; i++)
+					vector3f entry_offset;
+					vector3d_from_points3d(&position, &entries[i].point, &entry_offset);
+					if (maximum_distance_squared > length_sq3f(&entry_offset))
 					{
-						vector3f entry_offset;
-						vector3d_from_points3d(&position, &entries[i].point, &entry_offset);
-						if (maximum_distance_squared > length_sq3f(&entry_offset))
-						{
-							result = 3;
-							break;
-						}
+						result = 3;
+						break;
 					}
 				}
 			}
