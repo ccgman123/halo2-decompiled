@@ -17,6 +17,8 @@ void function_219560(s_packed_value *value, s_animation_ref *ref, dword data);
 short function_219110(s_set_ref *ref, short offset, dword *used_mask, short previous,
 	dword *seed, bool *all_used, bool mirror);
 
+// score 3: retail sets up the function_219110 argument registers (lea esi,
+// mov ecx) before pushing function_219370's result; ours pushes it first.
 // @retail 0x219070
 short function_219070(long set_index, s_sound_definition const *definition)
 {
