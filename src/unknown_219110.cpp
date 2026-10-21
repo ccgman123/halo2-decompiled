@@ -147,6 +147,8 @@ PRIVATE s_animation_entry *get_animation_entry(s_animation_ref *ref)
 	return &g_4e3b44[header->datum_index & 0xffff].data->entries[ref->index];
 }
 
+// score 3: the final store puts the pointer in edx and the value in cl;
+// retail puts the pointer in ecx and the value in dl.
 // @retail 0x2192b0
 void function_2192b0(s_animation_state *state, s_animation_ref *ref, byte value)
 {
@@ -156,6 +158,7 @@ void function_2192b0(s_animation_state *state, s_animation_ref *ref, byte value)
 	}
 }
 
+// score 3: same final-store register swap as 0x2192b0.
 // @retail 0x219310
 void function_219310(s_animation_state *state, s_animation_ref *ref, short value)
 {
