@@ -77,6 +77,9 @@ void function_262800(long actor_index, s_reference reference, bool unknown);
 
 /* slot type 0x23, update: once the actor stands at its prop's position, it
    turns to face it; then it lets the prop go */
+// score 81 (was 81): retail reads the pool before the registers are pushed,
+// ours reads it
+// afterwards, so the prologue differs.
 // @retail 0x1b89d0
 void __stdcall function_1b89d0(long actor_index, s_slot *slot)
 {
@@ -116,6 +119,9 @@ void __stdcall function_1b89d0(long actor_index, s_slot *slot)
 	state->unknown0c = true;
 }
 
+// score 41 (was 41): retail reads a different global and keeps the record
+// count in EBP,
+// ours uses ESI and another pool.
 // @retail 0x1b8ae0
 void __stdcall function_1b8ae0(long actor_index, s_slot *slot)
 {
@@ -195,6 +201,9 @@ bool function_1f4a20(s_1f4a20_entry const *entries, long actor_index, s_referenc
     bool alternate, s_type_c3b527 *point, vector3f *facing,
     signed char *type, bool *available);
 
+// score 323 (was 323): the size we use is 0x1634 where retail uses 0x162c,
+// and the index is
+// scaled in EAX here and in ESI there, so the loop is a different length.
 // @retail 0x1b85a0
 bool __stdcall function_1b85a0(long actor_index, s_slot *slot)
 {

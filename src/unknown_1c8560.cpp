@@ -69,17 +69,18 @@ long __stdcall function_1c8560(long arg_0, void *arg_1, long arg_2, bool *arg_3,
 	{
 		local_2 = (s_1c8560 *)local_1.datum;
 		long local_7 = local_2->field_4;
-		s_actor_view *actor = NULL;
 		if (local_7 != NONE)
 		{
-			actor = actor_get(local_7);
+			s_actor_view *actor = actor_get(local_7);
 			if (actor->unknown009 || *(long *)((byte *)actor + 0x10) == NONE)
 				continue;
 		}
 		local_0 += local_2->field_14;
-		if (local_7 != NONE)
+		if (local_7 == NONE)
+			swarm_delete(local_1.records.datum_index);
+		else
 		{
-			s_actor_view *local_4 = actor;
+			s_actor_view *local_4 = actor_get(local_7);
 			long local_5 = local_4->unknown018;
 			long local_6 = *(long *)((byte *)local_4 + 0x1c);
 			function_1e2a90(local_7);
@@ -91,8 +92,6 @@ long __stdcall function_1c8560(long arg_0, void *arg_1, long arg_2, bool *arg_3,
 			else if (local_6 != NONE)
 				swarm_delete(local_6);
 		}
-		else
-			swarm_delete(local_1.records.datum_index);
 	}
 	*arg_3 = false;
 	return local_0;

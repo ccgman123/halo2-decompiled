@@ -660,6 +660,8 @@ PRIVATE __forceinline void function_1c2891(short *arg_0, c_havok_reference_count
 	}
 }
 
+// score 45 (was 45): ours loads the havok reference from a different global
+// and clears it in EDI, retail loads it into ESI and clears it in EBX.
 // @retail 0x1c2890
 void function_1c2890(void)
 {
@@ -1367,6 +1369,9 @@ public:
   c_contact_shape_container *container, long key);
 };
 
+// score 24 (was 24): the contact shape is picked with a ternary here and with
+// an if/else in retail, so the branch after the virtual call is laid out
+// differently and the shape pointer is copied through EAX there.
 // @retail 0x1c32d0
 hkBool c_contact_rule_filter::accepts(void const *query, s_contact_body_view const *a, s_contact_body_view const *b,
  c_contact_shape_container *container, long key)

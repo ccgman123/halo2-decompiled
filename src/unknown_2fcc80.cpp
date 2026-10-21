@@ -81,7 +81,8 @@ public:
 hit_2fcc80 triangle_2fcc80::function_2fcc80(ray_input_2fcc80 const *input, ray_output_2fcc80 *output) const
 {
 	hit_2fcc80 hit;
-	__m128 const normal = cross_2fcc80(_mm_sub_ps(corners[1], corners[0]), _mm_sub_ps(corners[2], corners[0]));
+	__m128 normal = _mm_sub_ps(corners[1], corners[0]);
+	normal = cross_2fcc80(normal, _mm_sub_ps(corners[2], corners[0]));
 	float const offset = dot3_2fcc80(corners[0], normal);
 	float const from_side = dot3_2fcc80(normal, input->from) - offset;
 	float const to_side = dot3_2fcc80(normal, input->to) - offset;
@@ -95,11 +96,11 @@ hit_2fcc80 triangle_2fcc80::function_2fcc80(ray_input_2fcc80 const *input, ray_o
 		if (fraction < output->fraction)
 		{
 			float const length_squared = dot3_2fcc80(normal, normal);
+			float const tolerance = length_squared * -0.0001f;
 			__m128 const f = _mm_set1_ps(fraction);
 			__m128 const point = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, f), input->from), _mm_mul_ps(f, input->to));
 			__m128 const a = _mm_sub_ps(corners[0], point);
 			__m128 const b = _mm_sub_ps(corners[1], point);
-			float const tolerance = length_squared * -0.0001f;
 			if (dot3_2fcc80(cross_2fcc80(a, b), normal) >= tolerance)
 			{
 				__m128 const c = _mm_sub_ps(corners[2], point);

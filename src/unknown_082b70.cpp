@@ -6,6 +6,8 @@
 #include "globals.h"
 #include <string.h>
 
+#define PIN(x, lo, hi) ((x) < (lo) ? (lo) : (x) > (hi) ? (hi) : (x))
+
 /* the object fields read here */
 struct s_082b70_object
 {
@@ -240,7 +242,7 @@ void function_82d20(long object_index, s_object_relevance_source *source, s_weap
    {
     s_weapon_trigger_view *trigger = &definition->triggers[trigger_index];
     long barrel = trigger->barrel;
-    if (barrel >= 0 && barrel < definition->barrel_count)
+    if (definition->barrel_count > 0 && PIN(barrel, 0, definition->barrel_count - 1) == barrel)
     {
      byte *state = (byte *)object_get_082b70(weapon_index) + 0x1a4 + barrel * 0x34;
      word flags = *(word *)(state + 4);

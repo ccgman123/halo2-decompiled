@@ -44,6 +44,9 @@ bool function_1be410(long actor_index, long object_index, point3f *point);
 point3f *function_b9dd0(long object_index, point3f *result);
 bool function_1f8100(long actor_index, point3f const *origin, point3f const *target);
 
+// score 74 (was 74): the three position components are loaded into different
+// SSE registers
+// here and the copies on the stack sit at different offsets.
 // @retail 0x1be4b0
 short __stdcall function_1be4b0(long actor_index)
 {
@@ -107,6 +110,9 @@ short __stdcall function_1be6e0(long actor_index, s_slot *slot, bool active)
 }
 
 /* where the actor goes to reach the object */
+// score 46 (was 46): the seat index is scaled before it is masked here and
+// after it in retail,
+// and the element is read into EBX rather than into EBP.
 // @retail 0x1be410
 bool function_1be410(long actor_index, long object_index, point3f *point)
 {
@@ -196,6 +202,9 @@ s_slot_handler_2 g_47ed58 =
 
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force);
 
+// score 36 (was 36): the address of the out parameter is passed in EDX here
+// and in EAX in
+// retail, and the branch that reaches the call is laid out differently.
 // @retail 0x1be8f0
 void __stdcall function_1be8f0(long actor_index, s_slot *slot)
 {

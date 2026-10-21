@@ -132,6 +132,9 @@ evaluate:
 	return 0;
 }
 
+// score 73 (was 73): retail calls function_25d740, our build inlines it
+// through the
+// prop_node_view wrapper, so the two blocks are laid out differently.
 // @retail 0x1b81c0
 short __stdcall function_1b81c0(long actor_index, s_slot *slot, bool active)
 {

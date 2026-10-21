@@ -709,6 +709,9 @@ bool c_session_client::function_06daa0(long a)
 	return result;
 }
 
+struct s_session_join_request;
+bool function_630f0(c_class_58d20 *session, long address, const s_session_join_request *request, long reason);
+
 // @retail 0x6dae0
 void c_session_client::function_06dae0(long a, s_session_remote *remote)
 {
@@ -722,20 +725,13 @@ void c_session_client::function_06dae0(long a, s_session_remote *remote)
 			{
 				return;
 			}
-			byte has_address = remote->has_address;
-			if (has_address)
+			if (remote->has_address && function_0632e0(address, remote->address144) != NONE)
 			{
-				if (function_0632e0(address, remote->address144) != NONE)
-				{
-					return;
-				}
+				return;
 			}
-			if (has_address)
+			if (remote->has_address && function_063510(address, remote->address04, remote->id))
 			{
-				if (function_063510(remote->address04, address, remote->id))
-				{
-					goto fallback;
-				}
+				goto fallback;
 			}
 			if (function_06dd00(a, remote))
 			{
@@ -744,14 +740,7 @@ void c_session_client::function_06dae0(long a, s_session_remote *remote)
 		}
 	}
 fallback:
-	s = session;
-	long local[3];
-	memset(local + 2, 0, 4);
-	memset(local, 0, 8);
-	local[0] = s->unknown1c;
-	local[1] = s->unknown20;
-	local[2] = 3;
-	function_07b140(s->unknown04, a, 10, 12, local);
+	function_630f0(session, a, (const s_session_join_request *)remote, 3);
 }
 
 // @retail 0x6dbc0

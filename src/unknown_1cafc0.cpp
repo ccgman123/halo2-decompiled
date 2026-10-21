@@ -923,7 +923,7 @@ bool s_animation_state::animation_set(long mode, long weapon_class, long weapon_
 
 names_store:
 	{
-		bool changed = unknown70 != names.mode || unknown74 != names.weapon_class || unknown78 != names.weapon_type;
+		bool changed = (unknown70 != names.mode) | (unknown74 != names.weapon_class) | (unknown78 != names.weapon_type);
 
 		unknown70 = names.mode;
 		unknown74 = names.weapon_class;

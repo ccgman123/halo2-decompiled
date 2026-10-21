@@ -41,7 +41,7 @@ struct s_interface_function_context
 };
 
 // @retail 0x2c3b0
-inline void function_2c3b0(s_interface_function_context *context)
+void function_2c3b0(s_interface_function_context *context)
 {
     vector3f *copied_direction = &context->field_1c;
     s_interface_function_context volatile *initialization = context;

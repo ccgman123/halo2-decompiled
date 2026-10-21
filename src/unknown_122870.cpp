@@ -404,15 +404,15 @@ real __stdcall function_122dd0(byte *map_name, long mode, long type)
 	real map_weight = 100.0f;
 	real progress = 0.0f;
 	long location = map_location_get((char const *)map_name);
-	real map_progress;
-	cache_map_progress((char const *)map_name, &map_progress);
 	real query_progress;
+	cache_map_progress((char const *)map_name, &query_progress);
+	real map_progress = query_progress;
 	cache_map_progress(g_468804, &query_progress);
 	real menu_progress = query_progress;
 	cache_map_progress(g_4687fc, &query_progress);
 	real shared_progress = query_progress;
-	real campaign_progress;
-	cache_map_progress(g_468800, &campaign_progress);
+	cache_map_progress(g_468800, &query_progress);
+	real campaign_progress = query_progress;
 	if (!strcmp((char const *)map_name, g_468808))
 		map_weight = 90.0f;
 	else if (type == 0)

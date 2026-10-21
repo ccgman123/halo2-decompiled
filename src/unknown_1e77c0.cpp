@@ -664,9 +664,9 @@ void function_1e6bd0(long player_index)
   }
   if (selected != NONE)
   {
-   s_entry_420 *entry = entry_420_get(selected);
-   s_request_transition *transition = &state->transitions[selected];
    long old_current = *current;
+   s_request_transition *transition = &state->transitions[selected];
+   s_entry_420 *entry = entry_420_get(selected);
    if (selected != old_current)
    {
     if (old_current != NONE)

@@ -8,6 +8,7 @@
 // @flags /O2 /arch:SSE /Gr
 
 real function_30bf0(vector3f *arg_0);
+real function_11cc90(vector2f const *a, vector2f const *b);
 
 struct s_29c860
 {
@@ -46,14 +47,10 @@ void function_29c860(long arg_0, long arg_1, point2f const *arg_2,
 	real *local_9 = &arg_4;
 	s_actor_view *local_0 = actor_get(arg_0);
 	s_29c860 const *local_1 = (s_29c860 const *)function_1e5450(arg_0, *(long *)object_get(arg_1));
-	real local_2 = function_29c8b1(arg_2->x * arg_3->x + arg_3->y * arg_2->y);
-	real local_3 = (real)acos(function_29c8b1(local_2));
-	if (arg_3->y * arg_2->x - arg_2->y * arg_3->x < 0.0f)
-		local_3 = -local_3;
+	real local_3 = function_11cc90((vector2f const *)arg_2, (vector2f const *)arg_3);
 	local_3 += arg_4;
-	real gain = local_1->field_38;
-	if (gain > 0.0f)
-		local_3 *= gain;
+	if (local_1->field_38 > 0.0f)
+		local_3 *= local_1->field_38;
 	real local_4 = local_1->field_30 > 0.0f ? local_1->field_30 * 0.01745329238474369f : 1.5707963705062866f;
 	if (-local_4 > local_3)
 		local_3 = -local_4;

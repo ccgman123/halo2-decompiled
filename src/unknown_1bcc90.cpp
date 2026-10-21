@@ -32,6 +32,9 @@ short __stdcall function_1bcc90(long actor_index)
 	return result;
 }
 
+// score 35 (was 35): retail tests the value at 0x328 before it clears the
+// block, ours clears
+// the block first and tests it afterwards, so the setle lands in another place.
 // @retail 0x1bcd00
 bool __stdcall function_1bcd00(long actor_index, s_slot *slot)
 {

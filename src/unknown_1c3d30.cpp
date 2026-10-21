@@ -73,6 +73,9 @@ extern byte *g_51eca8;
 extern short g_51ecb0;
 c_2d8ab0 *g_47f044;
 
+// score 7 (was 7): the table pointer and the index are loaded into the
+// opposite registers
+// here, and the loop bound is compared the other way round.
 // @retail 0x1c3d30
 void function_1c3d30()
 {

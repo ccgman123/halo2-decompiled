@@ -89,7 +89,14 @@ void function_22b8e2(s_22b8e2 const *arg_0, long arg_1, color4f const *arg_2)
 			local_2 = 0;
 	}
 	function_1396c7(arg_0->field_1c, &local_4);
-	short const *offsets = arg_0->field_44 + local_0 * 2;
+	short const *offsets;
+	switch (local_0)
+	{
+	case 0: offsets = arg_0->field_44; break;
+	case 1: offsets = arg_0->field_44 + 2; break;
+	case 2: offsets = arg_0->field_44 + 4; break;
+	default: return;
+	}
 	real local_26 = (real)offsets[0] + local_4.x;
 	real local_27 = (real)offsets[1] + local_4.y;
 	real local_11 = (real)g_4b9dd2;

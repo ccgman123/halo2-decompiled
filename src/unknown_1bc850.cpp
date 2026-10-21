@@ -48,6 +48,9 @@ short __stdcall function_1bc6d0(long actor_index);
 bool __stdcall function_1f4280(long actor_index);
 short __stdcall function_1bc850(long actor_index, s_slot *slot, s_slot *next);
 
+// score 6 (was 6): the vehicle index is kept in ECX here and in ESI in
+// retail, and the
+// flags byte is read before the value is stored there and after it here.
 // @retail 0x1bc850
 short __stdcall function_1bc850(long actor_index, s_slot *slot, s_slot *next)
 {

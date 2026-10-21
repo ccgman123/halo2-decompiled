@@ -3574,7 +3574,7 @@ void function_125b40(void)
 			{
 				local_0->changing_pause = true;
 				local_0->unknown7b = false;
-				for (long local_1 = 0; local_1 < SOUND_SYSTEM->voice_count; local_1++)
+				for (short local_1 = 0; local_1 < SOUND_SYSTEM->voice_count; local_1++)
 					sound_voice_restart_stream((short)local_1);
 				looping_sound_controllers_synchronize(true);
 				function_21f5a0();

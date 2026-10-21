@@ -246,7 +246,7 @@ PRIVATE inline const byte *score_criteria(long mode)
 }
 
 // @retail 0x23f360
-long function_23f360(long mode, long team)
+long function_23f360(long team, long mode)
 {
 	long tied = 0;
 	long better = 0;

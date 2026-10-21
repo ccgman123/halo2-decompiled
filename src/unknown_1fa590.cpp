@@ -8,6 +8,7 @@
 #include "unknown_1fa590.h"
 #include <math.h>
 #include "slot_handler.h"
+#include "normalize3d.h"
 
 void function_11d180(vector3f const *in, vector3f const *up, vector3f *forward, vector3f *left, vector3f *out);
 
@@ -38,13 +39,19 @@ void __stdcall function_1fa810(long *ticks, s_motion_adjustment_result *out, s_m
 	vector3f forward;
 	function_11d180(&state->forward, g_4687b0, &forward, &left, &up);
 	vector3f target;
-	target.i = state->target.i * state->scale;
-	target.j = state->target.j * state->scale;
-	target.k = state->target.k * state->scale;
+	vector3f_scale(&state->target, state->scale, &target);
+	vector3f desired;
+	vector3f_scale(&state->forward, target.i, &desired);
+	desired.i += target.j * left.i;
+	desired.j += target.j * left.j;
+	desired.k += target.j * left.k;
+	desired.i += target.k * up.i;
+	desired.j += target.k * up.j;
+	desired.k += target.k * up.k;
 	vector3f offset;
-	offset.i = state->forward.i * target.i + left.i * target.j + up.i * target.k - state->current.i;
-	offset.j = state->forward.j * target.i + left.j * target.j + up.j * target.k - state->current.j;
-	offset.k = state->forward.k * target.i + left.k * target.j + up.k * target.k - state->current.k;
+	offset.i = desired.i - state->current.i;
+	offset.j = desired.j - state->current.j;
+	offset.k = desired.k - state->current.k;
 	vector3f normalized = offset;
 	real length = (real)sqrt(normalized.i * normalized.i + (normalized.j * normalized.j + normalized.k * normalized.k));
 	if (!(fabs(length) < 0.0001f))

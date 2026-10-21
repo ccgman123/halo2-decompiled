@@ -179,7 +179,7 @@ void function_247140(s_247143 const *arg_0, s_247141 *arg_1,
             local_2 = local_6;
         }
         if (local_0 && arg_1->field_4 != NONE)
-            function_2ba3a0((s_particle_entry_group_2ba *)local_0, arg_1->field_4, arg_2, arg_4, arg_5);
+            function_2ba3a0((s_particle_entry_group_2ba *)local_0, arg_1->field_4, arg_2, arg_3, arg_5);
         if (((byte const *)arg_4)[0x16] & 1 && local_4)
             arg_2->flag3 = false;
     }

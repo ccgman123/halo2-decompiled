@@ -126,24 +126,26 @@ int class_30a810::function_30ac50(face_list_30ac50 const *new_faces, void const 
 	return horizon != edge ? 2 : result;
 }
 
-// score 29 (was 54): the faces pointer and the first vertex are read once into
-// locals; retail still reloads the face count from the member to build the
-// loop's end, where ours keeps it in a register
 // the four faces over the first four vertices, wound outwards: when the
 // first vertex lies in front of the last face, three corners swap vertices
+// the faces and the face count are read through references, so that the end
+// of the loop is built from the members again on every pass
 // @retail 0x30ad20
 void class_30a810::function_30ad20()
 {
 	face_30aac0 *const first_face = faces;
+	face_30aac0 *const &base = faces;
+	int &count = face_count;
 	face_count = 4;
 	tetrahedron_edge_30ad20 const *entry = g_tetrahedron_edges_413700;
-	for (face_30aac0 *face = faces; face != first_face + face_count; face++)
+	for (face_30aac0 *face = first_face; face != base + count; face++)
 	{
+		edge_30aac0 *const last = face->edges + 3;
 		face->edges[0].next = &face->edges[1];
 		face->edges[1].next = &face->edges[2];
 		face->mark = 0;
 		face->edges[2].next = &face->edges[0];
-		for (edge_30aac0 *edge = face->edges; edge < face->edges + 3; edge++, entry++)
+		for (edge_30aac0 *edge = face->edges; edge < last; edge++, entry++)
 		{
 			edge->face = face;
 			edge->vertex = (vertex_30ac50 const *)(entry->vertex_offset + (char *)vertices);

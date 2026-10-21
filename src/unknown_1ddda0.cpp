@@ -498,13 +498,52 @@ void __stdcall function_1ddea0(s_1de2c0 *arg_0, long arg_1)
 {
  (void)&arg_0; (void)&arg_1;
  s_1de6d2 const *local_0 = (s_1de6d2 const *)arg_0->field_0;
- if (!(arg_1 & 0x800000))
+ if (arg_1 & 0x800000)
+ {
+  if (arg_1 != NONE)
+  {
+   long local_9 = arg_1 & 0x7fffff;
+   s_1dea01 const *local_10 = &local_0->field_14[local_9];
+   if (arg_0->field_14->field_c0c.field_0 < 256)
+    arg_0->field_14->field_c0c.field_4[arg_0->field_14->field_c0c.field_0++] = local_9;
+   if (arg_0->field_21f) return;
+   for (long local_11 = local_10->field_2; local_11 < local_10->field_2 + local_10->field_1; ++local_11)
+   {
+    s_1de6d2 const *local_12 = (s_1de6d2 const *)arg_0->field_0;
+    s_1dea02 const *local_13 = &local_12->field_1c[local_11];
+    if (function_1ddea1(arg_0, local_13->field_0))
+    {
+     plane3f const *local_15 = &local_12->field_c[local_13->field_0 & 0x7fff];
+     real local_19 = (real)fabs(local_15->i);
+     real local_20 = (real)fabs(local_15->j);
+     real local_21 = (real)fabs(local_15->k);
+     real local_16 = local_15->k * arg_0->field_c->z + local_15->j * arg_0->field_c->y + local_15->i * arg_0->field_c->x - local_15->d;
+     real local_17 = 0.0f - local_16;
+     point3f local_18;
+     local_18.x = local_17 * local_15->i + arg_0->field_c->x;
+     local_18.y = local_17 * local_15->j + arg_0->field_c->y;
+     local_18.z = local_15->k * local_17 + arg_0->field_c->z;
+     short local_22;
+     if (local_21 >= local_20 && local_21 >= local_19) local_22 = 2;
+     else if (local_20 >= local_19) local_22 = 1;
+     else local_22 = 0;
+     arg_0->field_21c = local_22;
+     arg_0->field_21e = plane3f_axis_positive(local_15, local_22) != ((local_13->field_0 & 0x8000) != 0);
+     short const *local_23 = g_440b94[local_22 * 2 + arg_0->field_21e];
+     arg_0->field_220.x = ((real const *)&local_18)[local_23[0]];
+     arg_0->field_220.y = ((real const *)&local_18)[local_23[1]];
+     function_1de220(arg_0, local_13->field_2);
+    }
+   }
+  }
+ }
+ else
  {
   s_1de6d1 const *local_1 = &local_0->field_4[arg_1];
   long local_2 = *(long const *)&local_1->field_2[-1] >> 8;
+  long local_3 = *(long const *)&local_1->field_2[2] >> 8;
   if (!(local_2 & 0x800000)) _mm_prefetch((char const *)&local_0->field_4[local_2], _MM_HINT_NTA);
   else if (local_2 != NONE) _mm_prefetch((char const *)&local_0->field_14[local_2 & 0x7fffff], _MM_HINT_NTA);
-  long local_3 = *(long const *)&local_1->field_2[2] >> 8;
   if (!(local_3 & 0x800000)) _mm_prefetch((char const *)&local_0->field_4[local_3], _MM_HINT_NTA);
   else if (local_3 != NONE) _mm_prefetch((char const *)&local_0->field_14[local_3 & 0x7fffff], _MM_HINT_NTA);
   long local_4 = local_1->field_0;
@@ -525,42 +564,6 @@ void __stdcall function_1ddea0(s_1de2c0 *arg_0, long arg_1)
   }
   else
    function_1ddea0(*(s_1de2c0 *volatile *)&arg_0, *(long const *)&local_1->field_2[local_8 * 3 - 1] >> 8);
- }
- else if (arg_1 != NONE)
- {
-  long local_9 = arg_1 & 0x7fffff;
-  s_1dea01 const *local_10 = &local_0->field_14[local_9];
-  if (arg_0->field_14->field_c0c.field_0 < 256)
-   arg_0->field_14->field_c0c.field_4[arg_0->field_14->field_c0c.field_0++] = local_9;
-  if (arg_0->field_21f) return;
-  for (long local_11 = local_10->field_2; local_11 < local_10->field_2 + local_10->field_1; ++local_11)
-  {
-   s_1de6d2 const *local_12 = (s_1de6d2 const *)arg_0->field_0;
-   s_1dea02 const *local_13 = &local_12->field_1c[local_11];
-   if (function_1ddea1(arg_0, local_13->field_0))
-   {
-    plane3f const *local_15 = &local_12->field_c[local_13->field_0 & 0x7fff];
-    real local_16 = local_15->k * arg_0->field_c->z + local_15->j * arg_0->field_c->y + local_15->i * arg_0->field_c->x - local_15->d;
-    real local_17 = 0.0f - local_16;
-    point3f local_18;
-    local_18.x = local_17 * local_15->i + arg_0->field_c->x;
-    local_18.y = local_17 * local_15->j + arg_0->field_c->y;
-    local_18.z = local_15->k * local_17 + arg_0->field_c->z;
-    real local_19 = (real)fabs(local_15->i);
-    real local_20 = (real)fabs(local_15->j);
-    real local_21 = (real)fabs(local_15->k);
-    short local_22;
-    if (local_21 >= local_20 && local_21 >= local_19) local_22 = 2;
-    else if (local_20 >= local_19) local_22 = 1;
-    else local_22 = 0;
-    arg_0->field_21c = local_22;
-    arg_0->field_21e = plane3f_axis_positive(local_15, local_22) != ((local_13->field_0 & 0x8000) != 0);
-    short const *local_23 = g_440b94[local_22 * 2 + arg_0->field_21e];
-    arg_0->field_220.x = ((real const *)&local_18)[local_23[0]];
-    arg_0->field_220.y = ((real const *)&local_18)[local_23[1]];
-    function_1de220(arg_0, local_13->field_2);
-   }
-  }
  }
 }
 

@@ -10,6 +10,9 @@
 
 static __declspec(align(16)) const unsigned long g_4124a0[4] = {0x80000000, 0x80000000, 0x80000000, 0x80000000};
 
+// the smallest step from one, kept in the data section
+float g_461f10 = 1.1920929e-07f;
+
 struct bool_3058b0
 {
 	bool value;
@@ -84,72 +87,72 @@ public:
 	bool_3058b0 function_306f80(feature_305f60 *feature);
 };
 
+// score 164 (was 253): retail keeps between in a 16-byte slot of its own (a
+// 0x58 frame, here 0x48, where it shares the slot of the edge read by index)
+// and loads the second box's half extents later, so the xmm registers differ
+// from there on; const, a union and declaring it at the top do not separate
+// the slot.
 // @retail 0x306f80
 bool_3058b0 pair_305f60::function_306f80(feature_305f60 *feature)
 {
 	int const first_axis = feature->kind & 0xf;
-	__m128 const first_signs = *(__m128 const *)((char const *)g_corner_signs_413610 + (feature->kind & 0xf0));
-	int const second_axis = feature->field_3a & 0xf;
-	__m128 const second_signs = *(__m128 const *)((char const *)g_corner_signs_413610 + (feature->field_3a & 0xf0));
-	float const second_length = second_half_extents.m128_f32[second_axis] + second_half_extents.m128_f32[second_axis];
+	__m128 const first_signs = *(__m128 const *)((feature->kind & 0xf0) + (char const *)g_corner_signs_413610);
+	unsigned short const second_kind = feature->field_3a;
+	int const second_axis = 0xf & second_kind;
+	__m128 const second_signs = *(__m128 const *)((char const *)g_corner_signs_413610 + (second_kind & 0xf0));
 	__m128 first_corner = _mm_mul_ps(first_signs, first_half_extents);
-	__m128 const second_local = _mm_mul_ps(second_signs, second_half_extents);
-	__m128 second_edge = _mm_mul_ps(splat_306f80(second_length), axes[second_axis]);
+	__m128 const second_local = _mm_mul_ps(second_half_extents, second_signs);
+	__m128 second_edge = _mm_mul_ps(splat_306f80(second_half_extents.m128_f32[second_axis] + second_half_extents.m128_f32[second_axis]), axes[second_axis]);
 	float const first_edge = first_half_extents.m128_f32[first_axis] * -2.0f;
 	float const along = first_edge * second_edge.m128_f32[first_axis];
 	__m128 const second_corner = _mm_add_ps(_mm_add_ps(
 		_mm_mul_ps(axes[0], _mm_shuffle_ps(second_local, second_local, 0x00)),
-		_mm_mul_ps(axes[1], _mm_shuffle_ps(second_local, second_local, 0x55))),
+		_mm_mul_ps(_mm_shuffle_ps(second_local, second_local, 0x55), axes[1])),
 		_mm_add_ps(_mm_mul_ps(axes[2], _mm_shuffle_ps(second_local, second_local, 0xaa)), position));
 	float const second_squared = second_half_extents.m128_f32[second_axis] * second_half_extents.m128_f32[second_axis] * 4.0f;
 	float const determinant = (float)fabs(first_edge * first_edge * second_squared - along * along);
 	__m128 between = _mm_sub_ps(second_corner, first_corner);
 	float const second_along = dot3_306f80(second_edge, between);
 	float t = first_edge * between.m128_f32[first_axis] * second_squared - second_along * along;
-	if (1.1920929e-07f * determinant >= t)
+	if (!(g_461f10 * determinant >= t))
 	{
-		return bool_3058b0(false);
+		float const most = 1.0f - g_461f10;
+		if (!(most * determinant <= t))
+		{
+			t = t / determinant;
+			float const s = t * along - second_along;
+			if (!(s <= second_squared * g_461f10))
+			{
+				if (!(s >= second_squared * most))
+				{
+					first_corner.m128_f32[first_axis] = t * first_edge + first_corner.m128_f32[first_axis];
+					__m128 first_direction = _mm_setzero_ps();
+					first_direction.m128_f32[first_axis] = first_edge * 0.5f;
+					__m128 const normal = cross_306f80(first_direction, second_edge);
+					__m128 const squares = _mm_mul_ps(normal, normal);
+					__m128 const length_squared = _mm_add_ss(_mm_add_ss(_mm_shuffle_ps(squares, squares, 0x55), squares), _mm_shuffle_ps(squares, squares, 0xaa));
+					__m128 const inverse = inverse_sqrt_306f80(length_squared);
+					float length;
+					_mm_store_ss(&length, _mm_mul_ss(inverse, length_squared));
+					if (!(length < minimum_length))
+					{
+						__m128 unit = _mm_mul_ps(inverse, normal);
+						if (dot3_306f80(first_signs, unit) < 0.0f)
+						{
+							unit = _mm_xor_ps(unit, *(__m128 const *)g_4124a0);
+						}
+						float const distance = dot3_306f80(unit, between);
+						if (!(tolerance < distance))
+						{
+							feature->distance = distance;
+							feature->first_point = first_corner;
+							feature->normal = _mm_xor_ps(unit, *(__m128 const *)g_4124a0);
+							return bool_3058b0(true);
+						}
+					}
+				}
+			}
+		}
 	}
-	float const most = 1.0f - 1.1920929e-07f;
-	if (most * determinant <= t)
-	{
-		return bool_3058b0(false);
-	}
-	t = t / determinant;
-	float const s = t * along - second_along;
-	if (s <= 1.1920929e-07f * second_squared)
-	{
-		return bool_3058b0(false);
-	}
-	if (s >= most * second_squared)
-	{
-		return bool_3058b0(false);
-	}
-	first_corner.m128_f32[first_axis] = t * first_edge + first_corner.m128_f32[first_axis];
-	__m128 first_direction = _mm_setzero_ps();
-	first_direction.m128_f32[first_axis] = first_edge * 0.5f;
-	__m128 const normal = cross_306f80(first_direction, second_edge);
-	__m128 const squares = _mm_mul_ps(normal, normal);
-	__m128 const length_squared = _mm_add_ss(_mm_shuffle_ps(squares, squares, 0xaa), _mm_add_ss(_mm_shuffle_ps(squares, squares, 0x55), squares));
-	__m128 const inverse = inverse_sqrt_306f80(length_squared);
-	float length;
-	_mm_store_ss(&length, _mm_mul_ss(length_squared, inverse));
-	if (length < minimum_length)
-	{
-		return bool_3058b0(false);
-	}
-	__m128 unit = _mm_mul_ps(inverse, normal);
-	if (dot3_306f80(unit, first_signs) < 0.0f)
-	{
-		unit = _mm_xor_ps(unit, *(__m128 const *)g_4124a0);
-	}
-	float const distance = dot3_306f80(unit, between);
-	if (distance > tolerance)
-	{
-		return bool_3058b0(false);
-	}
-	feature->first_point = first_corner;
-	feature->normal = _mm_xor_ps(unit, *(__m128 const *)g_4124a0);
-	feature->distance = distance;
-	return bool_3058b0(true);
+	return bool_3058b0(false);
 }

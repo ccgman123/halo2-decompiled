@@ -127,39 +127,50 @@ inline void set_2fd730(__m128 &vector, float x, float y, float z, float w)
 	terms[3] = w;
 }
 
+// a vector a copy is stored in
+struct vertex_2fd730
+{
+	__m128 value;
+
+	void copy(__m128 const &vector)
+	{
+		value = vector;
+	}
+};
+
 // @retail 0x2fd730
 __m128 *convex_2fd5c0::function_2fd730(__m128 *out) const
 {
 	vertex_block_2fd730 const *block = vertex_blocks;
-	__m128 *next = out;
+	vertex_2fd730 *next = (vertex_2fd730 *)out;
 	__m128 vertex;
 	int index = vertex_count - 1;
 	for (; index >= 3; index -= 4)
 	{
 		set_2fd730(vertex, block->x[0], block->y[0], block->z[0], radius);
-		*next++ = vertex;
+		(next++)->copy(vertex);
 		set_2fd730(vertex, block->x[1], block->y[1], block->z[1], radius);
-		*next++ = vertex;
+		(next++)->copy(vertex);
 		set_2fd730(vertex, block->x[2], block->y[2], block->z[2], radius);
-		*next++ = vertex;
+		(next++)->copy(vertex);
 		set_2fd730(vertex, block->x[3], block->y[3], block->z[3], radius);
-		*next++ = vertex;
+		(next++)->copy(vertex);
 		block++;
 	}
 	if (index >= 0)
 	{
 		set_2fd730(vertex, block->x[0], block->y[0], block->z[0], radius);
-		*next++ = vertex;
+		(next++)->copy(vertex);
 	}
 	if (index >= 1)
 	{
 		set_2fd730(vertex, block->x[1], block->y[1], block->z[1], radius);
-		*next++ = vertex;
+		(next++)->copy(vertex);
 	}
 	if (index >= 2)
 	{
 		set_2fd730(vertex, block->x[2], block->y[2], block->z[2], radius);
-		*next = vertex;
+		next->copy(vertex);
 	}
 	return out;
 }

@@ -293,7 +293,8 @@ void function_119020(long object_index, vector3f const *impulse)
 		function_30bf0(&axis);
 		real first_axis = axis.i;
 		real fraction = function_x82e52f(&g_4e7408->unknown0, NULL, 0);
-		real scale = fraction * (real)sqrt(impulse->i * impulse->i + impulse->j * impulse->j + impulse->k * impulse->k) * 1.57079637f;
+		real magnitude = (real)sqrt(impulse->i * impulse->i + (impulse->j * impulse->j + impulse->k * impulse->k));
+		real scale = fraction * magnitude * 1.57079637f;
 		object->angular_velocity.i += scale * first_axis;
 		object->angular_velocity.j += scale * axis.j;
 		object->angular_velocity.k += scale * axis.k;

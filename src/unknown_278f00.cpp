@@ -131,7 +131,7 @@ void function_278f00()
 							s_havok_object *local_17 = havok_object_get(local_16);
 							if (*((byte *)local_17 + 0xc0) & 1)
 							{
-								*((byte *)local_17 + 0xc0) &= 0xfe;
+								local_17->havok_flag = false;
 								(*g_51e9a0)--;
 							}
 							local_12->havok_component_index = NONE;
@@ -139,7 +139,7 @@ void function_278f00()
 						local_12 = havok_object_get(local_11);
 						if (*((byte *)local_12 + 0xc0) & 1)
 						{
-							*((byte *)local_12 + 0xc0) &= 0xfe;
+							local_12->havok_flag = false;
 							(*g_51e9a0)--;
 						}
 						if (local_13)

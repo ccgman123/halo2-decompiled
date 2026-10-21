@@ -38,7 +38,7 @@ bool g_468c4c;
 
 long function_213760(dword location, long size, void *buffer, dword *bytes_read, bool *done, long type, long priority);
 bool function_120ce0(long job, long priority);
-void function_125d60(void);
+void function_120d50(bool volatile *done, bool idle);
 long function_120bf0(void);
 void function_12e0c0(void);
 
@@ -162,14 +162,8 @@ bool function_12de70(s_geometry_block_info *block, dword flags)
 					function_120ce0(cache_block->job, 7);
 					cache_block->priority = (byte)priority;
 				}
-				if (wait && !cache_block->done)
-				{
-					while (!cache_block->done)
-					{
-						SwitchToThread();
-						function_125d60();
-					}
-				}
+				if (wait)
+					function_120d50(&cache_block->done, true);
 			}
 			if (cache_block->done)
 			{

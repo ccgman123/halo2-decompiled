@@ -100,8 +100,10 @@ c_extent_shape *s_1d7400::function_1d7400(c_extent_shape *arg_0, void *arg_1, re
     {
      c_havok_reference_counted *local_10 = (c_havok_reference_counted *)function_1d7390((long)((s_1d7401 *)local_8)->field_c, arg_1, local_2);
      void *local_17 = ((c_1d7390 *)g_480118)->function_1d7390(0x50, 0x22);
-     c_child_transform *local_18 = NULL;
-     if (local_17)
+     c_child_transform *local_18;
+     if (!local_17)
+      local_18 = NULL;
+     else
       local_18 = new (local_17) c_child_transform(local_10);
      local_18->transform = ((s_1d7401 *)local_8)->field_10;
      havok_reference_remove(local_10);

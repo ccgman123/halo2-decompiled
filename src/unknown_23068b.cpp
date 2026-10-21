@@ -928,9 +928,11 @@ void function_23223d(c_pause_game_screen *screen)
 
 	if (text && (text_object = (s_text_object_view *)text->function_22f52e()) != NULL)
 	{
+		long size = sizeof(text_object->layout);
+		memcpy(&text_object->layout, &g_459130, size);
+
 		word *buffer = (*screen_reference)->text.text;
 
-		memcpy(&text_object->layout, &g_459130, sizeof(text_object->layout));
 		text_object->value38 = 1;
 		buffer[0] = 0;
 

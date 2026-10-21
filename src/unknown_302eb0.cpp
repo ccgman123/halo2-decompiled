@@ -116,15 +116,18 @@ void __cdecl function_302eb0(body_302eb0 const *a, body_302eb0 const *b, input_3
 {
 	float const slide = input->tolerance->slide;
 	float const slide_squared = slide * slide;
+	int i = 0;
 	world_contacts_302eb0 *out = *out_list;
 	long const first = out->size;
 	out->resize(*count + first);
 	world_contact_302eb0 *written = out->data + first;
 	contact_302eb0 *contact = contacts;
-	for (int i = 0; i < *count;)
+	for (; i < *count;)
 	{
-		__m128 const on_first = a->placement->transform.apply(contact->first.point);
-		__m128 const on_second = b->placement->transform.apply(contact->second.point);
+		transform_302eb0 const &a_transform = a->placement->transform;
+		transform_302eb0 const &b_transform = b->placement->transform;
+		__m128 const on_first = a_transform.apply(contact->first.point);
+		__m128 const on_second = b_transform.apply(contact->second.point);
 		__m128 const normal = contact->normal;
 		float const distance = sum_302eb0(_mm_mul_ps(_mm_sub_ps(on_first, on_second), normal));
 		__m128 const along = _mm_add_ps(on_second, _mm_mul_ps(splat_302eb0(distance), normal));
@@ -145,7 +148,10 @@ void __cdecl function_302eb0(body_302eb0 const *a, body_302eb0 const *b, input_3
 		{
 			ids->release_id(contact->second.lanes.id);
 			(*count)--;
-			*contact = contacts[*count];
+			contact_302eb0 const &last = contacts[*count];
+			contact->first.point = last.first.point;
+			contact->second.point = last.second.point;
+			contact->normal = last.normal;
 			(*out_list)->size--;
 		}
 	}

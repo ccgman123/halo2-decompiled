@@ -5532,10 +5532,13 @@ void __stdcall function_2c52e7(char const *map_name)
 	real step = 1.0f;
 	real duration = (real)(long)main_menu_music_silence_time();
 	dword now = GetTickCount();
-	dword elapsed_ticks = now - g_509338;
+	real elapsed = (real)(now - g_509338);
 	g_509338 = now;
 	if (duration > 0.0f)
-		step = (real)(((double)elapsed_ticks > 0.0 ? (double)elapsed_ticks : 0.0) / duration);
+	{
+		real clamped = elapsed > 0.0 ? elapsed : 0.0;
+		step = clamped / duration;
+	}
 	if (0.0f > g_509330)
 		g_509330 = progress;
 	if (!(0.001f >= 1.0f - g_509330))

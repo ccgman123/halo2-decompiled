@@ -406,7 +406,6 @@ extern vector3f *g_4687b0;
 // @retail 0x1fe410
 void function_1fe410(point3f *point, real distance)
 {
-    (void)&distance;
     point3f start;
     start.x = g_4687b0->i * 1.5f + point->x;
     start.y = g_4687b0->j * 1.5f + point->y;

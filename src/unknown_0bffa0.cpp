@@ -1158,7 +1158,8 @@ point3f *transform4x3f_apply_point(transform4x3f const *matrix, point3f const *p
 // @retail 0xc2d00
 void __stdcall function_c2d00(long light_index)
 {
-    union { s_object_marker marker; s_cluster_partition partition; } scratch;
+    s_object_marker marker;
+    s_cluster_partition partition;
     long const *light_reference = &light_index;
     byte *light = g_4e030c->data + (*light_reference & 0xffff) * 0x110;
     byte *definition = g_4e3b44[*(long *)(light + 4) & 0xffff].bytes;
@@ -1175,10 +1176,10 @@ void __stdcall function_c2d00(long light_index)
                 (point3f *)(light + 0x84), (vector3f *)(light + 0xac), (vector3f *)(light + 0xb8));
         if (!in_own_view)
         {
-            function_b8d30(*(long *)(light + 0x4c), marker_name, &scratch.marker, 1, false);
-            *(point3f *)(light + 0x84) = scratch.marker.matrix.position;
-            *(vector3f *)(light + 0xac) = scratch.marker.matrix.forward;
-            *(vector3f *)(light + 0xb8) = scratch.marker.matrix.up;
+            function_b8d30(*(long *)(light + 0x4c), marker_name, &marker, 1, false);
+            *(point3f *)(light + 0x84) = marker.matrix.position;
+            *(vector3f *)(light + 0xac) = marker.matrix.forward;
+            *(vector3f *)(light + 0xb8) = marker.matrix.up;
         }
         *(real *)(light + 0x90) = *(real *)(light + 0x84) + *(real *)(light + 0xac);
         *(real *)(light + 0x94) = *(real *)(light + 0x88) + *(real *)(light + 0xb0);
@@ -1225,10 +1226,10 @@ void __stdcall function_c2d00(long light_index)
             function_11bed0(location, (point3f *)(light + 0x18));
     }
     bool overflow;
-    scratch.partition.cluster_first_data_references = (long *)g_4e0310;
-    scratch.partition.data_references = (s_record_pool *)g_4e0314;
-    scratch.partition.cluster_references = (s_record_pool *)g_4e0318;
-    function_1cac60(NULL, &scratch.partition, light_index, (long *)(light + 0x10), (point3f *)(light + 0x18),
+    partition.cluster_first_data_references = (long *)g_4e0310;
+    partition.data_references = (s_record_pool *)g_4e0314;
+    partition.cluster_references = (s_record_pool *)g_4e0318;
+    function_1cac60(NULL, &partition, light_index, (long *)(light + 0x10), (point3f *)(light + 0x18),
         *(real *)(light + 0x24), (s_partition_location *)location, 0, NULL, &overflow);
     light[2] |= 8;
 }

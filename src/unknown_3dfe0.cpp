@@ -20,7 +20,6 @@ void function_3e4e0(dword *current, dword const *target, real step);
 void function_3dfe0(long cache_index, long object_index, real priority)
 {
     s_3dfe0_cache *cache = (s_3dfe0_cache *)(g_509434->data + (cache_index & 0xffff) * 0x100);
-    s_effect_color_query *current = &cache->current;
     long elapsed = g_4ba034 - cache->sample_time;
     if (!elapsed) return;
     long update_elapsed = g_4ba034 - cache->update_time;
@@ -63,8 +62,10 @@ void function_3dfe0(long cache_index, long object_index, real priority)
         }
     }
     if (!cache->valid) return;
+    s_effect_color_query *current = &cache->current;
     if (cache->initialized && g_467464 && !update)
     {
+        s_effect_color_query const *target = &cache->target;
         vector3f velocity;
         function_ba1d0(object_index, &velocity, 0);
         real blend = (magnitude3d(&velocity) - 0.15000000596046448f) * 0.03350083902478218f;
@@ -74,9 +75,9 @@ void function_3dfe0(long cache_index, long object_index, real priority)
             (distance3d(&cache->position, (point3f *)(object + 0x30)) > 0.05000000074505806f && blend > 0.0f) ||
             function_badc0(object_index, 0x80))
         {
-            function_3e5a0((vector3f *)&(*current), (vector3f const *)&cache->target, blend * 0.009999999776482582f);
-            function_3e4e0(&(*current).color_b, &cache->target.color_b, blend * 0.5f);
-            function_3e4e0(&(*current).color_a, &cache->target.color_a, blend * 0.5f);
+            function_3e5a0((vector3f *)&(*current), (vector3f const *)target, blend * 0.009999999776482582f);
+            function_3e4e0(&(*current).color_b, &target->color_b, blend * 0.5f);
+            function_3e4e0(&(*current).color_a, &target->color_a, blend * 0.5f);
         }
     }
     else (*current) = cache->target;

@@ -23,6 +23,10 @@ void __cdecl function_2eee90(s_1c3a40 *table)
 	table->function_2e5d50(&handlers, 1, 1);
 }
 
+// score 33 (was 191): only the stack slots differ: retail has the kept
+// contact, the transform (shared with the contact passed on) and the closest
+// points low to high, here the reverse order for the contact and the closest
+// points; names, a pointer and declaration order do not move them.
 // the contact of the pair's two convex shapes, passed on when within the
 // tolerance; skipped while the shapes' motion since the last query cannot
 // have used up the distance they were apart, and a miss may keep the

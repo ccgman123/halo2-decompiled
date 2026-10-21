@@ -211,6 +211,9 @@ __forceinline __m128 rotate_inverse_307840(transform_307840 const *matrix, __m12
 		_mm_mul_ps(_mm_shuffle_ps(t2, t3, 0x88), z));
 }
 
+// score 316 (was 316): retail computes the newest normal's three splats once,
+// spills them and shares them between the two rotations, and keeps the count
+// in edi; sharing the splats here scores 322 to 326.
 // the faces of the two boxes most nearly facing along the normal of the
 // newest contacts, when both face it closely: their contacts and, when asked,
 // those of the edges around them, with the smallest distance among the

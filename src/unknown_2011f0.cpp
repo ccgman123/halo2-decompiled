@@ -2,6 +2,7 @@
 #include "unknown_11c920.h"
 #include "globals.h"
 #include "squads.h"
+#include <string.h>
 
 void __stdcall function_201100(long arg_0, dword *arg_1);
 void __stdcall function_202e90(long arg_0, short arg_1, long arg_2);
@@ -17,9 +18,10 @@ void function_2011f0(long arg_0)
     byte *local_1 = *(byte **)((byte *)g_4e0350 + 0x164) + (arg_0 & 0xffff) * 0x74;
     if (!(*(word *)(local_2 + 2) & 4))
     {
-        *(word *)(local_2 + 2) |= 4;
-        dword local_3[4] = {0, 0, 0, 0};
         byte *local_4 = NULL;
+        dword local_3[4];
+        memset(local_3, 0, sizeof(local_3));
+        *(word *)(local_2 + 2) |= 4;
         word local_5 = *(word *)(local_1 + 0x26);
         if (local_5 != (word)NONE)
         {

@@ -162,6 +162,9 @@ short __stdcall function_1bc580(long actor_index, s_slot *slot, bool active)
 }
 
 /* the nearest actor of the actor's group not in a vehicle */
+// score 51 (was 51): retail loads the pool before it masks the index and
+// stores the float
+// at a different stack offset, ours does the two the other way round.
 // @retail 0x1bc5d0
 long function_1bc5d0(long actor_index, long ignore_index)
 {
@@ -196,6 +199,9 @@ long function_1bc5d0(long actor_index, long ignore_index)
 
 /* whether the clump's vehicle (+0x26c) still has seats free that the actor
    cannot take while none of those it wants is taken */
+// score 2 (was 2): the counter is stored before the seat array is addressed
+// here, retail
+// addresses the array first and stores the counter after it.
 // @retail 0x1bc6d0
 short __stdcall function_1bc6d0(long actor_index)
 {
@@ -333,6 +339,9 @@ bool function_1f8660(long actor_index);
 real function_1f8940(long actor_index);
 real function_1e3920(long actor_index);
 
+// score 46 (was 46): ours copies the argument into EBX before comparing it
+// with the global
+// and reads a different global, retail compares the argument itself.
 // @retail 0x1bcab0
 bool __stdcall function_1bcab0(long actor_index, s_slot *slot)
 {
@@ -433,6 +442,9 @@ short function_1b8cc0(long object_index, long *seat_object_index);
 bool function_1b9200(long object_index, long prop_index);
 point3f *function_b9dd0(long object_index, point3f *result);
 
+// score 189 (was 189): the boolean result is kept in EAX here and in CL
+// there, so the branch
+// that follows it and the whole chain of branches are laid out differently.
 // @retail 0x1bbf40
 short __stdcall function_1bbf40(long actor_index, s_slot *slot)
 {

@@ -173,7 +173,7 @@ public:
 	void pose_write(hkTransform const &transform);
 	hkBool body_is_simulating(void) const;
 	void activate(void);
-	void motion_transform_set(hkTransform const &transform);
+	inline void motion_transform_set(hkTransform const &transform);
 
 	byte unknown00[0x8];
 	void *m_world;

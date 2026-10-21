@@ -101,9 +101,9 @@ void class_2f1080::function_2f1080(void const *a_, void const *b_, void const *i
 	results_2f1080 *results = (results_2f1080 *)collector;
 	contact_2f1080 *contact = &results->contacts->next_slot();
 	rounded_2f1080 const *sphere = a->shape;
+	rounded_2f1080 const *triangle = b->shape;
 	__m128 const *centre = &a->placement->transform.position;
 	transform_2f1080 const *frame = &b->placement->transform;
-	rounded_2f1080 const *triangle = b->shape;
 	placed_point_2f1080 corners[3];
 	__m128 const *vertex = triangle->corners;
 	placed_point_2f1080 *corner = corners;

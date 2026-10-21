@@ -11,6 +11,11 @@
 struct flag_30dce0
 {
 	bool value;
+
+	flag_30dce0(bool value_)
+	{
+		value = value_;
+	}
 };
 
 struct bool_result_30dce0
@@ -129,7 +134,7 @@ public:
 	char unknownd4[0x234 - 0xd4];
 	long pair_capacity;
 
-	void function_30dce0(object_30dce0 *object, bool notify);
+	void function_30dce0(object_30dce0 *object, flag_30dce0 notify);
 };
 
 // score 161 (was 200): the flag is now a plain byte written into a local, which
@@ -137,7 +142,7 @@ public:
 // while ours keeps this in edi and the object in ebx, and retail builds the
 // flag in the argument slot where ours copies it there
 // @retail 0x30dce0
-void world_30dce0::function_30dce0(object_30dce0 *object, bool notify)
+void world_30dce0::function_30dce0(object_30dce0 *object, flag_30dce0 notify)
 {
 	pairs_30d870 pairs(pair_capacity);
 	box_30dce0 box;
@@ -171,11 +176,11 @@ void world_30dce0::function_30dce0(object_30dce0 *object, bool notify)
 			}
 		}
 	}
-	if (notify)
+	if (notify.value)
 	{
 		object->overlaps_changed();
 	}
-	flag_30dce0 flag = { true };
+	flag_30dce0 flag(true);
 	if (added.size != 0)
 	{
 		for (int i = 0; i < added.size; i++)

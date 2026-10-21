@@ -55,6 +55,9 @@ void function_e70b0(long unit_index, short *value);
 long function_1469f0(real seconds);
 
 #pragma intrinsic(_ReadWriteBarrier)
+// score 18 (was 18): retail reads the slot reference before it fetches the
+// actor, ours fetches the actor first, and g_46fbe8 is read as a byte here
+// where retail reads it as a dword.
 // @retail 0x1bf0f0
 short __stdcall function_1bf0f0(long actor_index, s_slot *slot, bool active)
 {
@@ -135,6 +138,9 @@ PRIVATE __forceinline void function_1befd1(long arg_0)
 
 static __forceinline long real_to_long(real value);
 
+// score 42 (was 42): retail sets up its frame with a single push where ours
+// reserves 0x14 bytes, and the random seed it passes to function_259d0 comes
+// from a different global than ours.
 // @retail 0x1befd0
 bool __stdcall function_1befd0(long actor_index, s_slot *slot)
 {

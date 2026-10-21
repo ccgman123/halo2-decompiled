@@ -509,8 +509,9 @@ struct s_bsp_1648d0
 	s_plane_block_1648d0 *block;
 };
 
-PRIVATE inline void project_ray_1648d0(point3f const *origin, vector3f const *direction,
-	s_plane const *plane, point3f *out)
+/* how far along the ray the plane lies, in units of the direction (0 when they are parallel) */
+PRIVATE inline real ray_plane_distance_1648d0(point3f const *origin, vector3f const *direction,
+	s_plane const *plane)
 {
 	real dot = direction->j * plane->normal.j;
 	dot += direction->k * plane->normal.k;
@@ -525,9 +526,7 @@ PRIVATE inline void project_ray_1648d0(point3f const *origin, vector3f const *di
 	}
 	else
 		distance = 0.0f;
-	out->x = direction->i * distance + origin->x;
-	out->y = direction->j * distance + origin->y;
-	out->z = direction->k * distance + origin->z;
+	return distance;
 }
 
 bool function_1652e0(s_view *view, real margin, const point3f *points, long point_count, point3f *projected_points, short *projected_count, s_bounds3d *bounds, bool use_plane0, bool use_plane1);
@@ -550,8 +549,12 @@ bool function_1648d0(s_frustum_1648d0 const *source, s_view *view,
 		s_plane const *plane = &((s_bsp_1648d0 *)g_4e0348)->block->planes[source->plane_index];
 		for (long i = 0; i < 4; i++)
 		{
-			project_ray_1648d0(&source->points[4], &source->directions[i], plane, &points[i + 4]);
+			vector3f const *direction = &source->directions[i];
+			real distance = ray_plane_distance_1648d0(&source->points[4], direction, plane);
 			points[i] = source->points[i];
+			points[i + 4].x = direction->i * distance + source->points[4].x;
+			points[i + 4].y = direction->j * distance + source->points[4].y;
+			points[i + 4].z = direction->k * distance + source->points[4].z;
 		}
 		edge_count = 12;
 		edges = box_edges;

@@ -44,10 +44,21 @@ public:
 	void function_30df80(member_30c8e0 *member);
 };
 
+// a flag passed by value
+struct flag_30dce0
+{
+	bool value;
+
+	flag_30dce0(bool value_)
+	{
+		value = value_;
+	}
+};
+
 class world_30dce0
 {
 public:
-	void function_30dce0(object_30dce0 *object, bool notify);
+	void function_30dce0(object_30dce0 *object, flag_30dce0 notify);
 };
 
 class class_30f710
@@ -93,6 +104,6 @@ void class_30f710::function_30f710()
 	}
 	for (int k = 0; k < objects.size; k++)
 	{
-		((world_30dce0 *)this)->function_30dce0(objects.data[k], true);
+		((world_30dce0 *)this)->function_30dce0(objects.data[k], flag_30dce0(true));
 	}
 }

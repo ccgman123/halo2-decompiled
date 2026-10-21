@@ -665,10 +665,10 @@ void __stdcall function_17c540(long contrail_index, real dt)
 	s_contrail_definition *definition = CONTRAIL_DEFINITION(contrail->tag_index);
 	long point_list[1024];
 
-	for (long i = 0; i < 4; i++)
+	for (short i = 0; i < 4; i++)
 	{
-		short count = 0;
 		long point_index = contrail->point_indices[i];
+		short count = 0;
 
 		while (point_index != NONE)
 		{

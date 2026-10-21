@@ -69,12 +69,11 @@ void __stdcall function_180b60(s_cluster_query const *query, real radius_squared
 	if (count > 0x200)
 		count = 0x200;
 
-	s_record_pool *references = g_4ea950;
-	s_cluster_reference *reference = (s_cluster_reference *)references->data + (datum_index & 0xffff);
-	short const *cluster = clusters;
-	for (long remaining = count; remaining > 0; --remaining)
+	long cluster_count = count;
+	s_cluster_reference *reference = (s_cluster_reference *)g_4ea950->data + (datum_index & 0xffff);
+	for (long i = 0; i < cluster_count; i++)
 	{
-		long cluster_index = *cluster++;
+		long cluster_index = clusters[i];
 		if (cluster_index != query->cluster_index)
 		{
 			long next = function_17d100(cluster_index, datum_index);
@@ -83,7 +82,7 @@ void __stdcall function_180b60(s_cluster_query const *query, real radius_squared
 				break;
 			}
 			reference->next = next;
-			reference = (s_cluster_reference *)references->data + (next & 0xffff);
+			reference = (s_cluster_reference *)g_4ea950->data + (next & 0xffff);
 		}
 	}
 }

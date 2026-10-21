@@ -218,12 +218,11 @@ long function_101fb0(long object_index)
 }
 
 // @retail 0x102100
-bool function_102100(long link_arg, long object_index, bool *out_a, bool *out_b)
+bool function_102100(short link_index, long object_index, bool *out_a, bool *out_b)
 {
-	short link_index = (short)link_arg;
 	s_object *object = OBJECT_HEADER(object_index)->object;
-	s_object_tag *tag = OBJECT_TAG(object);
 	s_object_link *link = &object->links[link_index];
+	s_object_tag *tag = OBJECT_TAG(object);
 	bool result = false;
 	s_tag_link *tag_link = &tag->links[link_index];
 	bool blocked = false;
@@ -242,11 +241,10 @@ bool function_102100(long link_arg, long object_index, bool *out_a, bool *out_b)
 	if ((flag9 || TEST_FIELD_BIT(tag_link->flag10)) && tag->link_count > 1)
 	{
 		s_object_link *other = &object->links[link_index == 0];
-		byte state = other->state;
 
-		if (state == 1 && flag9)
+		if (other->state == 1 && flag9)
 			blocked = true;
-		if ((state == 3 || state == 2) && TEST_FIELD_BIT(tag_link->flag10))
+		if ((other->state == 3 || other->state == 2) && TEST_FIELD_BIT(tag_link->flag10))
 			blocked = true;
 	}
 

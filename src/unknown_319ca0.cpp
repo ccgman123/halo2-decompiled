@@ -57,16 +57,12 @@ inline __m128 cross_319c20(__m128 const &a, __m128 const &b)
 }
 
 // a push at a point: the push, and the turn it gives about the position
-// score 2 (was 2): retail loads the position before the point for the
-// subtraction; a local, a helper, a separate assignment, a copy of the position
-// read before the push and a reference to the point all keep ours, and the
-// permuter found nothing (the difference computed before the push gets the
-// order right but moves it ahead of the push, score 8).
 // @retail 0x319c20
 void class_319ca0::push_at(const __m128 &force, const __m128 &point)
 {
 	push = _mm_add_ps(push, force);
-	add(cross_319c20(_mm_sub_ps(point, position), force));
+	__m128 const &here = position;
+	add(cross_319c20(_mm_sub_ps(point, here), force));
 }
 // @retail 0x319ca0
 void class_319ca0::add(const __m128 &vector)

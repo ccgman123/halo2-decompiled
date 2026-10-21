@@ -192,6 +192,9 @@ short __stdcall function_1c04f0(long actor_index, s_slot *slot, bool active)
 	return result;
 }
 
+// score 143 (was 143): retail inlines function_1f4460, which lives in a file
+// that is not mine,
+// so our frame is 16 bytes smaller and the call is still there.
 // @retail 0x1c0670
 bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 {
@@ -258,6 +261,10 @@ bool __stdcall function_1c0670(long actor_index, s_slot *slot)
 	return true;
 }
 
+// score 26 (was 26): the slot pointer and the actor index are loaded into the
+// opposite
+// registers here, and the shared actor_reset_state helper stores its fields in
+// another order.
 // @retail 0x1c0430
 bool __stdcall function_1c0430(long actor_index, s_slot *slot)
 {

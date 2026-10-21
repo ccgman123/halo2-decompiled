@@ -919,11 +919,12 @@ long players_list_add_message_senders(XUID const *excluded, long excluded_count)
 		{
 			XUID *xuid = message_entry_get_xuid(*(s_entry *volatile *)&message);
 			bool is_excluded = false;
-			long j;
+			long remaining = excluded_count;
+			XUID const *excluded_xuid = excluded;
 
-			for (j = 0; j < excluded_count; j++)
+			for (; remaining > 0; --remaining, ++excluded_xuid)
 			{
-				if (xuid_equal(xuid, &excluded[j], false))
+				if (xuid_equal(xuid, excluded_xuid, false))
 					is_excluded = true;
 			}
 			if (!is_excluded && !players_list_contains(xuid))

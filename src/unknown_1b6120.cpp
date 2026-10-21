@@ -92,14 +92,15 @@ long __stdcall function_1b6120(long actor_index, s_slot *slot)
 			iterator.reference.unknown0 = NONE;
 			for (entry = function_26f0c0(&iterator); entry; entry = function_26f0c0(&iterator))
 			{
+				long current_reference = iterator.reference.unknown0;
 				if (joint_index == NONE && element_502424_get(entry->unknown4)->target.unknown4 == node->object_index &&
-					function_26ecc0(actor_index, iterator.reference.unknown0, (s_joint_behavior_state *)slot))
+					function_26ecc0(actor_index, current_reference, (s_joint_behavior_state *)slot))
 				{
 					joint_index = entry->unknown4;
 				}
 				else
 				{
-					joint_decline(actor_index, iterator.reference.unknown0);
+					joint_decline(actor_index, current_reference);
 				}
 			}
 

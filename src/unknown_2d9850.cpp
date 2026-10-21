@@ -45,6 +45,10 @@ public:
 	int function_2d99d0(int count);
 };
 
+// score 28 (was 83): the block's start is taken first and zeroed afterwards,
+// so retail's branch on the partial comes before the difference; ours keeps
+// the zero in eax where retail keeps it in edx, and reuses ecx for the -1
+// where retail reuses eax.
 // @retail 0x2d9850
 int class_2d99d0::function_2d9850()
 {
@@ -70,7 +74,11 @@ int class_2d99d0::function_2d9850()
 		else if (mark > 0)
 		{
 			int partial = kept % 512;
-			int start = partial ? 512 - partial : 0;
+			int start = 512 - partial;
+			if (partial == 0)
+			{
+				start = 0;
+			}
 			function_2d8dd0(buffer + start, buffer + mark, kept);
 			mark = start;
 			end = position = ((partial != 0) + kept / 512) * 512;
@@ -81,8 +89,8 @@ int class_2d99d0::function_2d9850()
 	while (total < wanted)
 	{
 		int count = source->read(buffer + position, wanted);
-		end += count;
 		total += count;
+		end += count;
 		if (count != wanted)
 		{
 			return total == 0;

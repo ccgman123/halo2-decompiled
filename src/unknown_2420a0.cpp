@@ -487,11 +487,12 @@ long function_243b10(long key_b, bool team_only, long *second)
 // @retail 0x243c00
 void function_243c00(long slot)
 {
+	s_slot_table *slots = g_51ec80;
 	long k;
 
 	for (k = 0; k < 2; k++)
 	{
-		long marker_index = k == 0 ? g_51ec80->b[slot] : g_51ec80->c[slot];
+		long marker_index = k == 0 ? slots->b[slot] : slots->c[slot];
 
 		if (marker_index != NONE)
 		{
@@ -503,15 +504,15 @@ void function_243c00(long slot)
 
 			if (k == 0)
 			{
-				g_51ec80->bounds[0][slot].x = 0.5f;
-				g_51ec80->bounds[0][slot].y = 0.0f;
-				g_51ec80->bounds[0][slot].z = 0.0f;
+				slots->bounds[0][slot].x = 0.5f;
+				slots->bounds[0][slot].y = 0.0f;
+				slots->bounds[0][slot].z = 0.0f;
 			}
 			else
 			{
-				g_51ec80->bounds[1][slot].x = 0.5f;
-				g_51ec80->bounds[1][slot].y = 0.0f;
-				g_51ec80->bounds[1][slot].z = 0.0f;
+				slots->bounds[1][slot].x = 0.5f;
+				slots->bounds[1][slot].y = 0.0f;
+				slots->bounds[1][slot].z = 0.0f;
 			}
 
 			for (j = 0; j < count; j++)
@@ -527,28 +528,28 @@ void function_243c00(long slot)
 
 					if (k == 0)
 					{
-						g_51ec80->bounds[0][slot].x = distance > g_51ec80->bounds[0][slot].x ? distance : g_51ec80->bounds[0][slot].x;
-						g_51ec80->bounds[0][slot].y = g_51ec80->bounds[0][slot].y > point.z - other_point.z ? g_51ec80->bounds[0][slot].y : point.z - other_point.z;
-						g_51ec80->bounds[0][slot].z = g_51ec80->bounds[0][slot].z > other_point.z - point.z ? g_51ec80->bounds[0][slot].z : other_point.z - point.z;
+						slots->bounds[0][slot].x = distance > slots->bounds[0][slot].x ? distance : slots->bounds[0][slot].x;
+						slots->bounds[0][slot].y = slots->bounds[0][slot].y > point.z - other_point.z ? slots->bounds[0][slot].y : point.z - other_point.z;
+						slots->bounds[0][slot].z = slots->bounds[0][slot].z > other_point.z - point.z ? slots->bounds[0][slot].z : other_point.z - point.z;
 					}
 					else
 					{
-						g_51ec80->bounds[1][slot].x = distance > g_51ec80->bounds[1][slot].x ? distance : g_51ec80->bounds[1][slot].x;
-						g_51ec80->bounds[1][slot].y = g_51ec80->bounds[1][slot].y > point.z - other_point.z ? g_51ec80->bounds[1][slot].y : point.z - other_point.z;
-						g_51ec80->bounds[1][slot].z = g_51ec80->bounds[1][slot].z > other_point.z - point.z ? g_51ec80->bounds[1][slot].z : other_point.z - point.z;
+						slots->bounds[1][slot].x = distance > slots->bounds[1][slot].x ? distance : slots->bounds[1][slot].x;
+						slots->bounds[1][slot].y = slots->bounds[1][slot].y > point.z - other_point.z ? slots->bounds[1][slot].y : point.z - other_point.z;
+						slots->bounds[1][slot].z = slots->bounds[1][slot].z > other_point.z - point.z ? slots->bounds[1][slot].z : other_point.z - point.z;
 					}
 				}
 			}
 
 			if (k == 0)
 			{
-				g_51ec80->bounds[0][slot].y += 0.1f;
-				g_51ec80->bounds[0][slot].z += 0.9f;
+				slots->bounds[0][slot].y += 0.1f;
+				slots->bounds[0][slot].z += 0.9f;
 			}
 			else
 			{
-				g_51ec80->bounds[1][slot].y += 0.1f;
-				g_51ec80->bounds[1][slot].z += 0.9f;
+				slots->bounds[1][slot].y += 0.1f;
+				slots->bounds[1][slot].z += 0.9f;
 			}
 		}
 	}

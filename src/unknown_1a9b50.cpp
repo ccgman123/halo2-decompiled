@@ -406,9 +406,10 @@ extern point2f *g_468778;
 // @retail 0x1aa0d0
 bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 {
-	s_actor_view *local_0 = actor_get(arg_0);
+	bool result = false;
 	s_1aa0d1 *local_1 = (s_1aa0d1 *)function_1e4f90(arg_0);
 	s_1aa0d0 *local_2 = (s_1aa0d0 *)arg_1;
+	s_actor_view *local_0 = actor_get(arg_0);
 	if (local_1 && !local_2->field_13 && !local_2->field_14 && !local_2->field_2d)
 	{
 		s_prop_node_view *local_3 = NULL;
@@ -537,9 +538,9 @@ bool __stdcall function_1aa0d0(long arg_0, s_slot *arg_1)
 		if (!local_2->field_12)
 			function_1a9e00(arg_0, local_1->field_c, local_2->field_2d);
 		if (!local_2->field_14 && !local_2->field_13 && !local_2->field_2d)
-			return true;
+			result = true;
 	}
-	return false;
+	return result;
 }
 
 bool function_25d9b0(long arg_0);
