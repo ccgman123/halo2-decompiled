@@ -33,6 +33,8 @@ __int64 timing_counter_resume(timing_counter *c)
 	return total;
 }
 
+// score 4: our prologue stores the first delta zero before pushing esi;
+// retail pushes esi first and then stores both zero dwords.
 // @retail 0x223b60
 __int64 timing_counter_stop(timing_counter *c)
 {
@@ -68,6 +70,8 @@ __int64 timing_counter_peek(timing_counter *c)
 	return total;
 }
 
+// score 28: the conversion is right, but our union/local store order differs
+// from retail's interleaved byte stores; rewrite pending.
 // @retail 0x223e70
 void function_223e70(const word *rgb, S3TC_COLOR *out)
 {
