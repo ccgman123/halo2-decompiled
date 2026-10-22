@@ -33,8 +33,9 @@ __int64 timing_counter_resume(timing_counter *c)
 	return total;
 }
 
-// score 4: our prologue stores the first delta zero before pushing esi;
-// retail pushes esi first and then stores both zero dwords.
+// score 4: identical body and length; our prologue stores the first delta
+// zero before pushing esi, while retail pushes esi first and then stores both
+// zero dwords. The permuter found no better variant.
 // @retail 0x223b60
 __int64 timing_counter_stop(timing_counter *c)
 {
@@ -70,8 +71,10 @@ __int64 timing_counter_peek(timing_counter *c)
 	return total;
 }
 
-// score 28: the conversion is right, but our union/local store order differs
-// from retail's interleaved byte stores; rewrite pending.
+// score 28: the conversion is correct, but our compiler keeps the union local
+// in registers (`movzx eax`; `shr ax`) while retail keeps it in memory
+// (`xor ecx, ecx`; `mov cx, [eax]`; `shr word ptr [esp + 4], 5`) and puts the
+// blue channel in dl. No source shape or annealed permuter run reproduced it.
 // @retail 0x223e70
 void function_223e70(const word *rgb, S3TC_COLOR *out)
 {
