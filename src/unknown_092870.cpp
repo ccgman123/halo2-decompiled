@@ -189,6 +189,8 @@ void network_samples_add(s_network_samples *samples, long value)
 	samples->index = (samples->index + 1) % samples->count;
 }
 
+// score 38 (was 38): the stack frame differs: retail keeps the two words at esp+0x1e and
+// esp+0x20, ours at esp+0xc and esp+0x10.
 // @retail 0x92ae0
 bool network_link_open_endpoint(long type, word port, bool broadcast, s_transport_endpoint **endpoint_out)
 {

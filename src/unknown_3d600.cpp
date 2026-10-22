@@ -19,9 +19,9 @@ void function_3d600(void)
 		}
 		for (long material = 0; material < *(long *)(definition + 0x60); ++material)
 		{
-			long tag = *(long *)(*(byte **)(definition + 0x64) + material * 0x20 + 0xc);
-			if (tag == NONE) continue;
-			byte *shader = *(byte **)(g_4e3b44[tag & 0xffff].bytes + 0x24);
+			byte *entry = *(byte **)(definition + 0x64) + material * 0x20;
+			if (*(long *)(entry + 0xc) == NONE) continue;
+			byte *shader = *(byte **)(g_4e3b44[*(long *)(entry + 0xc) & 0xffff].bytes + 0x24);
 			for (long texture = 0; texture < *(long *)(shader + 4); ++texture)
 			{
 				long const &bitmap_tag = *(long *)(*(byte **)(shader + 8) + texture * 0xc);

@@ -470,6 +470,9 @@ s_1a8a10 g_4453c0[] =
 };
 
 #pragma inline_depth(0)
+// score 17 (was 17): retail subtracts the local at [esi+0x294] inside the sum
+// and keeps the two partial products in xmm2 and xmm3; ours subtracts after
+// the products and multiplies the terms in the other order.
 // @retail 0x1a8a10
 bool function_1a8a10(point2f const *arg_0, long arg_1, short arg_2, real arg_3, real arg_4)
 {

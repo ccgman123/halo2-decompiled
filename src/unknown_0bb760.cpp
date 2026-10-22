@@ -487,7 +487,7 @@ void __stdcall function_be240(long object_index, dword color_mask, color3f const
                 }
 
                 long j = 0;
-                do
+                while (j != choice_count)
                 {
                     s_colour_choice_ab *choice = &entry->choices[j];
                     if (!choice->field_1c_4 || choice->field_1c_4 == variant)
@@ -498,12 +498,13 @@ void __stdcall function_be240(long object_index, dword color_mask, color3f const
                     }
 
                     ++j;
-                } while (j < choice_count);
+                }
                 if (eligible && weight > 0.0f)
                 {
                     real target = selection * weight;
                     real cumulative = 0.0f;
-                    for (long j = 0; j < choice_count; ++j)
+                    long j = 0;
+                    do
                     {
                         s_colour_choice_ab *choice = &entry->choices[j];
                         if (eligible & (1 << j))
@@ -528,7 +529,8 @@ void __stdcall function_be240(long object_index, dword color_mask, color3f const
                                 break;
                             }
                         }
-                    }
+                        ++j;
+                    } while (j < choice_count);
                 }
             }
         }

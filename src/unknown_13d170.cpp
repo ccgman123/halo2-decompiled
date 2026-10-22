@@ -10,6 +10,8 @@
 /* the physical memory allocator (physical_memory.h): a named, doubly linked
    list of blocks kept in a data array that follows the object */
 
+// score 18 (was 18): the final field stores of the manager are scheduled in a different
+// order than retail's; retail's order matches our source order exactly.
 // @retail 0x13d170
 void function_13d170(s_physical_object *manager, const char *name, long page_count, long page_shift, long maximum_count, physical_block_delete_proc delete_proc, physical_block_busy_proc busy_proc, physical_block_state_proc state_proc, c_data_allocator *allocator)
 {

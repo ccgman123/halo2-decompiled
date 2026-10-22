@@ -86,6 +86,8 @@ void DecodeBlockRGBA_explicit__single_pixel(S3TCBlockRGBA_explicit const *block,
 }
 
 // @retail 0x224080
+// score 19 (was 19): the interpolated colour is built in EDX where retail builds it in EAX, so the
+// shift and the lookup of the palette entry use the other register.
 void DecodeBlockRGBA_interpolated__single_pixel(S3TCBlockRGBA_interpolated const *block, S3TC_COLOR *out, short x, short y)
 {
 	word alphas[8];

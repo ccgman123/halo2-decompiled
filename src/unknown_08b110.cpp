@@ -22,7 +22,7 @@ void c_vtable_450c94::v3(s_node_450d1c *node, long a2, long a3, long key,
 	s_bitstream *stream, long reserved_bits)
 {
 	long index = (long)node;
-	stream->checkpoints[stream->checkpoint_count++] = stream->bit_position;
+	stream_save_position(stream);
 	stream_write_bit(stream, true);
 	stream_write_checked(stream, index, 5);
 	stream_write_bit(stream, (active_mask & (1 << index)) != 0);
@@ -431,15 +431,14 @@ long c_vtable_450c94::v5(dword a1, s_bitstream *stream, long max_blocks, s_block
   {
    s_block_450c94 *block = &blocks[used++];
    block->index = index;
-   s_item_450cb8 *items = (s_item_450cb8 *)block->data;
-   items[0].size = input ? 0x34 : 0;
-   items[1].size = transform ? 0x40 : 0;
-   items[0].data = input;
+   ((s_item_450cb8 *)block->data)[0].size = input ? 0x34 : 0;
+   ((s_item_450cb8 *)block->data)[1].size = transform ? 0x40 : 0;
+   ((s_item_450cb8 *)block->data)[0].data = input;
    block->unknown00 = NONE;
    block->count = 2;
-   items[0].type = 9;
-   items[1].type = 10;
-   items[1].data = transform;
+   ((s_item_450cb8 *)block->data)[0].type = 9;
+   ((s_item_450cb8 *)block->data)[1].type = 10;
+   ((s_item_450cb8 *)block->data)[1].data = transform;
   }
   else
   {

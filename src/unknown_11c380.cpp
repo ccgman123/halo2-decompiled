@@ -122,11 +122,8 @@ bool function_11c470(long trigger_volume_index, point3f const *point)
 			real x = dot3f(&vector, &matrix.forward);
 			real y = dot3f(&vector, &matrix.left);
 			real z = dot3f(&vector, &matrix.up);
-			if (x > 0.0f && y > 0.0f && z > 0.0f &&
-				trigger_volume->extents.i > x && trigger_volume->extents.j > y && trigger_volume->extents.k > z)
-			{
-				result = true;
-			}
+			result = x > 0.0f && y > 0.0f && z > 0.0f &&
+				trigger_volume->extents.i > x && trigger_volume->extents.j > y && trigger_volume->extents.k > z;
 		}
 	}
 	return result;

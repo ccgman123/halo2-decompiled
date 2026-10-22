@@ -51,7 +51,6 @@ void spherical_harmonics_evaluate_direction(vector3f const *direction, dword ord
 			real sqrt7;
 			real band3_21;
 
-			result[15] = xx_3yy * band3_35 * inverse_sqrt_pi * x * -0.125f;
 			band3_21 = (real)(sqrt(21.0) * sqrt2);
 			result[11] = zz5_1 * band3_21 * inverse_sqrt_pi * y * -0.125f;
 			result[13] = inverse_sqrt_pi * x * zz5_1 * band3_21 * -0.125f;
@@ -60,6 +59,7 @@ void spherical_harmonics_evaluate_direction(vector3f const *direction, dword ord
 			sqrt7 = (real)sqrt(7.0);
 			result[12] = sqrt7 * (zz5 - 3.0f) * inverse_sqrt_pi * z * 0.25f;
 			result[14] = inverse_sqrt_pi * z * sqrt105 * xx_yy * 0.25f;
+			result[15] = xx_3yy * band3_35 * inverse_sqrt_pi * x * -0.125f;
 		}
 	}
 }

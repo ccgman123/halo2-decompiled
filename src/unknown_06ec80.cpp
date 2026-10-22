@@ -44,6 +44,8 @@ struct s_6ec83
 };
 #pragma pack(pop)
 
+// score 13 (was 53): the two stack slots are swapped: retail keeps the short at esp+0x14 and
+// the pointer at esp+0x10, ours the other way round.
 // @retail 0x6ec80
 bool function_06ec80(c_class_58d20 *arg_0, bool arg_1)
 {

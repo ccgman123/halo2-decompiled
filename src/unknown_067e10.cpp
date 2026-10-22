@@ -1568,7 +1568,8 @@ static __forceinline bool view_needs_join_buffer(short type)
 long function_6a040(c_class_6a600 *world, c_simulation_view *view)
 {
  long result = 0;
- if (view->state < 3)
+ long state = view->state;
+ if (state < 3)
  {
   bool ready = view_needs_join_buffer(view->type);
   if (!ready)
@@ -1579,7 +1580,8 @@ long function_6a040(c_class_6a600 *world, c_simulation_view *view)
   }
   if (ready) view->set_state(3, view->state_id);
  }
- if (view->state == 3)
+ state = view->state;
+ if (state == 3)
  {
   if (!view_needs_join_buffer(view->type))
   {
@@ -1832,6 +1834,12 @@ void function_195e90(void);
 void function_68c00(s_simulation_world_owner *owner, void *definitions,
  s_simulation_distribution *distribution, c_class_6a600 *world);
 
+// score 35 (was 35): retail keeps the watcher in edx and the address of its
+// +8 field in eax, tests the flag with test al, al and clears with immediate
+// zeros; ours folds +8 into the stores and keeps zero in edx (55 bytes against
+// 73). Other forms of the link and the watcher, an early return, inline
+// functions, const references, a barrier and volatile stores all stay at
+// score 35; the permutation runs found no semantics-preserving improvement.
 // @retail 0x67f60
 void function_67f60(void)
 {

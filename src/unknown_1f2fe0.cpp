@@ -11,6 +11,8 @@
 #include "slot_handler.h"
 
 void function_1caa40(long object_index, point3f *position);
+/* retail inlines the object's forward lookup in 0x1f3e40 */
+__forceinline void object_get_forward(long object_index, vector3f *forward);
 bool __stdcall function_1f8a70(long actor_index, long unknown);
 
 /* aims the actor at its current path point */
@@ -253,42 +255,28 @@ void __stdcall function_1f3e40(long object_index, vector3f const *forward, vecto
 	vector3f up;
 	function_11d180(forward, g_4687b0, &unused0, &left, &up);
 	vector3f object_forward;
-	s_slot_object_view *object = object_get(object_index);
-	if (object->parent_index == NONE)
-		object_forward = object->forward;
-	else
-	{
-		transform4x3f *matrix = object_node_matrix(object_get(object->parent_index), object->parent_node);
-		real i = object->forward.i;
-		real j = object->forward.j;
-		real k = object->forward.k;
-		object_forward.i = matrix->forward.i * i + matrix->left.i * j + matrix->up.i * k;
-		object_forward.j = matrix->forward.j * i + matrix->left.j * j + matrix->up.j * k;
-		object_forward.k = matrix->forward.k * i + matrix->left.k * j + matrix->up.k * k;
-	}
+	object_get_forward(object_index, &object_forward);
 	vector3f unused1;
 	vector3f object_left;
 	vector3f object_up;
 	function_11d180(&object_forward, g_4687b0, &unused1, &object_left, &object_up);
-	real input_i = vector->i;
-	real input_j = vector->j;
-	real input_k = vector->k;
 	vector3f world;
-	vector3f contribution;
-	long component;
-	vector3f_scale(&object_forward, input_i, &contribution);
-	for (component = 0; component < 3; ++component)
-		world.n[component] = g_4687a4->n[component] + contribution.n[component];
-	vector3f_scale(&object_left, input_j, &contribution);
-	for (component = 0; component < 3; ++component)
-		world.n[component] += contribution.n[component];
-	vector3f_scale(&object_up, input_k, &contribution);
-	for (component = 0; component < 3; ++component)
-		world.n[component] += contribution.n[component];
+	real input_i = vector->i;
+	world.i = g_4687a4->i + object_forward.i * input_i;
+	world.j = g_4687a4->j + object_forward.j * input_i;
+	world.k = g_4687a4->k + object_forward.k * input_i;
+	real input_j = vector->j;
+	world.i += object_left.i * input_j;
+	world.j += object_left.j * input_j;
+	world.k += object_left.k * input_j;
+	real input_k = vector->k;
+	world.i += object_up.i * input_k;
+	world.j += object_up.j * input_k;
+	world.k += object_up.k * input_k;
 	vector3f result;
-	result.i = forward->k * world.k + forward->j * world.j + forward->i * world.i;
-	result.j = left.k * world.k + left.j * world.j + left.i * world.i;
-	result.k = up.k * world.k + up.j * world.j + up.i * world.i;
+	result.i = dot3f(forward, &world);
+	result.j = dot3f(&left, &world);
+	result.k = dot3f(&up, &world);
 	*vector = result;
 }
 
@@ -312,7 +300,6 @@ void function_1f3640(long actor_index)
     byte *entry = (byte *)function_1e50c0(actor_index);
     if (!actor->unknown007 && entry)
     {
-        bool enabled;
         if (*((bool *)actor + 0x6c0))
         {
             long first, second;
@@ -320,52 +307,50 @@ void function_1f3640(long actor_index)
                 active = second == 0x600005f;
         }
         if (*(long *)((byte *)actor + 0x858) != NONE)
-            enabled = false;
+            result = false;
         else if ((*(long *)((byte *)actor + 0x7fc) == 0x6000086 && (byte)function_113da0(actor->unknown018)) || actor->unknown086 >= 6)
-            enabled = false;
+            result = false;
         else if (!active && function_110ab0(actor->unknown018))
-            enabled = false;
+            result = false;
         else if (*(long *)((byte *)actor + 0x6c8))
-            enabled = false;
+            result = false;
         else if (!active && *(short *)((byte *)actor + 0x686) > 0)
-            enabled = false;
+            result = false;
         else
         {
-            enabled = (actor->unknown5d0 && *((bool *)actor + 0x485)) ||
+            result = (actor->unknown5d0 && *((bool *)actor + 0x485)) ||
                 ((!actor->unknown5d0 || active) && *((bool *)actor + 0x484));
         }
-        if (active && !enabled)
+        if (active && !result)
         {
             function_10f430(actor->unknown018, 0x7000101, 0x7000101, 0x7000101, 0x400000c, 0.2f, false, 0);
-            goto store;
         }
-        if (!*((bool *)actor + 0x6c0))
+        else
         {
-            if (!enabled)
-                goto store;
-            real seconds = function_259d0(&g_4e7408->unknown0, 0, 0, *(real *)(entry + 4), *(real *)(entry + 8));
-            real time = (real)g_510c54->field_2_3 * seconds;
-            long ticks;
-            ticks = real_to_long(time);
-            *(long *)((byte *)actor + 0x6c4) = ticks;
-        }
-        if (enabled && !active && --*(long *)((byte *)actor + 0x6c4) <= 0)
-        {
-            real delay = function_259d0(&g_4e7408->unknown0, 0, 0, *(real *)(entry + 4), *(real *)(entry + 8));
-            s_actor_view *current = actor_get(actor_index);
-            if (current->unknown26c == NONE)
+            if (!*((bool *)actor + 0x6c0) && result)
             {
-                s_unit_request request;
-                memset(&request, 0, sizeof(request));
-                request.type = 0x19;
-                request.type19.animation = 0x600005f;
-                request.type19.mode = 2;
-                function_e6900(current->unknown018, &request);
+                real seconds = function_259d0(&g_4e7408->unknown0, 0, 0, *(real *)(entry + 4), *(real *)(entry + 8));
+                real time = (real)g_510c54->field_2_3 * seconds;
+                long ticks;
+                ticks = real_to_long(time);
+                *(long *)((byte *)actor + 0x6c4) = ticks;
             }
-            *(long *)((byte *)actor + 0x6c4) = function_1469f0(delay);
+            if (result && !active && --*(long *)((byte *)actor + 0x6c4) <= 0)
+            {
+                real delay = function_259d0(&g_4e7408->unknown0, 0, 0, *(real *)(entry + 4), *(real *)(entry + 8));
+                s_actor_view *current = actor_get(actor_index);
+                if (current->unknown26c == NONE)
+                {
+                    s_unit_request request;
+                    memset(&request, 0, sizeof(request));
+                    request.type = 0x19;
+                    request.type19.animation = 0x600005f;
+                    request.type19.mode = 2;
+                    function_e6900(current->unknown018, &request);
+                }
+                *(long *)((byte *)actor + 0x6c4) = function_1469f0(delay);
+            }
         }
-store:
-        result = enabled;
     }
     *((bool *)actor + 0x6c0) = result;
 }

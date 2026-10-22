@@ -1087,6 +1087,8 @@ s_ai_player *ai_player_get(long player_index);
 
 /* the actor leaves the vehicle it rides in, and its player remembers the
    seat */
+// score 76 (was 76): the prologue: retail loads the global g_4f55f0 and its
+// data pointer before reserving the frame, ours reserves the frame first.
 // @retail 0x25c050
 void function_25c050(long player_index, long actor_index)
 {
@@ -1281,8 +1283,9 @@ bool function_1e1de0(long arg_0);
 bool function_25ccd0(s_type_5cfb45 *arg_0, long arg_1, short arg_2, s_2640c0 *arg_3)
 {
 	long local_1 = g_510c54->game_time;
-	if (arg_0->unknown00 == local_1)
-		return false;
+	bool updated = arg_0->unknown00 != local_1;
+	if (!updated)
+		return updated;
 	s_slot_object_view *local_2 = object_get(arg_1);
 	s_slot_object_view *local_3 = NULL;
 	long local_4 = NONE;
@@ -1379,7 +1382,7 @@ bool function_25ccd0(s_type_5cfb45 *arg_0, long arg_1, short arg_2, s_2640c0 *ar
 	arg_0->unknown62 = local_11;
 	arg_0->unknown61 = local_10;
 	arg_0->unknown00 = local_1;
-	return true;
+	return updated;
 }
 
 
@@ -1420,6 +1423,8 @@ bool __stdcall function_25c230(long arg_0, long arg_1, short arg_2)
 void __stdcall function_26c2d0(long arg_0);
 void function_1e4500(long arg_0, short arg_1);
 
+// score 21 (was 21): the g_510c54 load and the compare that follows it are
+// in the other order.
 // @retail 0x25b440
 void __stdcall function_25b440(long arg_0, long arg_1)
 {

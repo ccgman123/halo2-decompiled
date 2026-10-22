@@ -11,7 +11,7 @@ bool function_1f5110(long arg_0, point2f const *arg_1, real arg_2,
 
 PRIVATE __forceinline real function_1a83e1(point3f const *arg_0, vector3f const *arg_1, point3f const *arg_2)
 {
-    point3f const volatile *local_3 = arg_0;
+    point3f const *local_3 = arg_0;
     vector3f const *local_4 = arg_1;
     vector3f local_5;
     local_5.k = local_4->k;

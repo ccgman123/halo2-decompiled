@@ -725,6 +725,8 @@ PRIVATE __forceinline real function_21ece1(real arg_0, real arg_1)
 	return (real)((double)arg_0 + local_0);
 }
 
+// score 25 (was 25): retail loads the x87 accumulator before the value it
+// adds to it, ours loads that value first, so the fadd order differs.
 // @retail 0x21ece0
 void function_21ece0(long effect_index, s_sound_driver_reverb const *reverb)
 {
@@ -820,6 +822,8 @@ PRIVATE __forceinline long function_21ee82(real arg_0)
     return local_0;
 }
 
+// score 25 (was 25): retail loads the x87 accumulator before the value it
+// adds to it, ours loads that value first, so the fadd order differs.
 // @retail 0x21ee80
 void function_21ee80(void)
 {

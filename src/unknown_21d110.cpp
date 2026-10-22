@@ -646,6 +646,8 @@ PRIVATE long const g_44a200[] = { 0, 1, 2 };
 PRIVATE long const g_44a20c[] = { 0, 1, 2, 2 };
 
 // @retail 0x21d630
+// score 60 (was 60): the local variables sit in stack slots that are four bytes apart from retail's,
+// so every load and store of a local uses a different offset.
 void __stdcall function_21d630(long effect_index, long mode)
 {
 	s_sound_effect *effect = sound_effect_get(effect_index);

@@ -71,15 +71,7 @@ __forceinline real function_298df3(point2f *arg_0)
 	return local_0;
 }
 
-__forceinline real function_2990b0(real arg_0)
-{
-	real local_0;
-	if (-1.0f > arg_0)
-		local_0 = -1.0f;
-	else
-		local_0 = arg_0 > 1.0f ? 1.0f : arg_0;
-	return (real)acos(local_0);
-}
+real function_50650(real cosine);
 
 __forceinline void function_2992ba(short arg_0, bool arg_1, real arg_2, point2f const *arg_3,
 	point2f const *arg_4, long arg_5, s_298c30 const *arg_6, real arg_7, real arg_8, point2f const *arg_9, point2f *arg_10)
@@ -156,7 +148,7 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 			real local_13 = arg_6 / local_9;
 			if (local_13 > 1.0)
 				local_13 = 1.0f;
-			real local_14 = function_2990b0(local_13);
+			real local_14 = function_50650(local_13);
 			point2f local_15 = { local_1.x - local_8->x, local_1.y - local_8->y };
 			function_298df3(&local_15);
 			real local_16 = local_15.y * arg_4->y + local_15.x * arg_4->x;
@@ -164,7 +156,7 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 				local_16 = 1.0f;
 			else if (local_16 < -1.0)
 				local_16 = -1.0f;
-			real local_17 = function_2990b0(local_16);
+			real local_17 = function_50650(local_16);
 			real local_18;
 			if (local_7 != 0)
 				local_18 = local_4 ? 3.1415927410125732f - local_17 : local_17 + 3.1415927410125732f;
@@ -175,10 +167,11 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 			if (local_19[0] > 6.2831854820251465f)
 				local_19[0] -= 6.2831854820251465f;
 			local_19[1] = local_18 - local_14;
-			long local_20 = 0;
+			real const *angle_cursor = local_19;
+			long angles_remaining = 2;
 			do
 			{
-				real local_21 = local_19[local_20];
+				real local_21 = *angle_cursor;
 				real local_22 = local_21 < 0.0f ? local_21 + 6.2831854820251465f : local_21 - 6.2831854820251465f;
 				real local_23 = (real)sin(local_7 == 0 ? -local_22 : local_22);
 				real local_24 = (real)cos(local_22);
@@ -188,8 +181,8 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 				local_6++;
 				function_2992ba(local_6, local_10, local_22, &local_15, &local_2, arg_1, arg_2, local_13, local_5, arg_5, &local_27);
 				local_6++;
-				local_20++;
-			} while (local_20 < 2);
+				angle_cursor++;
+			} while (--angles_remaining);
 		}
 	}
 	g_504938 = local_6;
@@ -403,7 +396,7 @@ bool function_299460(long arg_0, s_298c46 *arg_1, s_298c30 const *arg_2,
 				local_48 = 1.0f;
 			else if (local_48 < -1.0)
 				local_48 = -1.0f;
-			real local_49 = function_2990b0(local_48);
+			real local_49 = function_50650(local_48);
 			real local_50;
 			if (arg_1->field_0)
 				local_50 = local_47 ? 3.1415927410125732f - local_49 : local_49 + 3.1415927410125732f;
@@ -494,7 +487,7 @@ void function_29a190(long arg_0, long arg_1, vector3f const *arg_2, vector3f *ar
 		local_6 = -1.0f;
 	else if (local_6 > 1.0f)
 		local_6 = 1.0f;
-	local_6 = function_2990b0(local_6);
+	local_6 = function_50650(local_6);
 	if (g_468778->x * local_5.j - g_468778->y * local_5.i < 0.0f)
 		local_6 = -local_6;
 	if (!*(bool *)(local_0 + 0x5d0) || *(bool *)(local_0 + 0x5d2) || !local_2)

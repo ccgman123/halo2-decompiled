@@ -35,7 +35,7 @@ struct s_object_values
 void function_b58c0(long index, dword mask);
 struct s_statborg;
 void function_1968b0(long index, long team, long counter, long value);
-void function_1e9df0(long field, long counter, long team, s_statborg *statistics, long delta);
+void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short delta);
 long function_196ef0(byte code);
 void function_196e60(long player_index, long counter, long code, long delta);
 void function_225880(long player_index);
@@ -86,9 +86,11 @@ void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, 
 	short consecutive = ++*(short *)(row + 0x16);
 	if ((short)old_maximum < consecutive && g_510ca0 && !g_510ca1 && index != NONE)
 	{
+		long minimum = g_46ddc0[12].minimum;
+		long maximum = g_46ddc0[12].maximum;
 		long value = consecutive;
-		if (value < g_46ddc0[12].minimum) value = g_46ddc0[12].minimum;
-		else if (value > g_46ddc0[12].maximum) value = g_46ddc0[12].maximum;
+		if (value < minimum) value = minimum;
+		else if (value > maximum) value = maximum;
 		g_511bf4.groups[index][12].value = (word)value;
 	}
 	if (g_55e4d0[g_4e9ae8->engine_index])
@@ -765,10 +767,10 @@ bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 
 // The new statistic callers allow this body without the earlier LTCG regressions.
 // @retail 0x1e9df0
-void function_1e9df0(long field, long counter, long team, s_statborg *statistics, long volatile delta)
+void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short volatile delta)
 {
  short *entry = &((s_object_values *)statistics)->team_values[team][field];
- long value = *entry + (short)delta;
+ long value = *entry + delta;
  if (value < -30000)
   value = -30000;
  else if (value > 30000)

@@ -203,24 +203,23 @@ void function_11a430(long list_index, real body_vitality, real shield_vitality)
 // @retail 0x11a4d0
 bool function_11a4d0(long unit_index, long definition_index)
 {
+	if (unit_index == NONE || definition_index == NONE)
+		return false;
 	bool result = false;
-	if (unit_index != NONE && definition_index != NONE)
+	s_unit_11a4d0 *unit = unit_get_11a4d0(unit_index);
+	short weapon_index = unit->weapon_index_a;
+	if (weapon_index != NONE)
 	{
-		s_unit_11a4d0 *unit = unit_get_11a4d0(unit_index);
-		short weapon_index = unit->weapon_index_a;
-		if (weapon_index != NONE)
-		{
-			long weapon_object_index = unit->weapon_object_indices[weapon_index];
-			if (weapon_object_index != NONE && unit_get_11a4d0(weapon_object_index)->definition_index == definition_index)
-				result = true;
-		}
-		weapon_index = unit->weapon_index_b;
-		if (weapon_index != NONE)
-		{
-			long weapon_object_index = unit->weapon_object_indices[weapon_index];
-			if (weapon_object_index != NONE && unit_get_11a4d0(weapon_object_index)->definition_index == definition_index)
-				result = true;
-		}
+		long weapon_object_index = unit->weapon_object_indices[weapon_index];
+		if (weapon_object_index != NONE && unit_get_11a4d0(weapon_object_index)->definition_index == definition_index)
+			result = true;
+	}
+	weapon_index = unit->weapon_index_b;
+	if (weapon_index != NONE)
+	{
+		long weapon_object_index = unit->weapon_object_indices[weapon_index];
+		if (weapon_object_index != NONE && unit_get_11a4d0(weapon_object_index)->definition_index == definition_index)
+			result = true;
 	}
 	return result;
 }
@@ -935,7 +934,7 @@ void function_11b710(long unit_index, long field_7c)
 				}
 			}
 
-			if (attached && attached_object_index != NONE)
+			if (attached_object_index != NONE && attached)
 			{
 				transform4x3f matrix;
 				function_ba3d0(unit_index);

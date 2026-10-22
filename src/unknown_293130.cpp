@@ -104,6 +104,8 @@ __forceinline void function_293133(real arg_0, vector3f const *arg_1, vector3f *
 	arg_2->k = arg_2->k * local_1 + arg_1->k * local_2 - local_5 * local_0;
 }
 
+// score 68 (was 68): every local of the frame sits 4 bytes higher in ours
+// ([esp+0x14] where retail has [esp+0x10]).
 // @retail 0x293130
 long __stdcall function_293130(long arg_0)
 {

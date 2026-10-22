@@ -1388,10 +1388,7 @@ void c_matchmaking_list::v3()
 				indices[index_count++] = i;
 			}
 		}
-		for (i = index_count; i < 16; i++)
-		{
-			indices[i] = NONE;
-		}
+		memset(indices + index_count, 0xff, (16 - index_count) * sizeof(long));
 	}
 	else
 	{
@@ -1403,10 +1400,7 @@ void c_matchmaking_list::v3()
 				indices[index_count++] = i;
 			}
 		}
-		for (i = index_count; i < 16; i++)
-		{
-			indices[i] = NONE;
-		}
+		memset(indices + index_count, 0xff, (16 - index_count) * sizeof(long));
 		if (mode == 1)
 		{
 			long count = 0;

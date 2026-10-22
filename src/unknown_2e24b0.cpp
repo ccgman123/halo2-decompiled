@@ -5,34 +5,7 @@
 // as a pair (or, for a box that stands for a grid cell, added to that cell's
 // list). (Its own file, not src/unknown_2e2190.cpp beside it: it needs /GX
 // for the stack array it unwinds.)
-#include "axis_sweep_2e1090.h"
-
-// an array of longs whose storage comes from the allocator's stack area
-// (src/unknown_2e18e0.cpp)
-struct array_longs_2e1ab0
-{
-	long *data;
-	long size;
-	unsigned long capacity_and_flags;
-
-	array_longs_2e1ab0() : data(0), size(0), capacity_and_flags(0x80000000) {}
-	~array_longs_2e1ab0()
-	{
-		if ((capacity_and_flags & 0x80000000) == 0)
-		{
-			g_memory_2d88a0->release_block(data, (capacity_and_flags & 0x7fffffff) * sizeof(long), 0x12);
-		}
-	}
-};
-
-struct longs_2e1ab0 : array_longs_2e1ab0
-{
-	long *stack_block;
-	long stack_capacity;
-
-	longs_2e1ab0(long capacity);
-	~longs_2e1ab0();
-};
+#include "sweep_search_2e1090.h"
 
 // moves the boxes' endpoint indices past the new ones (src/unknown_2dfcc0.cpp)
 struct quantized_box_2dfcc0;
@@ -67,114 +40,82 @@ inline long find_box_2e29b0(cell_2e1090 const *cell, unsigned short value)
 	return -1;
 }
 
-// @retail 0x2e24b0
-void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pairs_2e1090 *pairs)
+// one bit per box, set for the boxes whose x interval holds a box's lower
+// x: the box's lower x value is `low_value`, and its endpoints sit at
+// `low_slot` and `high_slot` on the x axis
+__forceinline void mark_holding_x_2e24b0(class_2e1090 *sweep, int count, int low_value, int low_slot, int high_slot, long *bits)
 {
-	__declspec(align(16)) struct
-	{
-		unsigned long low[4];
-		unsigned long high[4];
-	} corners;
-	{
-		union
-		{
-			__m128 vector;
-			unsigned long bits[4];
-		} quantized;
-		unsigned short low_words[3];
-		__m128 const minimum = bounds->lower;
-		__m128 const maximum = bounds->upper;
-		__m128 const ceiling = *(__m128 const *)g_4125d0;
-		__m128 const floor = *(__m128 const *)g_4125e0;
-		quantized.vector = _mm_add_ps(_mm_max_ps(_mm_min_ps(
-			_mm_mul_ps(_mm_add_ps(minimum, lower_offset), scale), ceiling), floor), *(__m128 const *)g_4125c0);
-		low_words[0] = (unsigned short)(quantized.bits[0] >> 7);
-		low_words[1] = (unsigned short)(quantized.bits[1] >> 7);
-		low_words[2] = (unsigned short)(quantized.bits[2] >> 7);
-		quantized.vector = _mm_add_ps(_mm_max_ps(_mm_min_ps(
-			_mm_mul_ps(_mm_add_ps(maximum, upper_offset), scale), ceiling), floor), *(__m128 const *)g_4125c0);
-		corners.high[0] = (unsigned short)(quantized.bits[0] >> 7) | 1;
-		corners.high[1] = (unsigned short)(quantized.bits[1] >> 7) | 1;
-		corners.high[2] = (unsigned short)(quantized.bits[2] >> 7) | 1;
-		corners.low[0] = low_words[0] & 0xfffe;
-		corners.low[1] = low_words[1] & 0xfffe;
-		corners.low[2] = low_words[2] & 0xfffe;
-	}
-	long const index = elements.size;
-	element_2e1090 *box = &elements.next_slot();
-	element_2e1090 *box_data = elements.data;
-	unsigned short *x_low_slot = &box->slots[4];
-	unsigned short *x_high_slot = &box->slots[5];
-	axes[0].function_2e0f80((long)box_data, index, (unsigned short)corners.low[0], (unsigned short)corners.high[0], x_low_slot, x_high_slot);
-	axes[1].function_2e0f80((long)box_data, index, (unsigned short)corners.low[1], (unsigned short)corners.high[1], &box->slots[0], &box->slots[2]);
-	axes[2].function_2e0f80((long)box_data, index, (unsigned short)corners.low[2], (unsigned short)corners.high[2], &box->slots[1], &box->slots[3]);
-	((quantized_boxes_2dfcc0 *)this)->function_2dfcc0((quantized_box_2dfcc0 *)box_data, index, box->slots);
-	box->owner = (long)owner;
-	*owner = index;
-
-	// one bit per box: set for the boxes whose x interval holds the new
-	// box's lower x
-	long const count = elements.size;
-	longs_2e1ab0 overlaps((count >> 5) + 4);
-	long x_high = *x_high_slot;
-	long x_low = *x_low_slot;
-	long *bits = overlaps.data;
-	float *block = (float *)bits;
-	__m128 const zero = _mm_setzero_ps();
-	for (long blocks = count >> 7; blocks >= 0; blocks--)
-	{
-		_mm_store_ps(block, zero);
-		block += 4;
-	}
-	endpoint_2e0f80 *endpoints = axes[0].data;
-	endpoint_2e0f80 *endpoint = endpoints + 1;
-	if (cells_used)
+	clear_blocks_2e1090(bits, count >> 3);
+	endpoint_2e0f80 *data = sweep->axes[0].data;
+	endpoint_2e0f80 *endpoint = data + 1;
+	if (sweep->cells_used)
 	{
 		// start from the grid cell's box: the boxes it holds, less those
 		// that start inside it
-		long const grid_slot = (long)corners.low[0] >> (16 - cell_shift);
-		if (grid_slot > 0)
+		int const slot = low_value >> (16 - sweep->cell_shift);
+		if (slot > 0)
 		{
-			cell_2e1090 *cell = &cells[grid_slot - 1];
-			toggle_bit_2e1090(bits, cell->box);
+			cell_2e1090 *cell = &sweep->cells[slot - 1];
+			flip_bit_2e1090(bits, cell->box);
 			unsigned short *held = cell->boxes.data;
-			for (long remaining = cell->boxes.size - 1; remaining >= 0; remaining--)
+			for (int remaining = cell->boxes.size - 1; remaining >= 0; remaining--)
 			{
-				toggle_bit_2e1090(bits, *held);
+				flip_bit_2e1090(bits, *held);
 				held++;
 			}
-			element_2e1090 *cell_box = &elements.data[cell->box];
-			for (endpoint_2e0f80 *inside = &axes[0].data[cell_box->slots[4] + 1]; inside < &axes[0].data[cell_box->slots[5]]; inside++)
+			element_2e1090 &cell_box = sweep->elements.data[cell->box];
+			endpoint = sweep->axes[0].data + cell_box.slots[4] + 1;
 			{
-				if ((inside->value & 1) == 0)
+				endpoint_2e0f80 *end = sweep->axes[0].data + cell_box.slots[5];
+				while (endpoint < end)
 				{
-					clear_bit_2e1090(bits, inside->id);
+					if ((endpoint->value & 1) == 0)
+					{
+						drop_bit_2e1090(bits, endpoint->id);
+					}
+					endpoint++;
 				}
 			}
-			endpoints = axes[0].data;
-			endpoint = &endpoints[cell_box->slots[4] + 1];
+			data = sweep->axes[0].data;
+			endpoint = data + cell_box.slots[4] + 1;
 		}
 	}
-	for (endpoint_2e0f80 *end = &endpoints[x_low]; endpoint < end; endpoint++)
+	endpoint_2e0f80 *end = data + low_slot;
+	while (endpoint < end)
 	{
-		toggle_bit_2e1090(bits, endpoint->id);
+		flip_bit_2e1090(bits, endpoint->id);
+		endpoint++;
 	}
+	// the box's own lower endpoint
 	endpoint++;
-	for (endpoint_2e0f80 *end = &axes[0].data[x_high]; endpoint < end; endpoint++)
 	{
-		if ((endpoint->value & 1) == 0)
+		end = sweep->axes[0].data + high_slot;
+		while (endpoint < end)
 		{
-			toggle_bit_2e1090(bits, endpoint->id);
+			if ((endpoint->value & 1) == 0)
+			{
+				flip_bit_2e1090(bits, endpoint->id);
+			}
+			endpoint++;
 		}
 	}
+}
 
-	// of those, the ones whose y and z intervals overlap too
-	element_2e1090 *group = elements.data;
-	unsigned long *words_end = (unsigned long *)bits + (elements.size >> 5) + 1;
-	for (unsigned long *word = (unsigned long *)bits; word < words_end; word++, group += 32)
+// of the marked boxes, each that overlaps `box` on y and z too: a plain box
+// is reported as a pair with `owner`, and a grid cell's box gets `index` in
+// its cell's list
+__forceinline void report_added_2e24b0(class_2e1090 *sweep, long *owner, int index, long *bits,
+	element_2e1090 &box, pairs_2e1090 *pairs)
+{
+	pair_2e1090 pair;
+	pair.first = owner;
+	element_2e1090 *group = sweep->elements.data;
+	long *word = bits;
+	long *end = bits + (sweep->elements.size >> 5) + 1;
+	for (; word < end; group += 32, word++)
 	{
-		unsigned long found = *word;
 		element_2e1090 *other = group;
+		unsigned long found = *word;
 		while (found)
 		{
 			if ((found & 0xff) == 0)
@@ -185,22 +126,17 @@ void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pai
 			}
 			if (found & 1)
 			{
-				unsigned long const *box_pairs = (unsigned long const *)box->slots;
-				unsigned long const *other_pairs = (unsigned long const *)other->slots;
-				unsigned long const apart = ((box_pairs[1] - other_pairs[0]) | (other_pairs[1] - box_pairs[0])) & 0x80008000;
+				unsigned long const apart = apart_yz_2e1090(*other, box);
 				if (!apart)
 				{
-					long const other_owner = other->owner;
-					if ((other_owner & 1) == 0)
+					if ((other->owner & 1) == 0)
 					{
-						pair_2e1090 pair;
-						pair.first = owner;
-						pair.second = other_owner;
+						pair.second = other->owner;
 						pairs->append(pair);
 					}
 					else
 					{
-						((cell_2e1090 *)((char *)cells + (other_owner & ~1)))->boxes.append((unsigned short)index);
+						((cell_2e1090 *)((char *)sweep->cells + (other->owner & ~1)))->boxes.append((unsigned short)index);
 					}
 				}
 			}
@@ -210,156 +146,148 @@ void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pai
 	}
 }
 
+// of the marked boxes, each that overlaps `box` on y and z too: a plain box
+// is reported as a pair with `owner`, and a grid cell's box loses `index`
+// from its cell's list
+__forceinline void report_removed_2e29b0(class_2e1090 *sweep, long *owner, unsigned long index, long *bits,
+	element_2e1090 &box, pairs_2e1090 *pairs)
+{
+	pair_2e1090 pair;
+	pair.first = owner;
+	element_2e1090 *group = sweep->elements.data;
+	long *word = bits;
+	long *end = bits + (sweep->elements.size >> 5) + 1;
+	for (; word < end; group += 32, word++)
+	{
+		element_2e1090 *other = group;
+		unsigned long found = *word;
+		while (found)
+		{
+			if ((found & 0xff) == 0)
+			{
+				other += 8;
+				found >>= 8;
+				continue;
+			}
+			if (found & 1)
+			{
+				unsigned long const apart = apart_yz_2e1090(box, *other);
+				if (!apart)
+				{
+					if ((other->owner & 1) == 0)
+					{
+						pair.second = other->owner;
+						pairs->append(pair);
+					}
+					else
+					{
+						cell_2e1090 *cell = (cell_2e1090 *)((char *)sweep->cells + (other->owner & ~1));
+						long const position = find_box_2e29b0(cell, (unsigned short)index);
+						cell->boxes.size--;
+						cell->boxes.data[position] = cell->boxes.data[cell->boxes.size];
+					}
+				}
+			}
+			other++;
+			found >>= 1;
+		}
+	}
+}
+
+// score 106 (was 371): the quantizing (two-level helper, its steps as separate
+// statements), the appends and the bit setter now match retail's code. Still:
+// in the grid cell's walk ours reloads the cell pointer into edx where retail
+// uses ecx; and in the pair scan retail keeps the found bits in ebx and the
+// box in ecx, computing the box's upper minus the other's lower first, where
+// ours has the bits in ecx, the box in eax and the other difference first
+// (either argument order of the y/z test and either order of its terms
+// compile alike), which shifts the scan's registers and its stack slots.
+// @retail 0x2e24b0
+void class_2e1090::function_2e24b0(long *owner, bounds_2e0020 const *bounds, pairs_2e1090 *pairs)
+{
+	quantized_box_2e1090 box;
+	quantize_box_2e1090(this, *bounds, box);
+	int const index = elements.size;
+	element_2e1090 &element = elements.next_slot();
+	element_2e1090 *data = elements.data;
+	axes[0].function_2e0f80((long)data, index, (unsigned short)box.low[0], (unsigned short)box.high[0], &element.slots[4], &element.slots[5]);
+	axes[1].function_2e0f80((long)data, index, (unsigned short)box.low[1], (unsigned short)box.high[1], &element.slots[0], &element.slots[2]);
+	axes[2].function_2e0f80((long)data, index, (unsigned short)box.low[2], (unsigned short)box.high[2], &element.slots[1], &element.slots[3]);
+	((quantized_boxes_2dfcc0 *)this)->function_2dfcc0((quantized_box_2dfcc0 *)data, index, element.slots);
+	element.owner = (long)owner;
+	*owner = index;
+	{
+		int const count = elements.size;
+		longs_2e1ab0 overlaps((count >> 5) + 4);
+		long *bits = overlaps.data;
+		mark_holding_x_2e24b0(this, count, box.low[0], element.slots[4], element.slots[5], bits);
+		report_added_2e24b0(this, owner, index, bits, element, pairs);
+	}
+}
+
+// score 373 (was 504): the steps follow retail, with the bit setter and the
+// removal scan as inline helpers taking their inputs as arguments. Still:
+// retail keeps `this` in esi and the box in edi where ours has them the other
+// way round (reading the owner's index first, a box pointer, a signed count
+// compile alike), so most of the body differs in those two registers, and
+// ours is 24 bytes short of retail.
 // takes a box out of the sweep: every box it overlaps loses its pair (or,
 // for a grid cell's box, the cell loses it), its endpoints leave each axis,
 // and the last box moves into its place
 // @retail 0x2e29b0
 void class_2e1090::function_2e29b0(long *owner, pairs_2e1090 *pairs)
 {
-	long const count = elements.size;
+	unsigned long const count = elements.size;
 	unsigned long const index = *owner;
-	element_2e1090 *box = &elements.data[index];
+	element_2e1090 &box = elements.data[index];
 	{
-		// one bit per box: set for the boxes whose x interval holds the
-		// box's lower x
-		longs_2e1ab0 overlaps((count >> 5) + 4);
-		long const x_high = box->slots[5];
-		long const x_low = box->slots[4];
-		long const x_low_value = axes[0].data[x_low].value;
+		int const inner_count = elements.size;
+		longs_2e1ab0 overlaps((inner_count >> 5) + 4);
 		long *bits = overlaps.data;
-		float *block = (float *)bits;
-		__m128 const zero = _mm_setzero_ps();
-		for (long blocks = count >> 7; blocks >= 0; blocks--)
-		{
-			_mm_store_ps(block, zero);
-			block += 4;
-		}
-		endpoint_2e0f80 *endpoint = axes[0].data + 1;
-		if (cells_used)
-		{
-			// start from the grid cell's box: the boxes it holds, less those
-			// that start inside it
-			long const grid_slot = x_low_value >> (16 - cell_shift);
-			if (grid_slot > 0)
-			{
-				cell_2e1090 *cell = &cells[grid_slot - 1];
-				toggle_bit_2e1090(bits, cell->box);
-				unsigned short *held = cell->boxes.data;
-				for (long remaining = cell->boxes.size - 1; remaining >= 0; remaining--)
-				{
-					toggle_bit_2e1090(bits, *held);
-					held++;
-				}
-				element_2e1090 *cell_box = &elements.data[cell->box];
-				for (endpoint_2e0f80 *inside = &axes[0].data[cell_box->slots[4] + 1]; inside < &axes[0].data[cell_box->slots[5]]; inside++)
-				{
-					if ((inside->value & 1) == 0)
-					{
-						clear_bit_2e1090(bits, inside->id);
-					}
-				}
-				endpoint = &axes[0].data[cell_box->slots[4] + 1];
-			}
-		}
-		for (endpoint_2e0f80 *end = &axes[0].data[x_low]; endpoint < end; endpoint++)
-		{
-			toggle_bit_2e1090(bits, endpoint->id);
-		}
-		endpoint++;
-		for (endpoint_2e0f80 *end = &axes[0].data[x_high]; endpoint < end; endpoint++)
-		{
-			if ((endpoint->value & 1) == 0)
-			{
-				toggle_bit_2e1090(bits, endpoint->id);
-			}
-		}
-
-		// of those, the ones whose y and z intervals overlap too
-		element_2e1090 *group = elements.data;
-		unsigned long *words_end = (unsigned long *)bits + (elements.size >> 5) + 1;
-		for (unsigned long *word = (unsigned long *)bits; word < words_end; word++, group += 32)
-		{
-			unsigned long found = *word;
-			element_2e1090 *other = group;
-			while (found)
-			{
-				if ((found & 0xff) == 0)
-				{
-					other += 8;
-					found >>= 8;
-					continue;
-				}
-				if (found & 1)
-				{
-					unsigned long const *box_pairs = (unsigned long const *)box->slots;
-					unsigned long const *other_pairs = (unsigned long const *)other->slots;
-					unsigned long const apart = ((box_pairs[1] - other_pairs[0]) | (other_pairs[1] - box_pairs[0])) & 0x80008000;
-					if (!apart)
-					{
-						long const other_owner = other->owner;
-						if ((other_owner & 1) == 0)
-						{
-							pair_2e1090 pair;
-							pair.first = owner;
-							pair.second = other_owner;
-							pairs->append(pair);
-						}
-						else
-						{
-							cell_2e1090 *cell = (cell_2e1090 *)((char *)cells + (other_owner & ~1));
-							long const position = find_box_2e29b0(cell, (unsigned short)index);
-							cell->boxes.size--;
-							cell->boxes.data[position] = cell->boxes.data[cell->boxes.size];
-						}
-					}
-				}
-				other++;
-				found >>= 1;
-			}
-		}
+		mark_holding_x_2e24b0(this, inner_count, axes[0].data[box.slots[4]].value, box.slots[4], box.slots[5], bits);
+		report_removed_2e29b0(this, owner, index, bits, box, pairs);
 	}
 
-	element_2e1090 *boxes = elements.data;
-	((array_2dffa0 *)&axes[0])->remove_two(box->slots[4], box->slots[5]);
-	((array_2dffa0 *)&axes[1])->remove_two(box->slots[0], box->slots[2]);
-	((array_2dffa0 *)&axes[2])->remove_two(box->slots[1], box->slots[3]);
-	((quantized_boxes_2dfcc0 *)this)->function_2dfdc0((quantized_box_2dfcc0 *)boxes, count, box->slots);
+	element_2e1090 *data = elements.data;
+	((array_2dffa0 *)&axes[0])->remove_two(box.slots[4], box.slots[5]);
+	((array_2dffa0 *)&axes[1])->remove_two(box.slots[0], box.slots[2]);
+	((array_2dffa0 *)&axes[2])->remove_two(box.slots[1], box.slots[3]);
+	((quantized_boxes_2dfcc0 *)this)->function_2dfdc0((quantized_box_2dfcc0 *)data, count, box.slots);
 
 	// the last box moves into the freed place
-	if (index < (unsigned long)(count - 1))
+	if (index < count - 1)
 	{
-		*box = elements.data[count - 1];
-		axes[0].data[box->slots[4]].id = (unsigned short)index;
-		axes[0].data[box->slots[5]].id = (unsigned short)index;
-		long const moved_owner = box->owner;
-		if ((moved_owner & 1) == 0)
+		box = elements.data[count - 1];
+		axes[0].data[box.slots[4]].id = (unsigned short)index;
+		axes[0].data[box.slots[5]].id = (unsigned short)index;
+		if ((box.owner & 1) == 0)
 		{
-			axes[1].data[box->slots[0]].id = (unsigned short)index;
-			axes[1].data[box->slots[2]].id = (unsigned short)index;
-			axes[2].data[box->slots[1]].id = (unsigned short)index;
-			axes[2].data[box->slots[3]].id = (unsigned short)index;
-			*(long *)box->owner = index;
+			axes[1].data[box.slots[0]].id = (unsigned short)index;
+			axes[1].data[box.slots[2]].id = (unsigned short)index;
+			axes[2].data[box.slots[1]].id = (unsigned short)index;
+			axes[2].data[box.slots[3]].id = (unsigned short)index;
+			*(long *)box.owner = index;
 		}
 		else
 		{
-			((cell_2e1090 *)((char *)cells + (moved_owner & ~1)))->box = (unsigned short)index;
+			((cell_2e1090 *)((char *)cells + (box.owner & ~1)))->box = (unsigned short)index;
 		}
-		if (cells_used && (box->owner & 1) == 0)
+		if (cells_used && (box.owner & 1) == 0)
 		{
 			// the grid cells holding the moved box hold it under its new index
-			endpoint_2e0f80 *x_axis = axes[0].data;
-			unsigned short const x_low_slot = box->slots[4];
+			unsigned short const x_low_slot = box.slots[4];
 			unsigned short const shift = (unsigned short)(16 - cell_shift);
-			long first_cell = x_axis[x_low_slot].value >> shift;
-			if (first_cell > 0 && elements.data[cells[first_cell - 1].box].slots[5] > x_low_slot)
+			int first = axes[0].data[x_low_slot].value >> shift;
+			if (first > 0 && elements.data[cells[first - 1].box].slots[5] > x_low_slot)
 			{
-				first_cell--;
+				first--;
 			}
-			long const last_cell = (x_axis[box->slots[5]].value >> shift) - 1;
-			for (long cell_slot = first_cell; cell_slot <= last_cell; cell_slot++)
+			int const last = (axes[0].data[box.slots[5]].value >> shift) - 1;
+			for (int m = first; m <= last; m++)
 			{
-				cell_2e1090 *cell = &cells[cell_slot];
-				cell->boxes.data[find_box_2e29b0(cell, (unsigned short)(count - 1))] = (unsigned short)index;
+				cell_2e1090 &cell = cells[m];
+				long const position = find_box_2e29b0(&cell, (unsigned short)(count - 1));
+				cell.boxes.data[position] = (unsigned short)index;
 			}
 		}
 	}

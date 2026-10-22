@@ -205,21 +205,21 @@ void __stdcall function_0af890(s_bitstream *stream, long size, s_message_0af890 
 	if (message->has_j)
 	{
 		stream_write_checked(stream, message->j_type, 3);
-		if (message->j_type == 1)
+		dword kind = message->j_type;
+		dword payload = 0;
+		if (kind == 1)
 		{
 			stream_write_checked(stream, message->j_value0, 4);
 			stream_write_checked(stream, message->j_value1, 4);
 			stream_write_checked(stream, message->j_value2, 6);
-			stream_write_checked(stream, message->j_value3, 10);
+			payload = message->j_value3;
 		}
-		else if (message->j_type == 2)
-		{
-			stream_write_checked(stream, message->j_value4, 10);
-		}
-		else if (message->j_type == 3)
-		{
-			stream_write_checked(stream, message->j_value5, 10);
-		}
+		else if (kind == 2)
+			payload = message->j_value4;
+		else if (kind == 3)
+			payload = message->j_value5;
+		if (kind == 1 || kind == 2 || kind == 3)
+			stream_write_checked(stream, payload, 10);
 	}
 
 	stream_write_bit(stream, message->has_k);
@@ -279,7 +279,7 @@ void __stdcall function_0af890(s_bitstream *stream, long size, s_message_0af890 
 	{
 		for (i = 0; i < 32; i++)
 		{
-			volatile word value = message->words[i];
+			word value = message->words[i];
 			function_195720(stream, value, 16);
 			if (!value)
 				break;
@@ -357,7 +357,7 @@ struct s_message_0b0900_entry
 {
 	bool flag0;
 	bool flag1;
-	word value1;
+	short value1;
 	dword value2;
 	byte address[6];
 	byte unknown0e[12];
@@ -595,7 +595,7 @@ bool __stdcall function_0b0900(s_bitstream *stream, long unused, s_message_0b090
 					message->entries[entry_index].flag1 = stream_read_bit(stream);
 					if (message->entries[entry_index].flag1)
 					{
-						message->entries[entry_index].value1 = (word)NONE;
+						message->entries[entry_index].value1 = NONE;
 						message->entries[entry_index].value2 = NONE;
 					}
 					else
@@ -605,11 +605,11 @@ bool __stdcall function_0b0900(s_bitstream *stream, long unused, s_message_0b090
 						message->entries[entry_index].value2 = function_1959c0(stream, 2);
 					}
 					function_195820(stream, message->entries[entry_index].unknown0e, 0x60);
-					bool entry_valid = function_07ca70(stream, message->entries[entry_index].unknown1c);
-					if (valid && entry_valid)
+					byte entry_valid = function_07ca70(stream, message->entries[entry_index].unknown1c);
+					valid = valid && entry_valid;
+					if (valid)
 					{
 						long j;
-						valid = true;
 						if (!message->entries[entry_index].flag1)
 						{
 							long found = NONE;
@@ -635,8 +635,6 @@ bool __stdcall function_0b0900(s_bitstream *stream, long unused, s_message_0b090
 							}
 						}
 					}
-					else
-						valid = false;
 				}
 			}
 		}

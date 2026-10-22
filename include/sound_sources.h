@@ -121,19 +121,19 @@ struct s_type_99c531
 	{
 		struct
 		{
-			dword flag0 : 1;
-			dword flag1 : 1;
-			dword flag2 : 1;
-			dword flag3 : 1;
-			dword flag4 : 1;
-			dword flag5 : 1;
-			dword flag6 : 1;
-			dword flag7 : 1;
-			dword flag8 : 1;
-			dword flag9 : 1;
-			dword flag10 : 1;
-			dword flag11 : 1;
-			dword unknown0c : 20;
+			word flag0 : 1;
+			word flag1 : 1;
+			word flag2 : 1;
+			word flag3 : 1;
+			word flag4 : 1;
+			word flag5 : 1;
+			word flag6 : 1;
+			word flag7 : 1;
+			word flag8 : 1;
+			word flag9 : 1;
+			word flag10 : 1;
+			word flag11 : 1;
+			word unknown0c : 4;
 		};
 		struct
 		{

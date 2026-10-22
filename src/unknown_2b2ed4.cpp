@@ -88,7 +88,7 @@ void __stdcall function_2b2ed4(c_y_menu_list *list, bool friends, bool empty,
     word display_name[256];
     display_name[0] = 0;
     long invitations = 0;
-    volatile bool online, voice_enabled, pending, outgoing;
+    bool online, voice_enabled, pending, outgoing;
     bool player_pending, player_outgoing, received, sent, declined;
     bool in_session, voice_available, voice_disabled, muted;
     bool active, joinable, self;

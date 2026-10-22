@@ -218,6 +218,7 @@ real camera_velocity_profile_evaluate(s_camera_velocity_profile const *profile, 
 		long acceleration_ticks;
 		long hold_ticks;
 		long deceleration_ticks;
+		real a, b, c;
 
 		rates[0] = profile->start_rate;
 		rates[1] = profile->peak_rate;
@@ -226,19 +227,17 @@ real camera_velocity_profile_evaluate(s_camera_velocity_profile const *profile, 
 		accelerations[1] = 0.0f;
 		accelerations[2] = profile->deceleration;
 
-		if (ticks < 0)
+		acceleration_ticks = ticks;
+		if (acceleration_ticks < 0)
 		{
 			acceleration_ticks = 0;
 		}
-		else if (ticks > profile->acceleration_ticks)
+		else if (acceleration_ticks > profile->acceleration_ticks)
 		{
 			acceleration_ticks = profile->acceleration_ticks;
 		}
-		else
-		{
-			acceleration_ticks = ticks;
-		}
 
+		a = (real)acceleration_ticks;
 		if (ticks - profile->acceleration_ticks < 0)
 		{
 			hold_ticks = 0;
@@ -253,6 +252,7 @@ real camera_velocity_profile_evaluate(s_camera_velocity_profile const *profile, 
 			hold_ticks = ticks - profile->acceleration_ticks;
 		}
 
+		b = (real)hold_ticks;
 		if (ticks - (profile->total_ticks - profile->deceleration_ticks) < 0)
 		{
 			deceleration_ticks = 0;
@@ -266,11 +266,8 @@ real camera_velocity_profile_evaluate(s_camera_velocity_profile const *profile, 
 			deceleration_ticks = ticks - (profile->total_ticks - profile->deceleration_ticks);
 		}
 
+		c = (real)deceleration_ticks;
 		{
-			real a = (real)acceleration_ticks;
-			real b = (real)hold_ticks;
-			real c = (real)deceleration_ticks;
-
 			result = c * c * accelerations[2] + a * a * accelerations[0] + c * rates[2] + b * rates[1] + a * rates[0] +
 				b * b * accelerations[1];
 		}
@@ -928,18 +925,22 @@ void __stdcall function_16c840(long user_index, long unused, s_observer_command 
 	camera = camera_scripting_state;
 	field_of_view = g_54e854;
 	camera->active = false;
-	if (g_510c50 && ((s_camera_field_of_view_flags *)g_510c50)->active && camera->field_of_view_target != 0.0f)
+	if (g_510c50 && ((s_camera_field_of_view_flags *)g_510c50)->active)
 	{
-		if (camera->field_of_view_time >= camera->field_of_view_duration)
+		real target = camera->field_of_view_target;
+		if (target != 0.0f)
 		{
-			field_of_view = camera->field_of_view_target;
-		}
-		else
-		{
-			real t = camera->field_of_view_time / camera->field_of_view_duration;
+			if (camera->field_of_view_time >= camera->field_of_view_duration)
+			{
+				field_of_view = target;
+			}
+			else
+			{
+				real t = camera->field_of_view_time / camera->field_of_view_duration;
 
-			t = PIN(t, 0.0f, 1.0f);
-			field_of_view = (camera->field_of_view_target - camera->field_of_view_start) * t + camera->field_of_view_start;
+				t = PIN(t, 0.0f, 1.0f);
+				field_of_view = (target - camera->field_of_view_start) * t + camera->field_of_view_start;
+			}
 		}
 	}
 	command->field_of_view = field_of_view;

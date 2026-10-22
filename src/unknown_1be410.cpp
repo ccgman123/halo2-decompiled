@@ -110,9 +110,9 @@ short __stdcall function_1be6e0(long actor_index, s_slot *slot, bool active)
 }
 
 /* where the actor goes to reach the object */
-// score 46 (was 46): the seat index is scaled before it is masked here and
-// after it in retail,
-// and the element is read into EBX rather than into EBP.
+// score 46 (was 46): the point argument travels on the stack here and in EAX
+// in retail, because function_26fc80 takes its point argument in EBX in
+// retail and on the stack in our build.
 // @retail 0x1be410
 bool function_1be410(long actor_index, long object_index, point3f *point)
 {
@@ -202,9 +202,9 @@ s_slot_handler_2 g_47ed58 =
 
 bool function_1f8160(long actor_index, signed char const *types, point3f const *target, bool force);
 
-// score 36 (was 36): the address of the out parameter is passed in EDX here
-// and in EAX in
-// retail, and the branch that reaches the call is laid out differently.
+// score 36 (was 36): the point argument is passed to function_1be410 on the
+// stack here and in EAX in retail, which moves the stores of the slot state
+// around as well.
 // @retail 0x1be8f0
 void __stdcall function_1be8f0(long actor_index, s_slot *slot)
 {

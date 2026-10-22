@@ -93,10 +93,10 @@ public:
 	void function_2fd8d0(description_2fd8d0 *out) const;
 };
 
-// score 35 (was 112): register choice only: in the vertex loop retail keeps
+// score 31 (was 35): register choice only: in the vertex loop retail keeps
 // the block offset in edx and blocks in eax and switches on eax, ours the
-// reverse, and the planes branch loads planes_wanted into eax and ecx where
-// ours uses ecx and edx.
+// reverse (the planes branch now matches, with planes_wanted read into a local
+// for the allocation). Other forms of the block address do not move it.
 // @retail 0x2fd8d0
 void blocked_convex_2fd8d0::function_2fd8d0(description_2fd8d0 *out) const
 {
@@ -108,7 +108,8 @@ void blocked_convex_2fd8d0::function_2fd8d0(description_2fd8d0 *out) const
 		{
 			g_memory_2d88a0->release_block(out->planes.data, capacity * sizeof(__m128), 0x12);
 		}
-		out->planes.data = (__m128 *)g_memory_2d88a0->allocate_block(planes_wanted * sizeof(__m128), 0x12);
+		int const wanted = planes_wanted;
+		out->planes.data = (__m128 *)g_memory_2d88a0->allocate_block(wanted * sizeof(__m128), 0x12);
 		out->planes.capacity_and_flags = planes_wanted;
 	}
 	out->planes.size = planes_wanted;

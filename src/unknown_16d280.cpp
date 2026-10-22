@@ -313,9 +313,9 @@ void model_variant_region_get_choices(s_type_f83fc7 const *region, long permutat
 
 						if (next_sum > random_value)
 						{
+							choice_permutation_index = alternative->permutation_index;
 							unknown0c = alternative->unknown0c;
 							unknown10 = alternative->unknown10;
-							choice_permutation_index = alternative->permutation_index;
 							choice_name = alternative->name;
 							choice_value = alternative->unknown05;
 							goto found;
@@ -338,9 +338,9 @@ void model_variant_region_get_choices(s_type_f83fc7 const *region, long permutat
 
 						if (alternative->name == name && alternative->unknown05 == value)
 						{
+							choice_permutation_index = alternative->permutation_index;
 							unknown0c = alternative->unknown0c;
 							unknown10 = alternative->unknown10;
-							choice_permutation_index = alternative->permutation_index;
 							goto found;
 						}
 					}

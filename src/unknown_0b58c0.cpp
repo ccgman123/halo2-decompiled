@@ -283,6 +283,10 @@ long simulation_watcher_find_machine(s_simulation_world_owner const *watcher, s_
 void function_8b4d0(s_event_distribution *distribution, long type, long entity_count,
     long const *entities, dword machine_mask, long size, void const *data, long timeout);
 
+// score 92 (was 92): retail passes the first parameter in EAX with six stack
+// arguments and returns with ret 0x18, but the callers in
+// src/unknown_0a7c50.cpp, src/unknown_0a7d50.cpp and src/unknown_0b8ca0.cpp
+// declare this __stdcall with seven stack arguments.
 // @retail 0xb5a70
 void __stdcall function_b5a70(long player_index, long type, long count, long object_indices,
     long size, void const *data, long timeout)
@@ -328,6 +332,9 @@ void __stdcall function_b5a70(long player_index, long type, long count, long obj
     }
 }
 
+// score 79 (was 79): retail passes the first parameter in EAX with six stack
+// arguments and returns with ret 0x18, but the callers in
+// src/unknown_0a7c50.cpp declare this __stdcall with seven stack arguments.
 // @retail 0xb5ba0
 void __stdcall function_b5ba0(long player_index, long type, long count, long object_indices,
     long size, void const *data, long timeout)

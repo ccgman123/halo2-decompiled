@@ -2,6 +2,7 @@
 /* UNKNOWN_17D9A0.CPP: decal placement and rendering (0x17d9a0 onwards) */
 
 #include "unknown_11c920.h"
+#include "vector_products.h"
 #include "segment_sphere.h"
 #include "unknown_0259d0.h"
 #include <float.h>
@@ -142,11 +143,10 @@ void function_17d9a0(transform4x3f const *matrix, real const *bounds, s_decal_qu
 	quad->edges[0].j = corners[1].y - corners[0].y;
 	quad->edges[1].i = corners[3].x - corners[0].x;
 	quad->edges[1].j = corners[3].y - corners[0].y;
+	quad->inverse_determinant = 0.0f;
 	if (quad->edges[0].i * quad->edges[0].i + quad->edges[0].j * quad->edges[0].j > 0.0001f &&
 		quad->edges[1].i * quad->edges[1].i + quad->edges[1].j * quad->edges[1].j > 0.0001f)
 		quad->inverse_determinant = 1.0f / (quad->edges[1].j * quad->edges[0].i - quad->edges[0].j * quad->edges[1].i);
-	else
-		quad->inverse_determinant = 0.0f;
 }
 
 struct s_decal_mesh_edge
@@ -591,9 +591,7 @@ void function_17fd20(s_decal_mesh_view const *mesh, long tag_index,
 				if (length > 0.0f)
 				{
 					vector3f cross;
-					cross.i = selected_plane.n.j * projection->quad.plane.n.k - selected_plane.n.k * projection->quad.plane.n.j;
-					cross.j = selected_plane.n.k * projection->quad.plane.n.i - selected_plane.n.i * projection->quad.plane.n.k;
-					cross.k = selected_plane.n.i * projection->quad.plane.n.j - selected_plane.n.j * projection->quad.plane.n.i;
+					cross3f(&selected_plane.n, &projection->quad.plane.n, &cross);
 					real sign = cross.i * axis.i + cross.k * axis.k + cross.j * axis.j < 0.0f ? 1.0f : -1.0f;
 					real angle = decal_normal_angle_17fd20(&selected_plane.n, &projection->quad.plane.n) * sign;
 					real sine = (real)sin(angle);

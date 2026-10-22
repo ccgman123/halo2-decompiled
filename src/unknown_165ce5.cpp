@@ -1389,10 +1389,10 @@ void __stdcall function_166d75(long user_index)
 	{
 		s_166d75_unit *unit = (s_166d75_unit *)first_person_object_get(user->unit_index);
 		long mode = first_person_weapon_mode_name(user_index);
-		real spring_a = 72.0f;
 		real spring_b = 15.0f;
-		real spring_c = 27.0f;
+		real spring_a = 72.0f;
 		real spring_d = 6.0f;
+		real spring_c = 27.0f;
 		s_first_person_weapon *first_weapon = &user->weapons[0];
 		real look_yaw;
 		real look_pitch;
@@ -1455,11 +1455,8 @@ void __stdcall function_166d75(long user_index)
 			{
 				weapon->unknownf2--;
 			}
-			active = false;
-			if (user->unit_index != NONE && weapon->weapon_index != NONE)
-			{
-				active = !function_155760(user_index) && function_0b6780((s_index_triple *)&weapon->animation);
-			}
+			active = user->unit_index != NONE && weapon->weapon_index != NONE &&
+				!function_155760(user_index) && function_0b6780((s_index_triple *)&weapon->animation);
 			first_person_weapon_set_active(user_index, field_x11c898, active);
 
 			if (weapon->weapon_index != NONE)
@@ -1771,19 +1768,15 @@ void __stdcall function_16760c(long user_index, long field_x11c898)
 
 		if (function_0b6780((s_index_triple *)state))
 		{
-			bool full_blend = true;
+			bool full_blend;
 			s_animation *animation;
 			real blend_time;
 
 			state->sample(0, 1.0f, NULL, (real_quaternion_transform *)orientations, 0, 0, weapon->orientation_count);
 			function_bd970(weapon_index, arg_2f82bc, state, 0, weapon->orientation_count, orientations);
 			animation = state->channels[0].function_1c6440();
-			blend_time = 0.4f;
-			if (animation && (((byte *)animation)[0x18] & 0x10))
-			{
-				blend_time = 0.2f;
-				full_blend = false;
-			}
+			full_blend = !(animation && (((byte *)animation)[0x18] & 0x10));
+			blend_time = full_blend ? 0.4f : 0.2f;
 			function_1d9240((s_1d9240 *)&user->unknown202c, full_blend, blend_time);
 			if (user->unknown202c.unknown1)
 			{

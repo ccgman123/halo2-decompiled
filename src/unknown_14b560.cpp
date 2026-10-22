@@ -823,11 +823,12 @@ bool __stdcall function_14df40(long *unit_index)
 		}
 
 		s_unit_vehicle_view *unit_object = (s_unit_vehicle_view *)object_get_unchecked(unit);
-		long root_index = NONE;
-
-		for (long object_index = unit; object_index != NONE; object_index = ((s_unit_vehicle_view *)object_get_unchecked(object_index))->parent_index)
+		long root_index = unit;
+		long parent = unit_object->parent_index;
+		while (parent != NONE)
 		{
-			root_index = object_index;
+			root_index = parent;
+			parent = ((s_unit_vehicle_view *)object_get_unchecked(root_index))->parent_index;
 		}
 
 		if (TEST_FIELD_BIT(((s_unit_vehicle_view *)object_get_unchecked(root_index))->flags.bit18))
@@ -1998,16 +1999,14 @@ void __stdcall function_14c090(long index, bool reuse, s_player_creation_record 
         *(short *)(player + 0x1a) == ((s_players_globals *)g_4e8c20)->local_machine_index)
     {
         player_set_local_user(index, record->controller_index);
+        long controller = record->value04;
         byte *current = (byte *)player_get(index);
         long old_controller = *(long *)(current + 0x24);
-        long controller = record->value04;
         if (old_controller != controller)
         {
             if (controller == NONE)
             {
-                ((s_players_globals *)g_4e8c20)->unknown1c[old_controller] = NONE;
-                --((s_players_globals *)g_4e8c20)->unknown0a;
-                *(long *)(current + 0x24) = NONE;
+                function_14f270(index, controller);
             }
             else
             {
@@ -2020,7 +2019,7 @@ void __stdcall function_14c090(long index, bool reuse, s_player_creation_record 
     }
     if (record->field_2_2)
     {
-        player[2] |= 2;
+        ((s_player *)player)->flags_word |= 2;
         *(long *)(player + 0x10) = g_510c54->game_time;
     }
 }
@@ -2705,8 +2704,8 @@ void function_14d8b0(void)
         }
         if (*(signed char *)(player + 0x3f) > 0) --player[0x3f];
         if (*(signed char *)(player + 0x40) > 0) --player[0x40];
-        short &timer = *(short *)(player + 0x180);
-        if (g_4e6948->mode != 4 && timer > 0 && --timer == 0)
+        short timer = *(short *)(player + 0x180);
+        if (g_4e6948->mode != 4 && timer > 0 && (*(short *)(player + 0x180) = --timer) == 0)
         {
             player[3] &= ~8;
             if (game_engine_get())

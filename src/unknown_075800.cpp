@@ -463,13 +463,16 @@ void c_class_938e0::function_94520(const s_session_id *message, const s_type_99a
 	c_class_58d20 *session = network_session_manager_find_session(session_manager, message);
 	long reason = 0;
 	bool has_identity = false;
+	bool skip_reply = false;
 	if (session)
 	{
 		if (function_05e7f0(session, address, message, &reason, &has_identity, (s_session_member_identity *)&identity))
-			return;
+			skip_reply = true;
 	}
 	else
 		reason = 1;
+	if (skip_reply)
+		return;
 	s_network_message_peer_reply reply;
 	memset(&reply, 0, sizeof(reply));
 	reply.session_id = *message;
@@ -961,6 +964,22 @@ void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_ty
 	long connection_index;
 	switch (message_type)
 	{
+	case 0:
+		network_message_handler_refuse_connect((const s_connect_request *)message, this, (long)address);
+		return;
+	case 2:
+		function_093fa0(this, message);
+		return;
+	case 3:
+		network_message_handler_handle_session_query((const s_network_message_session_query *)message, address);
+		return;
+	case 4:
+		function_0785d0(unknown10, address, message);
+		return;
+	default: break;
+	}
+	switch (message_type)
+	{
 	case 5:
 		connection_index = network_link_find_connection(field_4_5, 0, address);
 		if (connection_index != NONE)
@@ -975,18 +994,6 @@ void c_class_938e0::function_938e0(const s_type_99af70 *address, long message_ty
 		connection_index = network_link_find_connection(field_4_5, 0, address);
 		if (connection_index != NONE)
 			network_message_handle_connect_closed(connection_index, (const s_type_ac8d96 *)message);
-		break;
-	case 0:
-		network_message_handler_refuse_connect((const s_connect_request *)message, this, (long)address);
-		break;
-	case 2:
-		function_093fa0(this, message);
-		break;
-	case 3:
-		network_message_handler_handle_session_query((const s_network_message_session_query *)message, address);
-		break;
-	case 4:
-		function_0785d0(unknown10, address, message);
 		break;
 	case 8:
 		function_94100((const s_network_message_session_query *)message, address);

@@ -16,6 +16,8 @@ void function_fd0e0(long definition_index, real scale_a, real scale_b, vector3f 
     point3f const *point, vector3f const *normal, long index, bool attached, long object_index,
     short node_index, bool alternate);
 
+// score 17 (was 17): retail passes function_fd0e0's node_index as a dword, ours passes a
+// 16-bit value because the callee is declared with a short node_index in src/projectiles.cpp.
 // @retail 0xa1df0
 bool c_projectile_object_impact_effect_event::v11(long a, long const *entities, long c, void const *data)
 {

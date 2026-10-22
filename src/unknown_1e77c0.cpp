@@ -333,6 +333,9 @@ struct s_request_object_header
 
 bool function_1df560(short team_a, short team_b);
 
+// score 47 (was 47): retail keeps the scaled index in EAX and reads the field
+// as [eax+esi+0x28], and loads the table pointer after the index is scaled;
+// ours materialises the record pointer in EBX and reads [ebx+0x28].
 // @retail 0x1e6b00
 void function_1e6b00(long player_index, s_request_source *source)
 {
@@ -359,6 +362,9 @@ void function_1e6b00(long player_index, s_request_source *source)
 
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// score 57 (was 57): retail saves the pointer argument in EBX and shifts the
+// mask in EBP, where ours keeps the mask in EBP and the pointer in EAX; the
+// prologue and the argument setup of the call differ.
 // @retail 0x1e8d80
 bool __stdcall function_1e8d80(long index, s_local_player_state_view *state, s_entry_420 *entry, s_request_transition *output)
 {

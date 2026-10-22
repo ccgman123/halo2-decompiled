@@ -570,19 +570,17 @@ void c_interface_278b40::slot1(s_278da0_group *group)
 		if (!entry->resource)
 		{
 			s_278a70_body *first = (s_278a70_body *)(entry->first - 0x10);
-			s_278a70_body *second = (s_278a70_body *)(entry->second - 0x10);
+			s_278a70_body *second = (s_278a70_body *)(group->entries[i].second - 0x10);
 			hkRigidBody *first_body = first->type == 1 ? (hkRigidBody *)first->entity : NULL;
 			hkRigidBody *second_body = second->type == 1 ? (hkRigidBody *)second->entity : NULL;
-			s_278b60_filter *filter = group->context->filter_object;
-			if (filter && !((c_278b60_filter *)filter->interface08)->test0(first, second).m_bool)
+			c_library_30c190 *context = group->context;
+			if (context->filter_object && !((c_278b60_filter *)context->filter_object->interface08)->test0(first, second).m_bool)
 			{
 				group->entries[i].resource = NULL;
 				continue;
 			}
 			s_278b60_dispatch *dispatch = group->context->dispatch;
-			long first_type = *((char *)first_body + 0x48);
-			long second_type = *((char *)second_body + 0x48);
-			c_278da0_resource *owner = dispatch->table->factories[first_type * 8 + second_type]->create(first, second, dispatch);
+			c_278da0_resource *owner = dispatch->table->factories[*((char *)first_body + 0x48) * 8 + *((char *)second_body + 0x48)]->create(first, second, dispatch);
 			dispatch = group->context->dispatch;
 			s_278b60_table *table = dispatch->table;
 			long first_shape = (*(c_278b60_shape **)first)->type();

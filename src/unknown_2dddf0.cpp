@@ -50,8 +50,8 @@ void line_query_2dddf0::function_2dddf0(__m128 const *first_point, __m128 const 
 	__m128 const first_on_line = _mm_add_ps(*first_point, _mm_mul_ps(_mm_shuffle_ps(first_scale, first_scale, 0), *first_direction));
 	__m128 const second_scale = _mm_set_ss(second);
 	__m128 const second_on_line = _mm_add_ps(*second_point, _mm_mul_ps(_mm_shuffle_ps(second_scale, second_scale, 0), *second_direction));
-	*first_closest = first_on_line;
 	__m128 const offset = _mm_sub_ps(first_on_line, second_on_line);
+	*first_closest = first_on_line;
 	*second_closest = second_on_line;
 	*distance_squared = dot3_2dddf0(offset, offset);
 }

@@ -58,6 +58,8 @@ long g_4798b4;
 bool g_47f05a;
 bool g_47f05b;
 
+// score 34 (was 34): the vtable slot at [eax] is never filled in, so the two stores that follow
+// start one field too late; retail stores the vtable there first.
 // @retail 0x146a20
 void function_146a20(void)
 {
@@ -146,6 +148,8 @@ void function_146b80(void)
 	g_47989c = new ((byte *)g_479888 + 0x105410) c_havok_fixed_memory(buffer, size);
 }
 
+// score 5 (was 5): the byte local is loaded into DL before the other byte is stored; retail
+// stores the byte first and then loads the dword.
 // @retail 0x146bf0
 void function_146bf0(void)
 {
@@ -263,7 +267,9 @@ c_havok_abstract_allocator *function_146e30(void)
 		}
 		while (!block && ((size >>= 1) >= 0x100000));
 
-		adjustment = (((dword)block + 0xf) & ~0xf) - (dword)block;
+		adjustment = (dword)block & 0xf;
+		if (adjustment)
+			adjustment = 0x10 - adjustment;
 		g_4798a0 = new ((byte *)g_479888 + 0x105440) c_havok_fixed_memory(block, size - adjustment);
 		function_1c4590(1);
 	}

@@ -162,6 +162,8 @@ struct s_aim_definition
 };
 
 // @retail 0x1fe120
+// score 41 (was 41): the target index stays in EAX where retail keeps it in EBX, so
+// the moving object header's address is recomputed and its type byte is read into BL.
 void function_1fe120(long actor_index, vector3f *direction)
 {
 	s_actor_moving *actor = actor_moving_get(actor_index);
@@ -319,6 +321,9 @@ real function_30bf0(vector3f *v);
 vector3f *function_11d000(vector3f const *v, vector3f *out);
 
 // @retail 0x1fddd0
+// score 57 (was 57): the two components of the direction are loaded into the float registers in the
+// opposite order, so the products of the rotation end up in different registers;
+// our code is three bytes longer than retail's.
 bool function_1fddd0(long actor_index, point3f const *origin, vector3f *direction,
     long *out_index, real *arg_c9241c, long *out_object)
 {
@@ -404,6 +409,8 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 extern vector3f *g_4687b0;
 
 // @retail 0x1fe410
+// score 2 (was 42): the cosine is loaded onto the x87 stack before the register that
+// holds the point is pushed, retail pushes it first.
 void function_1fe410(point3f *point, real distance)
 {
     point3f start;

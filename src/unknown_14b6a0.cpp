@@ -126,6 +126,7 @@ void function_14b6a0()
 	short request = *(short *)(globals + 0xa4);
 	if (request != NONE)
 	{
+		s_record_pool_iterator iterator;
 		long player_index = *(long *)(globals + 0xa8);
 		byte *player = players->data + (player_index & 0xffff) * 0x21c;
 		byte *scenario = (byte *)g_4e0350;
@@ -145,7 +146,6 @@ void function_14b6a0()
 			offset.k = destination->z - origin->z;
 			++g_4de2fc;
 			g_4de2f8 = true;
-			s_record_pool_iterator iterator;
 			iterator.data = players;
 			iterator.index = NONE;
 			byte *current;
@@ -210,11 +210,10 @@ void function_14b6a0()
 			}
 			if (have_destination)
 			{
-				s_data_datum_iterator iterator;
 				iterator.data = g_4e8c24;
 				iterator.datum_index = NONE;
 				iterator.index = NONE;
-				while (data_datum_iterator_next(&iterator))
+				while (data_iterator_next_calling(&iterator))
 				{
 					if (iterator.datum_index != *(long *)((byte *)g_4e8c20 + 0xa8))
 					{

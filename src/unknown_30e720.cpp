@@ -212,7 +212,8 @@ public:
 	// whether the island was taken out of its world
 	bool taken_out_of_world() const
 	{
-		return index == -1;
+		bool const taken = index == -1;
+		return taken;
 	}
 };
 
@@ -227,11 +228,19 @@ public:
 	void function_30e720();
 };
 
-// score 506 (was 506): the same steps in the same order as retail, but the
-// registers differ throughout (retail keeps the world in edi, the island index
-// in ebx and zero in ebp), and the frame is realigned to 8 bytes because the
-// grouping is 8 bytes here; retail's grouping takes 12 bytes (0x34-0x40) and
-// no realignment, but declaring a third field scores 518. The grouping's
+// score 465 (was 506): the same steps in the same order as retail. The
+// island test now goes through a bool local, so it is set with sete and
+// tested, as in retail (grouping_3720a0::single_group, in a shared header,
+// would need the same to match retail's sete there; a local copy of it scores
+// 495). Still: the registers differ throughout (retail keeps the world in edi,
+// the island index in ebx and zero in ebp; it reloads the world at the top of
+// the groups loop, entering past the reload, where ours reloads it on the back
+// edge), and the frame is realigned to 8 bytes because the grouping is 8 bytes
+// here; retail's grouping takes 12 bytes (0x34-0x40) and no realignment (a
+// local wrapper with a third word drops the realignment but scores 518-525).
+// Retail converts a linked pair's side to its holder with a plain `sub 0x10`
+// left unfolded; static_cast null-checks it here, and char arithmetic folds
+// the offset away (both tried: 509, or 485 with the wrapper). The grouping's
 // destructor is the empty function 0x175f40, called here without retail's
 // `lea ecx`.
 // @retail 0x30e720

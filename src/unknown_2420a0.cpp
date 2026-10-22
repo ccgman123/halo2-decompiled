@@ -1275,6 +1275,8 @@ static inline bool ctf_engine_running()
 }
 
 // @retail 0x241520
+// score 77 (was 77): the flag byte is kept in DL where retail keeps it in a stack slot, and the record
+// pool's pointer is loaded into the other register.
 bool c_game_engine_markers::v16(long player_index, long object_index)
 {
 	bool result = ctf_engine_running();
@@ -1366,6 +1368,8 @@ long function_2421d0(long team)
 }
 
 // @retail 0x242210
+// score 17 (was 26): the enabled peer is loaded before the compare on the engine type and into
+// EDX, retail loads it after the compare and into ECX.
 long function_242210(point3f const *point)
 {
 	s_object_placement data;
@@ -1373,8 +1377,8 @@ long function_242210(point3f const *point)
 	long definition_index;
 
 	long engine_type = ctf_options()->engine_type;
-	c_engine_peer *enabled = g_55e4d0[g_4e9ae8->engine_index];
 	definition_index = NONE;
+	c_engine_peer *enabled = g_55e4d0[g_4e9ae8->engine_index];
 	if (engine_type == 9 && enabled)
 		definition_index = mp_globals_block()->bomb_definition_index;
 	else if (engine_type != 9 && enabled)
@@ -1420,6 +1424,8 @@ void function_2422d0(long slot)
 }
 
 // @retail 0x2423f0
+// score 65 (was 65): the counter is kept in a byte wide stack slot where retail keeps it in a dword
+// slot, so our stack frame is four bytes larger.
 bool function_2423f0()
 {
 	long others[8];
@@ -1754,6 +1760,8 @@ long function_242ef0(s_242ef1 arg_0, long team)
 
 #pragma inline_depth(1)
 // @retail 0x2430a0
+// score 53 (was 53): the fields of the event are written in the opposite order and the argument is
+// passed in the other register.
 void function_2430a0(long player_index, bool flag)
 {
 	long absolute_index = player_index & 0xffff;
@@ -1915,6 +1923,8 @@ PRIVATE __forceinline short function_244301(short arg_0)
 }
 
 // @retail 0x244300
+// score 68 (was 68): the record pool's pointer is loaded into EDX where retail loads it into ECX, and
+// the products of the dot product are computed in the other order.
 bool function_244300(long object_index, long *player_index)
 {
 	bool result = false;
@@ -2367,6 +2377,8 @@ bool function_241900(long player_index)
 
 #pragma inline_depth(1)
 // @retail 0x242e00
+// score 13 (was 13): the cause's team is loaded into EAX where retail loads it into EDX, and the
+// fields of the event are written in the other order.
 void function_242e00(long player_index, long team)
 {
 	s_event event;

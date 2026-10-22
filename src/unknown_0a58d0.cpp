@@ -285,6 +285,8 @@ struct s_z_state_world
 	long state;
 };
 
+// score 11 (was 11): the entity pointer is materialised in EAX and the record is read through it;
+// retail folds the address into the load itself.
 // @retail 0xa9820
 bool function_a9820(long *block, long index)
 {
@@ -618,6 +620,8 @@ bool function_aa970(long index)
 #include "unknown_0d0690.h"
 #include "unknown_0259d0.h"
 
+// score 37 (was 37): the float is added into the accumulator and stored back; retail loads it into
+// a separate register, adds and stores that.
 // @retail 0xaa9e0
 void function_aa9e0(long index, point3f const *previous_position, vector3f const *velocity)
 {

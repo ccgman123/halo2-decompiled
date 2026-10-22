@@ -417,8 +417,9 @@ void __stdcall function_1d77d0(s_havok_component *component, s_physics_model_own
 		s_component_joint *joint = index < block->count ? (s_component_joint *)(block->elements + index * element_size) : NULL;
 		if (!joint)
 			break;
+		long object_index = component->object_index;
 		long type = iterator.type;
-		if (!function_db4c0(component->object_index, type, index) && joint->frames.node_a != NONE)
+		if (!function_db4c0(object_index, type, index) && joint->frames.node_a != NONE)
 		{
 			long body_a = rigid_body_list_get(&bodies, joint->frames.node_a);
 			short node_b = joint->frames.node_b;

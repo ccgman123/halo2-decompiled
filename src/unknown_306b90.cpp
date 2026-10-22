@@ -56,6 +56,9 @@ public:
 	void function_306d00(face_306b90 *face, int axis) const;
 };
 
+// score 35 (was 35): the mask's second lane is +1e-5 here and -1e-5 in retail,
+// the mask constant is loaded once at the top of ours and twice in retail, and
+// the axis values are read before the branch here and after it there.
 // @retail 0x306b90
 void box_306b90::function_306b90(face_306b90 *face, int axis) const
 {
@@ -84,6 +87,9 @@ void box_306b90::function_306b90(face_306b90 *face, int axis) const
 	face->first_frame_normal = transform_point_306b90(&transform, &face->second_frame_normal);
 }
 
+// score 67 (was 67): the mask constant is loaded once at the top of ours and
+// twice in retail, the axis values are read before the branch here and after
+// it there, and the registers the terms are built in differ.
 // @retail 0x306d00
 void box_306b90::function_306d00(face_306b90 *face, int axis) const
 {

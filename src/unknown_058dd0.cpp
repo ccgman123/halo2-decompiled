@@ -223,11 +223,11 @@ bool c_session_state_start_game::update()
 		}
 		else if (a->type == 2)
 		{
-			if (a->function_058d20() && function_06e720(a) && function_06e6b0(a, &flag10))
+			result = a->function_058d20() && function_06e720(a) && function_06e6b0(a, &flag10);
+			if (result)
 			{
 				network_session_stop_countdown(a);
 				network_session_set_mode(a, 4);
-				result = true;
 			}
 		}
 		else
@@ -599,31 +599,24 @@ bool c_session_state_joining::update()
 	s_session_owner *o = owner;
 	c_class_58d20 *c = o->session_c;
 	c_class_58d20 *a = o->session_a;
-	if (unknown104 == 0)
+	if (unknown104 == 0 && flag10)
 	{
-		if (flag10)
+		function_06f4b0(this);
+	}
+	if (unknown104 == 0 && !flag10)
+	{
+		if (a->state != 0)
 		{
-			function_06f4b0(this);
+			function_06f700(this);
 		}
-		if (unknown104 == 0)
+		else
 		{
-			if (!flag10)
-			{
-				if (a->state != 0)
-				{
-					function_06f700(this);
-				}
-				else
-				{
-					function_06fcc0(this);
-				}
-			}
+			function_06fcc0(this);
 		}
 	}
 	if (unknown104 != 0)
 	{
-		long state = a->state;
-		if (state == 5 || state == 6 || state == 7 || state == 8)
+		if (a->function_058d20())
 			network_session_set_mode(a, 1);
 	}
 	if (flagf8)
@@ -1359,20 +1352,23 @@ bool function_71f80(c_session_state_matchmaking *state)
 	{
 		if (!function_058d90(session) && current > 2 && current <= 8)
 		{
-			long next;
-			long type = session->type;
-			if (type >= 2 && type <= 4)
-				next = 7;
-			else if (type == 5)
-				next = 9;
-			else
-				goto local_1;
-			function_06df60(owner, next, 0, 0);
-			state->mode = 2;
-			local_0 = true;
+			switch (session->type)
+			{
+			case 2:
+			case 3:
+			case 4:
+				function_06df60(owner, 7, 0, 0);
+				state->mode = 2;
+				local_0 = true;
+				break;
+			case 5:
+				function_06df60(owner, 9, 0, 0);
+				state->mode = 2;
+				local_0 = true;
+				break;
+			}
 		}
 	}
-local_1:
 	return local_0;
 }
 
@@ -1825,7 +1821,6 @@ long function_75890(long time);
 
 bool network_session_host_become_leader(c_class_58d20 *session);
 
-#pragma inline_depth(0)
 // @retail 0x72700
 bool c_session_state_start_match::update()
 {
@@ -1885,7 +1880,6 @@ bool c_session_state_start_match::update()
         network_session_host_set_value49f8(a, mode);
     return result;
 }
-#pragma inline_depth(255)
 
 long function_66050(c_class_58d20 *session, long variant_index);
 bool network_session_members_ready(c_class_58d20 *session, dword *unready_mask);

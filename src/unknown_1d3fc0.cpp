@@ -64,17 +64,20 @@ void __stdcall function_1d3fc0(long arg_0, s_havok_component *arg_1)
    function_142a60(&local_1[5], &local_1[3], &local_1[0]);
    if (arg_1->unknown04 & 0x10000)
    {
-    function_1d3fc1(&local_1[0].forward);
-    function_1d3fc1(&local_1[0].up);
-    real local_10 = dot3f(&local_1[0].forward, &local_1[0].up);
-    local_1[0].up.i -= local_1[0].forward.i * local_10;
-    local_1[0].up.j -= local_1[0].forward.j * local_10;
-    local_1[0].up.k -= local_1[0].forward.k * local_10;
-    function_1d3fc1(&local_1[0].up);
-    local_1[0].left.i = local_1[0].up.j * local_1[0].forward.k - local_1[0].up.k * local_1[0].forward.j;
-    local_1[0].left.j = local_1[0].up.k * local_1[0].forward.i - local_1[0].up.i * local_1[0].forward.k;
-    local_1[0].left.k = local_1[0].forward.j * local_1[0].up.i - local_1[0].up.j * local_1[0].forward.i;
-    function_1d3fc1(&local_1[0].left);
+    vector3f *forward = &local_1[0].forward;
+    vector3f *up = &local_1[0].up;
+    vector3f *left = &local_1[0].left;
+    function_1d3fc1(forward);
+    function_1d3fc1(up);
+    real local_10 = dot3f(forward, up);
+    up->i -= forward->i * local_10;
+    up->j -= forward->j * local_10;
+    up->k -= forward->k * local_10;
+    function_1d3fc1(up);
+    left->i = up->j * forward->k - up->k * forward->j;
+    left->j = up->k * forward->i - up->i * forward->k;
+    left->k = forward->j * up->i - up->j * forward->i;
+    function_1d3fc1(left);
    }
    havok_component_rigid_body_matrix_set(local_9, arg_1, &local_1[0]);
   }

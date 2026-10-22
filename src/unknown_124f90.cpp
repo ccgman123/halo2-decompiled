@@ -1305,7 +1305,7 @@ long function_127010(short class_index)
 
 /* a sound's gain in decibels: between its definition's bounds, with its
    class's and the caller's */
-#pragma inline_depth(0)
+inline long function_1251e0(void const *definition_pointer, long gain, real interpolation);
 // @retail 0x1251e0
 long function_1251e0(void const *definition_pointer, long gain, real interpolation)
 {
@@ -1314,12 +1314,11 @@ long function_1251e0(void const *definition_pointer, long gain, real interpolati
 	long lower_decibels = sound_definition_gain_lower(definition);
 	real lower = function_2195f0(*(real *)&lower_decibels);
 	real upper = function_2195f0(*(real *)&upper_decibels);
-	long volatile decibels = function_2197f0((upper - lower) * interpolation + lower);
+	long volatile interpolated_decibels = function_2197f0((upper - lower) * interpolation + lower);
 	long class_gain = function_127010(definition->promotion_index);
 
-	return decibels_add(decibels, decibels_add(class_gain, gain));
+	return decibels_add(interpolated_decibels, decibels_add(class_gain, gain));
 }
-#pragma inline_depth(255)
 
 /* requests the chunk a playing sound is at; true once it is loaded. Retail
    keeps the sound on the stack (ret 4): its address is taken */
@@ -1901,6 +1900,7 @@ short sound_voice_acquire(long sound_index, long *reason)
 }
 
 bool function_12be90(void);
+static inline void approach_126660(real *value, real delta, real lower, real upper);
 
 /* advances the sound system's clock and the ambience fades, and fades the
    master gain out while the game asks for it (after its delay) and back in
@@ -1937,9 +1937,10 @@ void sound_system_update_time(void)
 		}
 		else if (!function_12be90())
 		{
-			real step = sound_system->elapsed_time / (0.001f > sound_system->master_fade_times.k ? 0.001f : sound_system->master_fade_times.k);
+			real fade_seconds = sound_system->elapsed_time;
+			real step = fade_seconds / (0.001f > sound_system->master_fade_times.k ? 0.001f : sound_system->master_fade_times.k);
 
-			sound_system->master_fade += PIN(1.0f - sound_system->master_fade, 0.0f - step, step);
+			approach_126660(&sound_system->master_fade, 1.0f - sound_system->master_fade, 0.0f - step, step);
 			sound_system->master_fade_delay = NONE;
 		}
 	}
@@ -2452,13 +2453,17 @@ static inline real sound_vector_normalize(vector3f *v)
 {
 	real length = (real)sqrt(v->i * v->i + v->j * v->j + v->k * v->k);
 
+	real i = v->i;
+	real j = v->j;
+	real k = v->k;
+
 	if (!(0.0001f > fabs(length)))
 	{
 		real inverse = 1.0f / length;
 
-		v->i = inverse * v->i;
-		v->j *= inverse;
-		v->k *= inverse;
+		v->i = inverse * i;
+		v->j = j * inverse;
+		v->k = k * inverse;
 	}
 	return length;
 }

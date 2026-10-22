@@ -87,14 +87,16 @@ void function_1bbc00(long player_index, long vehicle_index)
 
 static __forceinline long real_to_long(real value);
 
-// score 57 (was 57): the argument is passed in ESI here and in EBX in retail,
-// and the call
-// that follows takes its arguments in a different order.
+// score 42 (was 57): the game clock is kept in a local so that the player
+// index stays in EBX as in retail, but the clock is loaded before the child
+// loop instead of after it, and the child iterator is passed on the stack
+// instead of in EBX.
 // @retail 0x1bbcc0
 void function_1bbcc0(long player_index, long vehicle_index, long seat_index)
 {
 	if (g_4f55d0->active)
 	{
+		s_game_time_globals *game_clock = g_510c54;
 		long player_slot = NONE;
 		s_ai_player *player = ai_player_get(player_index);
 
@@ -114,7 +116,7 @@ void function_1bbcc0(long player_index, long vehicle_index, long seat_index)
 
 			player->unit_index = vehicle_index;
 			player->unknown08 = (short)seat_index;
-			time = (real)g_510c54->field_2_3 * 10.0f;
+			time = (real)game_clock->field_2_3 * 10.0f;
 			ticks = real_to_long(time);
 			player->unknown0a = (short)ticks;
 
@@ -128,7 +130,7 @@ void function_1bbcc0(long player_index, long vehicle_index, long seat_index)
 					s_actor_view *actor = actor_get(actor_index);
 
 					actor->unknown31c = (short)player_slot;
-					time = (real)g_510c54->field_2_3 * 2.0f;
+					time = (real)game_clock->field_2_3 * 2.0f;
 					ticks = real_to_long(time);
 					actor->unknown31e = (short)ticks;
 					*(short *)actor->unknown320 = 0;
@@ -144,9 +146,10 @@ real function_204950(long actor_index, long squad_index, short mode);
 void function_26def0(long actor_index, long owner_index);
 __declspec(noinline) bool function_f5dc0(long object_index);
 
-// score 72 (was 72): retail compares the field against -1 directly and reads
-// it back as a
-// word, ours loads it into EAX first and tests EAX.
+// score 67 (was 72): retail compares the squad field against -1 in memory and
+// reads it back as a word, ours loads the field into EAX first and narrows it
+// to a word; the arguments of the distance call are also set up in the other
+// order.
 // @retail 0x1bba70
 void function_1bba70(long actor_index, long vehicle_index, long seat_index)
 {
@@ -171,7 +174,7 @@ void function_1bba70(long actor_index, long vehicle_index, long seat_index)
                 else
                 {
                     long squad_index = *(long *)(vehicle + 0x3a0);
-                    if (squad_index == NONE || function_204950(actor_index, squad_index, 0) >= 3.0f)
+                    if (squad_index == NONE || !(3.0f > function_204950(actor_index, squad_index, 0)))
                     {
                         *((byte *)actor + 0x3c) = true;
                         *(short *)((byte *)actor + 0x2c) = g_510c54->field_2_3 * 10;

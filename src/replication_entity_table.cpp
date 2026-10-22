@@ -318,6 +318,8 @@ void function_89a20(s_handle_peers *peers)
 	((c_handle_owner_with_mask *)peers->owner)->slot14();
 }
 
+// score 66 (was 66): the prologue and the first store differ: retail saves ebx/ebp/esi/edi
+// and stores the sender pointer into the table, ours uses edx and ecx.
 // @retail 0x898c0
 void replication_table_attach_sender(s_handle_peers *peers, long index, c_handle_table_450cd0 *sender)
 {

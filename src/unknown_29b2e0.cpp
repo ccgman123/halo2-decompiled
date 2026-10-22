@@ -113,15 +113,14 @@ void function_29b2e0(long arg_0, long arg_1, vector3f const *arg_2,
         local_16 = local_9 - local_15;
         if (!(0.0f > local_15 * local_16)) local_14 *= arg_4;
         local_9 = local_15 + function_29b4c0(local_16, -local_14, local_14);
-        local_3 = *arg_2;
-        function_29b6c0(&local_3, g_4687b0, local_8, &local_7);
+        vector3f rotation_input = *arg_2;
+        function_29b6c0(&rotation_input, g_4687b0, local_8, &local_7);
         vector3f const *local_17 = (vector3f const *)((byte *)local_1 + 0x7c);
         vector3f local_18;
         local_18.i = local_17->k * local_1->forward.j - local_17->j * local_1->forward.k;
         local_18.j = local_1->forward.k * local_17->i - local_1->forward.i * local_17->k;
         local_18.k = local_1->forward.i * local_17->j - local_1->forward.j * local_17->i;
-        function_29b6c0(&local_7, &local_18, local_9, &local_3);
-        local_7 = local_3;
+        function_29b6c0(&local_7, &local_18, local_9, &local_7);
     }
     else
         local_7 = *(vector3f *)((byte *)local_0 + 0x290);

@@ -686,7 +686,7 @@ struct s_looping_spatialization
 };
 
 long function_2197f0(real gain);
-long function_1251e0(void const *definition, long gain_bits, real scale);
+inline long function_1251e0(void const *definition, long gain_bits, real scale);
 dword vector3d_compress(vector3f const *vector);
 
 // @retail 0x21ac30

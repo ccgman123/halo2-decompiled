@@ -59,6 +59,8 @@ ELEMENTS_2D91D0(pairs_30ed40, pair_30ed40);
 // the pairs of `destination` and `source` merged in order into
 // `destination`; a pair both hold is kept once, and its agent in `source`
 // told through its slots
+// score 197 (was 197): the frame is four bytes bigger here than in retail, so
+// the locals sit at other offsets, and the counter is kept in another register.
 // @retail 0x30ed40
 static void __cdecl function_30ed40(pairs_30ed40 *destination, pairs_30ed40 const *source)
 {

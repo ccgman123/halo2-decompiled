@@ -122,12 +122,15 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 		real local_15[4];
 		s_2922b1 local_16;
 		*(short *)((byte *)&local_16 + 0x24) = NONE;
-		for (long local_17 = 0; local_17 < 4; local_17++)
+		long local_17 = 0;
+		long remaining = 4;
+		do
 		{
 			vector3f local_18;
-			local_18.i = local_10->i * local_14[local_17];
-			local_18.j = local_10->j * local_14[local_17];
-			local_18.k = local_10->k * local_14[local_17];
+			real ray_length = local_14[local_17];
+			local_18.i = local_10->i * ray_length;
+			local_18.j = local_10->j * ray_length;
+			local_18.k = local_10->k * ray_length;
 			if (function_1697c0(0x1808c2d, &local_13[local_17], &local_18, arg_1, NONE, (s_collision_result_1697c0 *)&local_16))
 			{
 				real local_19 = local_14[local_17] * local_16.field_4 - local_2->field_14;
@@ -140,7 +143,8 @@ bool __stdcall function_2922b0(long arg_0, long arg_1, vector3f *arg_2,
 				local_5[local_17] = true;
 				if (local_4 > local_19) local_4 = local_19;
 			}
-		}
+			++local_17;
+		} while (--remaining);
 		if (local_0)
 		{
 			real local_17 = 0.0f;

@@ -58,7 +58,7 @@ color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t
 }
 
 // @retail 0x131d60
-color3f *function_131d60(color4f const *a, color4f const *b, dword flags, real t, color3f const *tint, color3f *result)
+color3f *function_131d60(color4f const *a, color4f const *b, dword flags, real t, color3f *result, color3f const *tint)
 {
 	function_131c20((color3f const *)&a->red, (color3f const *)&b->red, flags, t, result);
 	if (tint)
@@ -66,9 +66,10 @@ color3f *function_131d60(color4f const *a, color4f const *b, dword flags, real t
 		if (a->alpha > 0.0001f || b->alpha > 0.0001f)
 		{
 			real alpha = (1.0f - t) * a->alpha + b->alpha * t;
-			result->red = tint->red * (1.0f - alpha) + result->red * alpha;
-			result->green = tint->green * (1.0f - alpha) + result->green * alpha;
-			result->blue = tint->blue * (1.0f - alpha) + result->blue * alpha;
+			real tint_weight = 1.0f - alpha;
+			result->red = tint->red * tint_weight + result->red * alpha;
+			result->green = tint->green * tint_weight + result->green * alpha;
+			result->blue = tint->blue * tint_weight + result->blue * alpha;
 		}
 		else
 		{

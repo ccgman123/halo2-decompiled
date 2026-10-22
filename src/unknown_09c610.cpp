@@ -216,6 +216,25 @@ struct s_9c610
     dword field_50;
 };
 
+struct s_input_9c610
+{
+    long field_0;
+    byte field_4[4];
+    short field_8;
+    byte field_a;
+    byte field_b;
+    vector3f field_c;
+    real field_18;
+    real field_1c;
+    dword field_20;
+    real field_24;
+    real field_28;
+    short field_2c;
+    short field_2e;
+    dword field_30;
+    byte field_34;
+};
+
 // @retail 0x9c610
 bool c_damage_aftermath_event_definition::v11(long arg_0, long const *arg_1, long arg_2, void const *arg_3)
 {
@@ -224,10 +243,10 @@ bool c_damage_aftermath_event_definition::v11(long arg_0, long const *arg_1, lon
     long local_2 = function_a58d0(arg_1[1]);
     if (local_1 != NONE)
     {
-        byte const *local_3 = (byte const *)arg_3;
+        s_input_9c610 const *input = (s_input_9c610 const *)arg_3;
         long local_4 = NONE;
         long local_5 = NONE;
-        short local_6 = *(short const *)(local_3 + 8);
+        short local_6 = input->field_8;
         if (local_6 != -1)
         {
             long local_7 = local_6;
@@ -242,7 +261,7 @@ bool c_damage_aftermath_event_definition::v11(long arg_0, long const *arg_1, lon
                 }
             }
         }
-        if (function_122c10(0x6a707421, *(long const *)local_3))
+        if (function_122c10(0x6a707421, input->field_0))
         {
             short local_11 = (short)local_5;
             s_9c610 local_10;
@@ -250,26 +269,26 @@ bool c_damage_aftermath_event_definition::v11(long arg_0, long const *arg_1, lon
             local_10.field_10 = local_2;
             local_10.field_c = local_4;
             local_10.field_14 = local_11;
-            local_10.field_8 = *(long const *)local_3;
-            if (local_3[0xa])
-                local_10.field_18 = *(vector3f const *)(local_3 + 0xc);
-            local_10.field_34 = *(real const *)(local_3 + 0x18);
-            local_10.field_38 = *(real const *)(local_3 + 0x1c);
-            local_10.field_50 = *(dword const *)(local_3 + 0x30);
-            local_10.field_3c = *(short const *)(local_3 + 0x2c);
-            local_10.field_44 = *(real const *)(local_3 + 0x28);
-            local_10.field_40 = *(short const *)(local_3 + 0x2e);
-            local_10.field_48 = *(real const *)(local_3 + 0x24);
-            local_10.field_0 = local_3[0x34];
+            local_10.field_8 = input->field_0;
+            if (input->field_a)
+                local_10.field_18 = input->field_c;
+            local_10.field_34 = input->field_18;
+            local_10.field_38 = input->field_1c;
+            local_10.field_50 = input->field_30;
+            local_10.field_3c = input->field_2c;
+            local_10.field_44 = input->field_28;
+            local_10.field_40 = input->field_2e;
+            local_10.field_48 = input->field_24;
+            local_10.field_0 = input->field_34;
             local_10.field_30 = 0.0f;
-            local_10.field_4 = *(dword const *)(local_3 + 0x20);
+            local_10.field_4 = input->field_20;
             function_b9dd0(local_1, &local_10.field_24);
             local_10.field_4c = 0.0f;
-            if (local_3[0x20] & 2)
+            if (input->field_20 & 2)
                 function_d6a70(local_1);
             function_d9640((s_damage_report const *)&local_10, local_1);
-            if (g_4e0300->data[(local_1 & 0xffff) * 12 + 3] == 0 && (local_3[0x20] & 0x80))
-                function_e4a20((point3f const *)(local_3 + 0xc), *(short const *)(local_3 + 0x2e), local_1, false);
+            if (g_4e0300->data[(local_1 & 0xffff) * 12 + 3] == 0 && (input->field_20 & 0x80))
+                function_e4a20((point3f const *)&input->field_c, input->field_2e, local_1, false);
         }
         local_0 = true;
     }

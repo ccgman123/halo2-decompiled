@@ -25,7 +25,8 @@ symbols, names, strings, comments or other material from:
 - proprietary SDK/XDK files;
 - Havok SDK material: headers, documentation, samples or source, including
   versions that were once free to download. The project's Havok code is
-  recreated from the retail executable alone.
+  written from the retail executable, and must not contain or copy Havok
+  SDK material.
 
 Sources that are acceptable, where appropriate:
 

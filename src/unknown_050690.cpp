@@ -135,7 +135,7 @@ real function_13b390(void const *function, real input, real range);
 
 static __forceinline real noise_curve_value(const s_noise_curve *curve, real input)
 {
-	real result = 0.0f;
+	real result;
 	if (curve->data && curve->size > 0)
 	{
 		result = function_13b390(curve, input, 0.0f);
@@ -150,6 +150,8 @@ static __forceinline real noise_curve_value(const s_noise_curve *curve, real inp
 			result = lower + (upper - lower) * result;
 		}
 	}
+	else
+		result = 0.0f;
 	return result;
 }
 
@@ -170,11 +172,12 @@ long __stdcall function_516d0(bool reduced, dword seed,
 	long level_count = exponent + 2;
 	real inverse_count = 1.0f / (real)(count - 1);
 	__declspec(align(8)) s_noise_pair noise[257];
-	s_noise_pair sums[257];
-	real weights[257];
-	memset(sums, 0, sizeof(sums));
-	memset(weights, 0, sizeof(weights));
-	for (volatile long level = 0; level < level_count; level++)
+	s_noise_pair sums[257] = {0};
+	real weights[257] = {0};
+	long seed_offset = 0;
+	/* volatile keeps the level counter in its stack slot; it takes this near miss
+	   from score 778 to 734 */
+	for (volatile long level = 0; level < level_count; level++, seed_offset += 3)
 	{
 		if (!(definition->active_levels & (1 << level)))
 			continue;
@@ -185,7 +188,7 @@ long __stdcall function_516d0(bool reduced, dword seed,
 		factors[1] = phase - square + 0.5f;
 		factors[2] = phase * 0.0f + square * 0.5f;
 		long stride = (count - 1) >> level;
-		dword level_seed = draw->words[level] + level * 3 + seed;
+		dword level_seed = draw->words[level] + seed_offset + seed;
 		dword state = level_seed;
 		long i;
 		for (i = 0; i < count; i += stride)

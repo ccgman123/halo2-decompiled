@@ -108,9 +108,6 @@ public:
 
 
 
-// @stub 0x3123a0
-s_havok_property_word hkEntity::entity_property_erase(dword key) { return s_havok_property_word(0); }
-
 // @stub 0x312530
 void hkEntity::entity_property_put(dword key, s_havok_property_word value) { }
 

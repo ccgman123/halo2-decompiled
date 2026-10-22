@@ -164,13 +164,13 @@ bool __stdcall function_14e200(long player_index, long target_index, point3f con
     if (*target_reference != NONE && function_baf80(*target_reference) != *target_reference)
     {
         long root = function_baf80(unit_index);
-        target_index = function_baf80(*target_reference);
+        long target_root = function_baf80(*target_reference);
         byte *headers = objects->data;
+        byte *target = *(byte **)(headers + (target_root & 0xffff) * 12 + 8);
         real placement_radius = (bool)(((dword)(1 << headers[(root & 0xffff) * 12 + 3]) >> 1) & 1) ? 2.0f : 0.35f;
-        long volatile target_snapshot = *target_reference;
-        byte *target = *(byte **)(headers + (target_snapshot & 0xffff) * 12 + 8);
         vector3f &direction = location.vector;
         direction = *(vector3f *)(target + 0x88);
+        target_index = target_root;
         if (!(direction.j * direction.j + direction.i * direction.i > 0.0f))
         {
             if (*(real *)(target + 0x78) < 0.7071067690849304f)
@@ -187,33 +187,36 @@ bool __stdcall function_14e200(long player_index, long target_index, point3f con
         function_30bf0(&direction);
         transform4x3f frame;
         function_1420f0(&frame, (point3f *)(target + 0x30), &direction, g_4687b0);
-        long pass = target_snapshot == NONE ? 1 : 0;
-        while (pass < 2)
+        long pass = target_root == NONE ? 1 : 0;
+        while (!result && pass < 2)
         {
-            long ignore = pass == 0 ? target_snapshot : NONE;
+            long ignore = pass == 0 ? target_root : NONE;
             for (unsigned short offset_index = 0; offset_index < 9 && !result; ++offset_index)
             {
                 transform_offset_point(&frame, offset_scale, &g_453918[(short)offset_index], &placed);
                 result = function_c5460(root, ignore, &placed, NULL, *(long *)&placement_radius, 1.0f, 0);
-                for (short attempt = 0; attempt < 8 && !result; ++attempt)
+                if (!result)
                 {
-                    g_4e7408->unknown0 = g_4e7408->unknown0 * 0x19660d + 0x3c6ef35f;
-                    short random_index = (short)(((g_4e7408->unknown0 >> 16) * 1026) >> 16);
-                    vector3f random_offset = g_4417f0[random_index];
-                    point3f candidate;
-                    candidate.x = random_offset.i * search_radius + placed.x;
-                    candidate.y = random_offset.j * search_radius + placed.y;
-                    candidate.z = random_offset.k * search_radius + placed.z;
-                    result = function_c5460(root, ignore, &candidate, NULL, *(long *)&placement_radius, 1.0f, 0);
+                    for (short attempt = 0; attempt < 8 && !result; ++attempt)
+                    {
+                        g_4e7408->unknown0 = g_4e7408->unknown0 * 0x19660d + 0x3c6ef35f;
+                        vector3f random_offset = g_4417f0[(short)(((g_4e7408->unknown0 >> 16) * 1026) >> 16)];
+                        point3f candidate;
+                        candidate.x = random_offset.i * search_radius + placed.x;
+                        candidate.y = random_offset.j * search_radius + placed.y;
+                        candidate.z = random_offset.k * search_radius + placed.z;
+                        result = function_c5460(root, ignore, &candidate, NULL, *(long *)&placement_radius, 1.0f, 0);
+                    }
                 }
             }
             ++pass;
-            if (result)
-                break;
         }
     }
     else
-        result = function_c5460(function_baf80(unit_index), target_index, position, NULL, 0, 1.0f, 0);
+    {
+        long root = function_baf80(unit_index);
+        result = function_c5460(root, target_index, position, NULL, 0, 1.0f, 0);
+    }
     *(short *)(player + 0x2a) = NONE;
     if (result)
     {
@@ -235,11 +238,10 @@ bool __stdcall function_14e200(long player_index, long target_index, point3f con
         return result;
     }
     *(vector3f *)(unit + 0x88) = *g_4687a4;
-    short user_index = *(short *)(player + 0x28);
-    if (user_index != NONE)
+    if (*(short *)(player + 0x28) != NONE)
     {
         byte *sensor_globals = (byte *)g_51e994;
-        byte *sensor = sensor_globals + user_index * 0x2f0;
+        byte *sensor = sensor_globals + *(short *)(player + 0x28) * 0x2f0;
         *(long *)(sensor_globals + 0xbc4) = 0;
         *(long *)(sensor + 0x2ec) = 0;
         *(long *)(sensor + 0x2e8) = 0;
@@ -258,11 +260,12 @@ bool __stdcall function_14e200(long player_index, long target_index, point3f con
         *(vector3f *)(unit + 0x150) = direction;
         *(vector3f *)(unit + 0x15c) = direction;
         *(vector3f *)(unit + 0x180) = direction;
-        if (user_index != NONE)
+        if (*(short *)(player + 0x28) != NONE)
         {
-            s_unknown_185ab0_entry *view = &g_4ed284->entries[user_index];
-            view->yaw = (real)atan2(direction.j, direction.i);
-            view->pitch = (real)atan2(direction.k, sqrt(direction.i * direction.i + direction.j * direction.j));
+            s_unknown_185ab0_entry *view = &g_4ed284->entries[*(short *)(player + 0x28)];
+            s_view_angles *angles = &view->angles;
+            angles->yaw = (real)atan2(direction.j, direction.i);
+            angles->pitch = (real)atan2(direction.k, sqrt(direction.i * direction.i + direction.j * direction.j));
             if (view->yaw < 0.0f)
                 view->yaw += 6.2831854820251465f;
         }
@@ -274,14 +277,21 @@ bool __stdcall function_14e200(long player_index, long target_index, point3f con
             {
                 byte *current = attachment_object(*(long *)(player + 0x2c));
                 target = attachment_object(target_index);
-                current[0xc0] = (current[0xc0] & ~6) | (target[0xc0] & 6);
+                if ((bool)((*(word *)(target + 0xc0) >> 1) & 1))
+                    *(word *)(current + 0xc0) |= 2;
+                else
+                    *(word *)(current + 0xc0) &= ~2;
+                if ((bool)((*(word *)(target + 0xc0) >> 2) & 1))
+                    *(word *)(current + 0xc0) |= 4;
+                else
+                    *(word *)(current + 0xc0) &= ~4;
                 *(long *)(current + 0xb8) = *(long *)(target + 0xb8);
                 *(long *)(current + 0x3e4) = *(long *)(target + 0x3e4);
                 *(long *)(current + 0x3e8) = *(long *)(target + 0x3e8);
                 long current_index = *(long *)(player + 0x2c);
                 function_b7740(current_index, &velocity, NULL, false);
                 function_1c4b00(current_index, &velocity, NULL, 1);
-                if (velocity.i * velocity.i + velocity.k * velocity.k + velocity.j * velocity.j > 0.0001f)
+                if (velocity.j * velocity.j + velocity.k * velocity.k + velocity.i * velocity.i > 0.0001f)
                 {
                     function_b9b90(current_index, false);
                     function_b7360(current_index);

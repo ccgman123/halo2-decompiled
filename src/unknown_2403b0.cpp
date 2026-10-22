@@ -104,23 +104,18 @@ void __stdcall function_2403b0(long player_index)
 		if (!function_15e410(team) || !slot_flag_clear_2403b0(g_51ec80, team))
 			blocked = true;
 	}
-	if (!blocked)
-	{
-		if (function_138860())
-		{
-			if (g_4e6948->mode_180 == 9)
-				function_242ba0(marker, weapon_index, player_index);
-			else
-			{
-				short team = (short)slot == 8 ? NONE : (short)slot;
-				function_197210(player_index, 1, slot);
-				function_242e00(player_index, team);
-				function_242660(weapon_index, false);
-			}
-		}
-	}
-	else
-	{
+	if (blocked)
 		function_2430a0(player_index, true);
+	else if (function_138860())
+	{
+		if (g_4e6948->mode_180 == 9)
+			function_242ba0(marker, weapon_index, player_index);
+		else
+		{
+			short team = (short)slot == 8 ? NONE : (short)slot;
+			function_197210(player_index, 1, slot);
+			function_242e00(player_index, team);
+			function_242660(weapon_index, false);
+		}
 	}
 }

@@ -114,6 +114,8 @@ void function_22fba9(c_class_1473c9 *screen)
 
 /* the widgets of the current pane: bitmaps, groups, texts and models */
 // @retail 0x22fc08
+// score 23 (was 66): the two results are masked into the slot with AND where retail stores them, so
+// the slot keeps the old value instead of the new one.
 void __stdcall function_22fc08(c_class_1473c9 *screen)
 {
 	s_screen_pane *pane = screen->get_current_pane();

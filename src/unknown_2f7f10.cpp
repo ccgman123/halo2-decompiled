@@ -97,6 +97,10 @@ public:
 	void function_2f7f10(void const *a, void const *b, void const *input, void *collector);
 };
 
+// score 65 (was 108): retail keeps the second body and its shape in registers
+// across the corners' loop and reads the sphere count after it; ours reads the
+// count before the loop, so the count takes the register retail keeps the body
+// in and the body has to be reloaded from the stack afterwards.
 // @retail 0x2f7f10
 void class_2f7f10::function_2f7f10(void const *a, void const *b, void const *input, void *collector)
 {
@@ -105,6 +109,7 @@ void class_2f7f10::function_2f7f10(void const *a, void const *b, void const *inp
 	body_2f7f10 const *side_b = (body_2f7f10 const *)b;
 	triangle_2f7f10 const *triangle = (triangle_2f7f10 const *)side_b->shape;
 	spheres_2f7f10 const *spheres = (spheres_2f7f10 const *)side_a->shape;
+	long const sphere_count = spheres->count;
 	__m128 corners[3];
 	{
 		c_query_transform const *frame = &side_b->placement->transform;
@@ -117,7 +122,6 @@ void class_2f7f10::function_2f7f10(void const *a, void const *b, void const *inp
 			corner++;
 		}
 	}
-	long const sphere_count = spheres->count;
 	__m128 centres[8];
 	{
 		c_query_transform const *frame = &side_a->placement->transform;

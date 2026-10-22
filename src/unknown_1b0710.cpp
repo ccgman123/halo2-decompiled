@@ -161,11 +161,10 @@ bool __stdcall function_1b09b0(long actor_index, s_slot *slot)
 short __stdcall function_1b0a10(long actor_index, s_slot *slot, bool active)
 {
 	short result = g_46fbe4;
-	s_actor_view *actor = actor_get(actor_index);
 
-	if (actor->unknown504 != 2 && actor->unknown030 != NONE)
+	if (actor_get(actor_index)->unknown504 != 2 && actor_get(actor_index)->unknown030 != NONE)
 	{
-		s_51e9d8_element *element = (s_51e9d8_element *)(g_51e9d8->data + (actor->unknown030 & 0xffff) * sizeof(s_51e9d8_element));
+		s_51e9d8_element *element = (s_51e9d8_element *)(g_51e9d8->data + (actor_get(actor_index)->unknown030 & 0xffff) * sizeof(s_51e9d8_element));
 
 		if (element->entry_index != NONE)
 		{

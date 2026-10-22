@@ -422,36 +422,38 @@ short function_b5000(s_transport_endpoint *endpoint, void const *buffer, short l
 // @retail 0xb6000
 bool s_http_connection_ab::send()
 {
-    bool result_value = 0;
+    bool result;
     byte buffer[0x518];
-    for (;;)
+    do
     {
         long position = upload_position;
         long written = 0;
-        bool result = false;
+        result = false;
         if (!function_b6320((s_upload_ab *)((byte *)this + 0x30), buffer, sizeof(buffer), &written))
-            { result_value = result; goto return_exit; }
-        short sent = written ? function_b5000(endpoint, buffer, (short)written) : 0;
+            goto return_exit;
+        short sent;
+        if (!written)
+            sent = 0;
+        else
+            sent = function_b5000(endpoint, buffer, (short)written);
         if (sent < 0)
         {
             if (sent == -2)
             {
                 upload_position = position;
-                { result_value = true; goto return_exit; }
+                result = true;
             }
-            { result_value = result; goto return_exit; }
+            goto return_exit;
         }
+        result = true;
         if (sent < written)
             upload_position = position + sent;
-        if (upload_position == upload_file_length + upload_ending_length + upload_part_length + upload_header_length)
-            break;
-    }
+    } while (upload_position != upload_file_length + upload_ending_length + upload_part_length + upload_header_length);
     response_length = 0;
     state = 3;
-    { result_value = true; goto return_exit; }
 
 return_exit:
-    return result_value;
+    return result;
 }
 
 bool transport_endpoint_test_connection(s_transport_endpoint *endpoint, bool *connected);

@@ -3,6 +3,7 @@
 
 #include "agent_table_2e5d50.h"
 #include "tagged_objects_2e4ff0.h"
+#include "sweep_batches_2e50d0.h"
 #include "motion_description_3115a0.h"
 #include "pair_agents_2eab70.h"
 #include "derived_311920.h"
@@ -17,6 +18,12 @@
 // @stub 0x2e5a90
 void s_1c3a40::function_2e5a90(handlers_2e5d50 const *handlers, long first_type, long second_type,
 	long first_type_again, long second_type_again, bool arg_5)
+{
+}
+
+// the three-axis sweep's pair report for many boxes at once (claimed, #638)
+// @stub 0x2e2f70
+void sweep_batches_2e50d0::function_2e2f70(endpoint_2e0f80 *endpoints, long count, pairs_2e1090 *pairs, pair_change_2e2f70 change)
 {
 }
 
@@ -103,15 +110,7 @@ struct class_2df670
 
 
 
-struct element_2e1090;
-struct bounds_2e0020;
-
-class class_2e1090
-{
-public:
-	void function_2e0020(element_2e1090 const *element, bounds_2e0020 *bounds);
-};
-
+// (class_2e1090 is declared in axis_sweep_2e1090.h, through sweep_batches_2e50d0.h)
 // @stub 0x2e0020
 void class_2e1090::function_2e0020(element_2e1090 const *element, bounds_2e0020 *bounds)
 {

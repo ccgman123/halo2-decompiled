@@ -79,28 +79,27 @@ bool __stdcall function_138180(const s_session_options *options)
 		dword count = 0;
 		for (i = 0; i < MAXIMUM_PLAYERS_PER_SESSION; i++)
 		{
-			const s_session_player *player = &options->players[i];
-			if (player->active)
+			if (options->players[i].active)
 			{
-				bool unique = ok && player->index >= 0 && player->index < MAXIMUM_CONTROLLERS && memcmp(&player->id, g_440070, sizeof(player->id)) != 0;
+				bool unique = ok && options->players[i].index >= 0 && options->players[i].index < MAXIMUM_CONTROLLERS && memcmp(&options->players[i].id, g_440070, sizeof(options->players[i].id)) != 0;
 				count++;
 				for (long j = i + 1; j < MAXIMUM_PLAYERS_PER_SESSION; j++)
 				{
 					if (options->players[j].active)
 					{
-						unique = unique && memcmp(&player->id, &options->players[j].id, sizeof(player->id)) != 0;
+						unique = unique && memcmp(&options->players[i].id, &options->players[j].id, sizeof(options->players[i].id)) != 0;
 					}
 				}
-				if (player->flag1)
+				if (options->players[i].flag1)
 				{
-					ok = unique && memcmp(&player->machine, g_440070, sizeof(player->machine)) == 0;
+					ok = unique && memcmp(&options->players[i].machine, g_440070, sizeof(options->players[i].machine)) == 0;
 				}
 				else
 				{
 					long found = NONE;
 					for (long m = 0; m < MAXIMUM_PLAYERS_PER_SESSION; m++)
 					{
-						if (((1 << m) & mask) && memcmp(&options->machines[m], &player->machine, sizeof(s_session_machine)) == 0)
+						if (((1 << m) & mask) && memcmp(&options->machines[m], &options->players[i].machine, sizeof(s_session_machine)) == 0)
 						{
 							found = m;
 							break;

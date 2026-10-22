@@ -100,6 +100,7 @@ long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *out
 					real local_14 = 1.0f / local_6;
 					for (long local_15 = 0; local_15 < local_5->field_d8; local_15++)
 					{
+						real weight = local_8[local_15];
 						if (local_8[local_15] > 0.0f)
 						{
 							long local_16 = local_5->field_dc[local_15].field_c;
@@ -109,7 +110,7 @@ long function_12eb00(long count, s_fog_cluster_distance *clusters, s_12eb00 *out
 								for (long local_20 = 0; local_20 < local_0[local_19][1]; local_20 += 4)
 								{
 									long local_21 = local_0[local_19][0] + local_20;
-									*(real *)((byte *)&local_13 + local_21) += *(real *)((byte *)local_18 + local_21) * local_8[local_15] * local_14;
+									*(real *)((byte *)&local_13 + local_21) += *(real *)((byte *)local_18 + local_21) * weight * local_14;
 								}
 							}
 						}

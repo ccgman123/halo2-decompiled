@@ -52,13 +52,14 @@ long function_2960e0(s_2960e0_counts *counts, long *objects, long maximum_count)
 			objects[slot] = state.iterator.object_index;
 		}
 	}
+	s_2960e0_counts const *base_counts = counts;
 	function_bae80(&state.iterator, 0x80, 0);
 	while ((state.object = function_baeb0(&state.iterator)) != NULL)
 	{
 		long index = NONE;
 		if (function_b7a40((s_scenario_identifier_ab const *)((byte *)state.object + 0xa4), &index))
 		{
-			short slot = (short)(counts->first_count + (short)index);
+			short slot = (short)(base_counts->first_count + (short)index);
 			if (slot >= maximum_count)
 				break;
 			objects[slot] = state.iterator.object_index;

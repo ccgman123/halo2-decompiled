@@ -635,19 +635,19 @@ PRIVATE long __stdcall signed_file_read_work(s_async_task *task, s_signed_file_r
 			if (parameters->body_offset < parameters->body_size)
 			{
 				byte *buffer;
-				dword size;
+				dword size = parameters->body_size - parameters->body_offset;
 				dword bytes;
 				if (parameters->body)
 				{
 					buffer = parameters->body + parameters->body_offset;
-					size = parameters->body_size - parameters->body_offset;
 				}
 				else
 				{
-					buffer = job_thread_buffer_get(task, &size);
-					if (size > parameters->body_size - parameters->body_offset)
+					dword available;
+					buffer = job_thread_buffer_get(task, &available);
+					if (size > available)
 					{
-						size = parameters->body_size - parameters->body_offset;
+						size = available;
 					}
 				}
 
@@ -682,7 +682,10 @@ PRIVATE long __stdcall signed_file_read_work(s_async_task *task, s_signed_file_r
 				if (XCalculateSignatureEnd(parameters->signature_handle, &computed) == ERROR_SUCCESS)
 				{
 					s_saved_game_file_task *output = parameters->task;
-					output->succeeded = memcmp(&computed, &stored, sizeof(stored)) == 0;
+					if (memcmp(&computed, &stored, sizeof(stored)) == 0)
+						output->succeeded = true;
+					else
+						output->succeeded = false;
 				}
 				parameters->signature_handle = INVALID_HANDLE_VALUE;
 			}

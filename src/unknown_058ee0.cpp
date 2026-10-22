@@ -286,6 +286,13 @@ void function_6dec0(s_session_owner_view *owner);
 void function_737b0(c_helper_a *helper);
 c_class_58d20 *network_session_manager_find_session(s_network_session_list *manager, s_session_id const *id);
 
+// score 20 (was 20): after the call to 0x75800, retail rereads g_510518 and
+// stores an immediate 0 into g_51051d; ours drops the repeated check, since
+// the callee does not write g_510518 (a separate global here), and stores al,
+// the call's zero result. A _ReadWriteBarrier before the check brings the
+// reread back with other registers (23, also with nested ifs); an inner-block
+// barrier and a session local stay at 20. The 600 s permutation run found no
+// improvement.
 // @retail 0x59940
 void function_59940(void)
 {

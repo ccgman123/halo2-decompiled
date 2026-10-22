@@ -53,13 +53,20 @@ void __stdcall function_06d380(c_session_client *client, const s_session_id *id)
 				found++;
 			}
 		}
-		for (long j = 0; j < found; j++)
+		if (found > 0)
 		{
-			session = client->session;
-			long index = network_session_find_member(session, &members[j]);
-			if (index != NONE && index != session->current_member &&
-				session->state != 7 && session->state != 6 && session->state != 8)
-				network_session_disband_member(session, index);
+			long remaining = found;
+			s_session_member_identity *member = members;
+			do
+			{
+				session = client->session;
+				long index = network_session_find_member(session, member);
+				if (index != NONE && index != session->current_member &&
+					session->state != 7 && session->state != 6 && session->state != 8)
+					network_session_disband_member(session, index);
+				member++;
+			}
+			while (--remaining);
 		}
 	}
 	network_session_cancel_reservations(client->session, id);
@@ -183,6 +190,15 @@ bool c_session_client::function_06de10(s_session_remote *remote)
 
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// score 14 (was 14): retail keeps the memset's zero in ecx and copies every
+// argument through edx; ours copies some through ecx, so it clears ecx again
+// before the mode store, and it clears the flags at +0x48, +0x49, +0x4a where
+// retail clears +0x49, +0x48, +0x4a. A zero local held through a const
+// reference, references to the cleared fields, a volatile owner, chained
+// clears, and fewer or no barriers score 15 to 30. Clearing the last two flags
+// in one assignment scores 13, but only by lining up one instruction while
+// moving the store order further from retail's; the 600 s permutation runs
+// found nothing else.
 // @retail 0x6de50
 void session_owner_initialize(s_session_owner *owner_, long unknown40, long unknown44, void *unknown2c, c_class_58d20 *session_a, c_class_58d20 *session_c, c_class_58d20 *session_b, void *unknown3c)
 {
@@ -600,8 +616,16 @@ bool function_06e720(c_class_58d20 *session)
 			long member_count = session->member_count;
 			machines.data[0] = (1 << member_count) - 1;
 			s_session_machine *addresses = (s_session_machine *)&machines.data[1];
-			for (long i = 0; i < member_count; i++)
-				addresses[i] = *(s_session_machine *)((byte *)session->members[i].words + 0xa);
+			if (member_count > 0)
+			{
+				long i = 0;
+				long members_remaining = member_count;
+				do
+				{
+					addresses[i] = *(s_session_machine *)((byte *)session->members[i].words + 0xa);
+					i++;
+				} while (--members_remaining);
+			}
 			for (long i = 0; i < 16; i++)
 			{
 				if ((session->player_mask & (1 << i)) && session->players[i].unknown14 != NONE)

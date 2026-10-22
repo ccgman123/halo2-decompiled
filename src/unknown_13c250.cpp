@@ -85,11 +85,10 @@ __forceinline bool function_13c253(s_13c251 const *arg_1)
 // @retail 0x13c250
 void __stdcall function_13c250(long arg_1, long arg_2, long arg_3)
 {
-    long const *local_1 = &arg_1;
     volatile long local_2;
     long local_3[4];
     byte local_4[0xc4];
-    if (*(long const volatile *)local_1 != NONE)
+    if (arg_1 != NONE)
     {
         local_2 = 0;
         long local_6 = local_player_first_index();

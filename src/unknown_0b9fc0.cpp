@@ -657,6 +657,13 @@ struct s_component_property_view
 	bool function_1d3550(long key, bool *positive, real *value) const;
 };
 
+// score 13 (was 13): retail reads value into edx before it looks up the
+// component and reads key into ecx last, just before the call; ours reads key
+// first, value last, and loads g_51e9b8 through ecx (93 bytes against 92).
+// Locals or const references for the value pointer or the component offset,
+// a volatile read of the parameters, the call inline in the test, early
+// returns and the havok_component_get form score 13 to 23; the 600 s
+// permutation run found no improvement.
 // @retail 0x11bd60
 bool __stdcall function_11bd60(long object_index, long key, long value, long positive)
 {

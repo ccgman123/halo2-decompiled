@@ -60,6 +60,25 @@ inline void stream_write_bit(s_bitstream *stream, bool value)
 	stream->bit_position++;
 }
 
+/* points a stream at a buffer, at its start (the streams built on the stack
+   set unknown08 to 1 first) */
+inline void stream_set_buffer(s_bitstream *stream, void const *data, long size)
+{
+	stream->data = (byte *)data;
+	stream->size_in_bytes = size;
+	stream->mode = 0;
+	stream->bit_position = 0;
+	stream->checkpoint_count = 0;
+	stream->error = false;
+}
+
+/* saves the position, so that what is written after it can be taken back
+   (194710) or kept (the checkpoint count stepped back) */
+inline void stream_save_position(s_bitstream *stream)
+{
+	stream->checkpoints[stream->checkpoint_count++] = stream->bit_position;
+}
+
 /* writes a value that must fit in the given number of bits (0x1947e0) */
 inline void stream_write_checked(s_bitstream *stream, dword value, long bits)
 {

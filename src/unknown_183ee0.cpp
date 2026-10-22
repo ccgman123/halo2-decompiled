@@ -77,6 +77,13 @@ static inline byte *bsp_bit_vector(long index)
 	return &((s_bsp_bit_vectors *)g_4ed280)->bits[g_4686c4][index];
 }
 
+// score 6 (was 6): retail keeps the slot index in esi ([esi*4 + g_4eca60],
+// inc esi, cmp esi, 8); ours steps a byte offset ([esi + g_4eca60], add esi, 4,
+// cmp esi, 0x20). The other differing lines are the same instructions one byte
+// apart. dword, short and byte indices, do/while, a post-increment, a counter
+// in a struct, inline read, clear and release helpers, and a plain global array
+// keep the byte offset or score worse; the 600 s permutation run found no
+// improvement.
 // @retail 0x185a30
 void function_185a30(void)
 {

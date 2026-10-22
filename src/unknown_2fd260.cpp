@@ -37,6 +37,10 @@ public:
 
 // the vertex furthest along a direction, with its index in the fourth term
 // tagged with the bits of 0.5
+// score 50 (was 50): the block's z, y and x terms are read from one block
+// earlier than retail's, the largest float is set up after the shift in retail
+// and before it here, and the direction's terms come out of the registers in
+// another order.
 // @retail 0x2fd260
 void convex_vertices_2fd260::function_2fd260(__m128 const *direction, __m128 *support) const
 {
@@ -191,6 +195,9 @@ void convex_vertices_2fd260::function_2fd260(__m128 const *direction, __m128 *su
 }
 
 // the vertices for a list of indices
+// score 147 (was 147): retail takes four vertices per step and writes each
+// vertex's four words through a register, where ours writes them straight to
+// memory and takes one vertex per step.
 // @retail 0x2fd430
 void convex_vertices_2fd260::function_2fd430(unsigned short const *indices, int count, __m128 *vertices) const
 {

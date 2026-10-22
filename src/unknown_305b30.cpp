@@ -65,7 +65,7 @@ void box_305b30::function_305b30(__m128 *out, long i, long j) const
 	row.set(axes[0].m128_f32[j], axes[1].m128_f32[j], axes[2].m128_f32[j]);
 	__m128 const scaled_j = _mm_mul_ps(splat_305b30(half_extents[i]), row.value);
 	*out = _mm_sub_ps(scaled_i, scaled_j);
-	*out = _mm_and_ps(*out, *(__m128 const *)absolute_mask_305b30);
+	*out = _mm_and_ps(_mm_sub_ps(scaled_i, scaled_j), *(__m128 const *)absolute_mask_305b30);
 }
 
 // a box's corner key: an id, then a word whose low byte's high nibble picks

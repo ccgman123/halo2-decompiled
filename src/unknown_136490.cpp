@@ -78,6 +78,8 @@ static inline short function_x48d32c(short format)
 	return function_1358c0(format);
 }
 
+// score 6 (was 6): the sign-extended byte is moved into AX and the result into EAX; retail uses
+// CX and ECX.
 // @retail 0x1364e0
 long function_1364e0(s_type_7ba8e9 const *bitmap, short mipmap_index)
 {
@@ -165,6 +167,8 @@ long function_1366d0(short width, short height, short depth, short format, short
 	return total;
 }
 
+// score 4 (was 4): the word is written to [esi+0xa] before the dword is loaded; retail loads the
+// dword first and reads the word from a different stack slot.
 // @retail 0x1358e0
 s_type_7ba8e9 *function_1358e0(short width, short height, short mipmap_count, short format, word flags)
 {

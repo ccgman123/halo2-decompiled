@@ -51,6 +51,9 @@ __forceinline void function_290852(transform4x3f const *arg_0, vector3f const *a
 	arg_2->k = arg_0->up.k * local_2 + arg_0->left.k * local_1 + arg_0->forward.k * local_0;
 }
 
+// score 21 (was 21): ours keeps the transform pointer in EBX and the point's y component in
+// EBP, retail keeps them the other way round; retail also stores the last field with a
+// direct word store where ours moves it through EAX.
 // @retail 0x2907d0
 bool function_2907d0(long arg_0, short arg_1, transform4x3f const *arg_2, s_actor_position_state *arg_3)
 {

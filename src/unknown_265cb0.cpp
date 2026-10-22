@@ -485,6 +485,8 @@ short const g_44ae3c[13] = { 1, 1, 2, 3, 4, 6, 7, 8, 8, 9, 9, 9, 9 };
 short g_470fa4[4] = { 0, 0, 2, 3 };
 short g_470fe0[3] = { 1, 2, 3 };
 
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 void *function_272a00(long actor_index);
 bool function_1a8220(long index, short a, short b, long unknown, short c, short d, short e);
 
@@ -498,11 +500,11 @@ void function_2662f0(long actor_index)
 	if (task_index != NONE)
 	{
 		byte *task = g_502408->data + (task_index & 0xffff) * 0xd4;
-		short level = *(short *)(task + 0x84);
-		if (level > 0)
+		if (*(short *)(task + 0x84) > 0)
 		{
-			desired = level - 1;
-			goto reset_time;
+			desired = *(short *)(task + 0x84) - 1;
+			*(long *)actor->unknown088 = 0;
+			goto update;
 		}
 	}
 	desired = g_44ae3c[actor->unknown328];
@@ -518,9 +520,7 @@ void function_2662f0(long actor_index)
 			desired = 0;
 		if (actor->unknown358 > 0)
 			recent_minimum = 2;
-		short maximum = clump_minimum;
-		if (recent_minimum > maximum) maximum = recent_minimum;
-		if (maximum > desired) desired = maximum;
+		desired = MAX(desired, MAX(clump_minimum, recent_minimum));
 	}
 	if (desired < 3)
 	{
@@ -534,9 +534,8 @@ void function_2662f0(long actor_index)
 			if (actor->unknown030 != NONE)
 			{
 				byte *squad = g_51e9d8->data + (actor->unknown030 & 0xffff) * 0x98;
-				short definition_index = *(short *)(squad + 0x2a);
-				if (definition_index != NONE)
-					definition = *(byte **)((byte *)g_4e0350 + 0x244) + definition_index * 0x7c;
+				definition = *(short *)(squad + 0x2a) != NONE ?
+					*(byte **)((byte *)g_4e0350 + 0x244) + *(short *)(squad + 0x2a) * 0x7c : NULL;
 			}
 			if (definition && desired < *(short *)(definition + 0x28) - 1)
 				desired = *(short *)(definition + 0x28) - 1;
@@ -553,23 +552,26 @@ void function_2662f0(long actor_index)
 		}
 		if (desired < actor->unknown086)
 		{
+			short timer = *(short *)actor->unknown088;
 			desired = actor->unknown086;
-			switch (desired)
+			switch (actor->unknown086)
 			{
 			case 3:
-				if (*(short *)actor->unknown088 * g_510c54->rate < 0.0f)
+				if (timer * g_510c54->rate >= 0.0f)
+					desired = 2;
+				else
 					break;
-				desired = 2;
 			case 2:
-				if (*(short *)actor->unknown088 * g_510c54->rate >= 15.0f)
+				if (timer * g_510c54->rate >= 15.0f)
 					desired = 1;
 				break;
 			}
-			goto update;
 		}
+		else
+			*(long *)actor->unknown088 = 0;
 	}
-reset_time:
-	*(long *)actor->unknown088 = 0;
+	else
+		*(long *)actor->unknown088 = 0;
 update:
 	if (actor->unknown086 != desired)
 	{
@@ -798,8 +800,7 @@ real function_267370(long volatile object_index)
 		if (!((bool)((s_object_activity_flags *)object)->blocked) && ((1 << object->type) & 3))
 		{
 			long actor_index = object->actor_index;
-			if (actor_index != NONE)
-				actor = actor_get(actor_index);
+			actor = actor_index != NONE ? actor_get(actor_index) : NULL;
 			long first;
 			if (actor)
 			{
@@ -1004,6 +1005,9 @@ struct s_equipped_object_view
 
 /* The held-object lookup rereads the pool's data field. */
 
+// score 6 (was 6): the tag lookup: retail keeps the index in ecx and the
+// table base in eax, ours keeps the index in eax and the base in ecx;
+// thirteen source rewrites all scored 6.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {

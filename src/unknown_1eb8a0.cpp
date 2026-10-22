@@ -143,17 +143,18 @@ struct s_ease_input
 };
 
 bool function_109fd0(long object_index, vector3f *velocity);
-long function_1eb8a0(bool update, vector3f *a, point3f *b, s_ease_state *s,
+long function_1eb8a0(s_ease_state *s, bool update, vector3f *a, point3f *b,
 	s_ease_output *out, real dt, vector3f *d, vector3f *q, point3f *pos);
 
 // @retail 0x1eb6f0
 void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *output)
 {
 	s_ease_state *const *state_reference = &state;
+	s_ease_output *const *output_reference = &output;
 	vector3f velocity = input->velocity;
 	vector3f reference = input->reference_velocity;
 	vector3f object_velocity;
-	long relative = function_109fd0(input->object_index, &object_velocity);
+	bool relative = function_109fd0(input->object_index, &object_velocity);
 	if (relative == true)
 	{
 		reference.i -= object_velocity.i;
@@ -171,22 +172,23 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 		velocity.j = (real)(velocity.j * scale);
 		velocity.k = (real)(velocity.k * scale);
 	}
-	function_1eb8a0(input->update, &velocity, &input->target, *state_reference,
+	function_1eb8a0(*state_reference, input->update, &velocity, &input->target,
 		output, input->time, &input->direction, &reference, &input->position);
 	if (relative)
 	{
-		(output)->position.i += object_velocity.i;
-		(output)->position.j += object_velocity.j;
-		(output)->position.k += object_velocity.k;
+		s_ease_output *result = *output_reference;
+		result->position.i += object_velocity.i;
+		result->position.j += object_velocity.j;
+		result->position.k += object_velocity.k;
 	}
 }
 
 // @retail 0x1eb8a0
 long function_1eb8a0(
+	s_ease_state *s,
 	bool update,
 	vector3f *a,
 	point3f *b,
-	s_ease_state *s,
 	s_ease_output *out,
 	real dt,
 	vector3f *d,
@@ -202,11 +204,11 @@ long function_1eb8a0(
 		{
 			if (dt > 0.001f)
 			{
+				real k = s->fast ? 12.f : 8.f;
 				real step = dt;
 				if (s->limit != 0.f && step > s->limit)
 					step = s->limit;
 
-				real k = s->fast ? 12.f : 8.f;
 				real t = step * 0.375f;
 				real e = 0.001f;
 				if (!(0.001f > t))
@@ -323,8 +325,8 @@ long function_1eb8a0(
 			s->direction = *d;
 	}
 
-	out->position = *q;
-	globals = g_510c54;
+	vector3f *position = &out->position;
+	*position = *q;
 
 	if (s->active)
 	{
@@ -365,24 +367,24 @@ long function_1eb8a0(
 				if (5.f > cnt)
 				{
 					real f = MIN(third3, MAX(0.f, e3 - MAX(0.f, w)));
-					out->position.i = s->direction.i * f + qr.i;
-					out->position.j = s->direction.j * f + qr.j;
-					out->position.k = s->direction.k * f + qr.k;
+					position->i = s->direction.i * f + qr.i;
+					position->j = s->direction.j * f + qr.j;
+					position->k = s->direction.k * f + qr.k;
 					real ticks = (real)globals->field_2_3;
-					out->position.i = out->position.i * ticks;
-					out->position.j = out->position.j * ticks;
-					out->position.k = out->position.k * ticks;
+					position->i = position->i * ticks;
+					position->j = position->j * ticks;
+					position->k = position->k * ticks;
 					s->ticks_left = (long)((dist - (((3.f - cnt) - 0.5f) * e3 * 0.5f + hi)) / e3 + (3.f - cnt) + 3.f + 0.5f);
 				}
 				else
 				{
-					out->position.i = qr.i;
-					out->position.j = qr.j;
-					out->position.k = qr.k;
+					position->i = qr.i;
+					position->j = qr.j;
+					position->k = qr.k;
 					real ticks = (real)globals->field_2_3;
-					out->position.i = ticks * out->position.i;
-					out->position.j = out->position.j * ticks;
-					out->position.k = out->position.k * ticks;
+					position->i = ticks * position->i;
+					position->j = position->j * ticks;
+					position->k = position->k * ticks;
 					s->ticks_left = (long)((dist - hi) / e3 + 3.f - 0.5f);
 				}
 				goto done;
@@ -409,13 +411,13 @@ long function_1eb8a0(
 						real len4 = MIN(m, len);
 						real ratio = s->settle_minimum / hi - 0.5f;
 						real back = 0.f - len4;
-						out->position.j = nq.j * back + qr.j;
-						out->position.i = nq.i * back + qr.i;
-						out->position.k = nq.k * back + qr.k;
+						position->j = nq.j * back + qr.j;
+						position->i = nq.i * back + qr.i;
+						position->k = nq.k * back + qr.k;
 						real ticks = (real)globals->field_2_3;
-						out->position.i = out->position.i * ticks;
-						out->position.j = out->position.j * ticks;
-						out->position.k = out->position.k * ticks;
+						position->i = position->i * ticks;
+						position->j = position->j * ticks;
+						position->k = position->k * ticks;
 						s->ticks_left = (long)ratio;
 						goto done;
 					}
@@ -425,9 +427,9 @@ long function_1eb8a0(
 					real m = (s->settle_distance + step) * 0.33333334f;
 					real m2 = MIN(m, len);
 					real back = 0.f - m2;
-					out->position.i = back * nq.i + qr.i;
-					out->position.j = nq.j * back + qr.j;
-					out->position.k = nq.k * back + qr.k;
+					position->i = back * nq.i + qr.i;
+					position->j = nq.j * back + qr.j;
+					position->k = nq.k * back + qr.k;
 					if (!(step > len - m + 0.001f))
 						goto done;
 				}
@@ -773,17 +775,17 @@ void function_1ed4a0(s_state_c570 *state, dword *output, byte const *input)
   component = g_51e9b8->data + (*(long *)(input + 0x40) & 0xffff) * 0xa0;
   long object_index = *(long *)(component + 8);
   byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
-  if (!(bool)((object[0xc0] >> 6) & 1))
+  if (!(bool)((*(word *)(object + 0xc0) >> 6) & 1))
   {
    byte *other = *(byte **)(g_4e0300->data + (state->field_14 & 0xffff) * 12 + 8);
    transform4x3f matrix;
    function_142a60((transform4x3f *)(other + *(short *)(other + 0x116) + (short)state->field_18 * 0x34),
     (transform4x3f *)state->field_1c, &matrix);
-   real dot = g_4687b0->j * matrix.up.j + g_4687b0->k * matrix.up.k + g_4687b0->i * matrix.up.i;
+   real dot = dot3f(g_4687b0, &matrix.up);
    state->field_0c = dot > 0.5f ? movement_counter_increment(state->field_0c) : 0;
    if (state->field_0c)
    {
-    real projection = matrix.forward.j * matrix.up.j + matrix.forward.k * matrix.up.k + matrix.forward.i * matrix.up.i;
+    real projection = dot3f(&matrix.forward, &matrix.up);
     matrix.forward.i -= matrix.up.i * projection;
     matrix.forward.j -= matrix.up.j * projection;
     matrix.forward.k -= matrix.up.k * projection;
@@ -836,7 +838,7 @@ attached_done:
     state->field_0c = movement_counter_increment(state->field_0c);
     goto increment_duration;
    }
-   real dot = g_4687b0->k * state->position.z + g_4687b0->j * state->position.y + g_4687b0->i * state->position.x;
+   real dot = dot3f(g_4687b0, (vector3f *)&state->position);
    state->field_0c = dot > 0.5f ? movement_counter_increment(state->field_0c) : 0;
    if (!state->field_0c || state->field_0d < movement_round_ticks(g_510c54->field_2_3 * 0.15f)) goto increment_duration;
    long other_index = *(long *)(input + 0xc);
@@ -860,15 +862,15 @@ attached_done:
    function_1201a0((vector3f *)&state->position, g_4687b0);
    transform4x3f matrix;
    function_ba160(object_index, &matrix);
-   vector3f up = *(vector3f *)&state->position;
-   matrix.forward.i -= up.i;
-   matrix.forward.j -= up.j;
-   matrix.forward.k -= up.k;
+   matrix.up = *(vector3f *)&state->position;
+   matrix.forward.i -= matrix.up.i;
+   matrix.forward.j -= matrix.up.j;
+   matrix.forward.k -= matrix.up.k;
    if (function_30bf0(&matrix.forward) != 0.0f)
    {
-    matrix.left.i = matrix.forward.k * up.j - up.k * matrix.forward.j;
-    matrix.left.j = up.k * matrix.forward.i - matrix.forward.k * up.i;
-    matrix.left.k = matrix.forward.j * up.i - up.j * matrix.forward.i;
+    matrix.left.i = matrix.forward.k * matrix.up.j - matrix.up.k * matrix.forward.j;
+    matrix.left.j = matrix.up.k * matrix.forward.i - matrix.forward.k * matrix.up.i;
+    matrix.left.k = matrix.forward.j * matrix.up.i - matrix.up.j * matrix.forward.i;
     transform4x3f inverse;
     function_141590(node_matrix, &inverse);
     function_142a60(&inverse, &matrix, (transform4x3f *)state->field_1c);

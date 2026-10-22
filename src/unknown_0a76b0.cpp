@@ -4594,11 +4594,9 @@ void function_ee7f0(long unit_index, long state)
 
 
 void __stdcall function_104080(long object_index);
-void function_b7360(long object_index);
-long function_101f20(long weapon_index);
-bool function_cd660(long unit_index);
 long function_1039a0(long object_index, long tag_index, long effect_index, real scale_a, real scale_b);
 short first_person_weapon_animation_ticks(long weapon_index, long animation_name, short type);
+bool function_1058b0(long weapon_index, long state, bool force);
 
 // @retail 0xfff40
 void __stdcall function_fff40(long weapon_index, bool silent, bool immediate)
@@ -4606,29 +4604,7 @@ void __stdcall function_fff40(long weapon_index, bool silent, bool immediate)
     byte *object = *(byte **)(g_4e0300->data + (weapon_index & 0xffff) * 12 + 8);
     byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
     function_104080(weapon_index);
-    byte *current = *(byte **)(g_4e0300->data + (weapon_index & 0xffff) * 12 + 8);
-    function_b7360(weapon_index);
-    byte *active = *(byte **)(g_4e0300->data + (weapon_index & 0xffff) * 12 + 8);
-    if (*(short *)(active + 0x12a) != NONE)
-    {
-        s_animation_state *state = (s_animation_state *)(current + *(short *)(current + 0x12a));
-        long kind = 0x07000001;
-        long unit = function_101f20(weapon_index);
-        if (unit != NONE && function_cd660(unit)) kind = 0x0400054b;
-        if (state->animation_set(0x07000101, kind, 0x07000001, 0x05000024, 0x82, 0x3f)
-            || (kind == 0x0400054b && state->animation_set(0x07000101, 0x07000001, 0x07000001, 0x05000024, 0x82, 0x3f)))
-            *(long *)(current + 0x178) = 9;
-    }
-    active = *(byte **)(g_4e0300->data + (weapon_index & 0xffff) * 12 + 8);
-    volatile bool selected;
-    if ((active[0x12c] & 1) && *(long *)(active + 0x154) != NONE)
-    {
-        long unit = *(long *)(active + 0x154);
-        byte *owner = *(byte **)(g_4e0300->data + (unit & 0xffff) * 12 + 8);
-        short slot = *(signed char *)(owner + 0x212);
-        long selected_weapon = slot == NONE ? NONE : *(long *)(owner + slot * 4 + 0x218);
-        selected = weapon_index == selected_weapon;
-    }
+    function_1058b0(weapon_index, 9, true);
     if (!silent) function_1039a0(weapon_index, *(long *)(definition + 0x144), NONE, 0.0f, 0.0f);
     if (immediate)
         *(short *)(object + 0x17c) = 0;

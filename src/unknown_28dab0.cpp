@@ -35,6 +35,12 @@ long function_1e4990(long arg_0);
 long function_28dbd0(long arg_0, long arg_1, long arg_2, s_28dab2 const *arg_3, bool arg_4);
 void __stdcall swarm_delete(long arg_0);
 
+// score 53 (was 53): the tag pointer is in esi where retail keeps it in edi
+// (the constant -1 is in the other one), and retail keeps the loop limit in
+// ebx with a cmov where ours puts it in a stack slot with a branch. Nine
+// source rewrites (the declaration order, the result split from the
+// allocation, the comparison against the variable, the goto, the width of the
+// limit) all scored 53 or worse.
 // @retail 0x28dab0
 long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 {
@@ -47,15 +53,15 @@ long __stdcall function_28dab0(long arg_0, s_28dab2 const *arg_1)
 		{
 			long local_2 = local_1->field_18;
 			s_28dab0 *local_3 = (s_28dab0 *)perception_get(local_0);
-			local_3->field_4 = NONE;
-			local_3->field_18 = NONE;
-			local_3->field_14 = 0;
-			local_3->field_16 = 0;
-			local_3->field_8 = *g_468788;
-			local_3->field_1c = 0;
-			local_3->field_24 = *g_468788;
 			local_3->field_30 = false;
 			local_3->field_31 = true;
+			local_3->field_14 = 0;
+			local_3->field_16 = 0;
+			local_3->field_1c = 0;
+			local_3->field_4 = NONE;
+			local_3->field_18 = NONE;
+			local_3->field_8 = *g_468788;
+			local_3->field_24 = *g_468788;
 			short local_4 = arg_1->field_2e > 0 ? arg_1->field_2e : 10;
 			for (short local_5 = 0; local_5 < local_4; local_5++)
 				function_28dbd0(local_0, arg_0, local_2, arg_1, local_5 == 0);

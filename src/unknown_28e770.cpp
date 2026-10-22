@@ -2,6 +2,7 @@
 #include "unknown_2551c0.h"
 #include "globals.h"
 #include "object_markers.h"
+#include "normalize3d.h"
 
 struct s_28e770
 {
@@ -188,7 +189,7 @@ void __stdcall function_28e770(long arg_0, long arg_1)
 						local_3->field_98 = *g_4687a8;
 						if (local_29->k * local_14->k + local_29->j * local_14->j + local_14->i * local_29->i > 0.95f)
 						{
-							if (function_2900b0(arg_1, &local_8, 0.9f, 2.7f, (vector3f *)&local_3->field_58))
+							if (function_2900b0(arg_1, (point3f const *)&target_velocity, 0.9f, 2.7f, (vector3f *)&local_3->field_58))
 							{
 								real local_20 = function_259d0((dword *)g_4e7408, NULL, 0, 1.0f, 3.0f);
 								local_3->field_57 = true;
@@ -267,7 +268,7 @@ void __stdcall function_28e770(long arg_0, long arg_1)
 								function_28f0e0(&direction, (s_28f0e0 const *)&local_15, arg_1, local_10);
 							else if (local_12->field_17c == 1 && !(bool)local_12->field_12c)
 							{
-								real local_25 = local_12->field_1f0.j * direction.j + local_12->field_1f0.i * direction.i + direction.k * local_12->field_1f0.k;
+								real local_25 = dot3f(&local_12->field_1f0, &direction);
 								if (local_25 < -0.99f || (local_12->field_1f0.k > 0.70710677f && local_25 > 0.99f))
 									local_3->field_50 = NONE;
 							}
@@ -293,9 +294,11 @@ void __stdcall function_28e770(long arg_0, long arg_1)
 								real local_27 = (real)local_3->field_26 * g_510c54->rate;
 								local_27 = local_27 < 0.0f ? 0.0f : local_27 > 5.0f ? 5.0f : local_27;
 								real local_28 = (1.0f - local_27 * (1.0f / 3.0f)) * 2.0f;
-								local_29->i += local_28 * direction.i;
-								local_29->j += direction.j * local_28;
-								local_29->k += direction.k * local_28;
+								vector3f contribution;
+								vector3f_scale(&direction, local_28, &contribution);
+								local_29->i += contribution.i;
+								local_29->j += contribution.j;
+								local_29->k += contribution.k;
 								if (function_30bf0(local_29) == 0.0f)
 									*local_29 = local_13;
 							}

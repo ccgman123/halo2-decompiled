@@ -497,7 +497,7 @@ short function_122570(s_font_header const *header, dword first_character, dword 
 
 /* a pixel of a character: 3 bits of alpha (widened to 4) over a 12 bit
    color */
-static inline long font_character_pixel(long alpha, long color)
+static inline word font_character_pixel(long alpha, long color)
 {
 	return (((alpha << 1) | ((byte)alpha & 1)) << 12) | color;
 }

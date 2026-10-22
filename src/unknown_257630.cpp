@@ -88,6 +88,9 @@ PRIVATE __forceinline s_clump_7f_view *function_257632(long arg_0)
 	return (s_clump_7f_view *)(g_502420->data + (arg_0 & 0xffff) * sizeof(s_502420_element));
 }
 
+// score 19 (was 19): the pool lookup starts in the other register (ours
+// mov eax,[esp+4], retail mov ecx,[esp+4]); the callee's body decides
+// that and it lives in src/unknown_26e370.cpp, outside this lane.
 // @retail 0x257630
 short __stdcall function_257630(long actor_index)
 {

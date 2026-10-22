@@ -211,7 +211,17 @@ s_type_4f0dcc *function_d5260(long type, long index)
 
 /* whether an object of this type made from this tag can be placed by more
    than its name (it can be damaged, or is scenery with a damage model) */
-// @retail 0xd5990
+/* the standard marker (docs/DECOMPILING.md): (1) with it this body matches
+   byte for byte, in the build's standard /Gr convention (type in ecx,
+   tag_index in edx, plain ret); without it LTCG passes tag_index in eax and
+   keeps the mask in edx (score 19), and the caller 0xd59f0 differs only in
+   loading tag_index into eax (score 2). (2) retail holds no reference to
+   0xd5990's address; its three callers (0xd52b0 at 0xd52e0, 0xd5640 at
+   0xd57cd, 0xd59f0 at 0xd5a2e) are LTCG code that pass type in ecx and
+   tag_index in edx. (3) tried: an explicit __fastcall (score 19, LTCG still
+   moves tag_index to eax), a volatile read of tag_index (score 30) and
+   copying tag_index to a local first (score 19). */
+// @retail 0xd5990 standard
 bool function_d5990(long type, long tag_index)
 {
 	dword type_mask = 1 << type;

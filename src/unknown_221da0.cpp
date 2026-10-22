@@ -7,19 +7,14 @@
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include "local_cameras.h"
+#include "unknown_246cd0.h"
 #include <math.h>
 #include <string.h>
 
 #define PIN(n, floor, ceiling) ((n) < (floor) ? (floor) : ((n) > (ceiling) ? (ceiling) : (n)))
 
-/* a tag's data block, as the function evaluator reads it */
-struct s_tag_data_view
-{
-	long size;
-	byte *address;
-};
-
 real function_13b390(void const *function, real input, real range);
+real function_13bb90(s_tag_data const *function, real input, real range);
 
 /* rounds as the x87 does (unknown_0259d0's fld/fistp idiom) */
 static __forceinline long real_to_long(real value)
@@ -147,7 +142,7 @@ struct s_effect_function
 {
 	short input;
 	short range_input;
-	s_tag_data_view function;
+	s_tag_data function;
 	real period;
 };
 
@@ -246,23 +241,7 @@ void function_2222c0(s_effect_component const *component, s_effect_component_ove
 						y *= function_222250(&inputs->direction, speaker);
 					}
 				}
-				if (function->function.address && function->function.size > 0)
-				{
-					value = function_13b390(&function->function, x, y);
-					byte const *field_30 = function->function.address;
-
-					if (!(field_30[1] & 0xf0))
-					{
-						real lower = *(real const *)(field_30 + 4);
-						real upper = *(real const *)(field_30 + 8);
-
-						value = lower + (upper - lower) * PIN(value, 0.0f, 1.0f);
-					}
-				}
-				else
-				{
-					value = 0.0f;
-				}
+				value = function_13bb90(&function->function, x, y);
 			}
 			else
 			{
@@ -503,9 +482,15 @@ static inline void *tag_block_get_first(long count, void *elements)
 	return NULL;
 }
 
-static inline bool playback_sound_effect_valid(s_playback_sound_effect const *effect)
+static inline s_playback_sound_effect const *playback_sound_effect_valid(s_playback_sound_effect const *effect)
 {
-	return effect && effect->definition_tag_index != NONE && effect->override_count > 0;
+	s_playback_sound_effect const *result = effect;
+	if (effect)
+	{
+		if (effect->definition_tag_index == NONE || effect->override_count <= 0)
+			result = NULL;
+	}
+	return result;
 }
 
 static inline s_effect_components *sound_effect_tag_get_components(long tag_index)
@@ -521,11 +506,8 @@ void function_222770(long tag_index, long handle, s_effect_inputs const *inputs,
 	s_platform_playback_view *playback = (s_platform_playback_view *)function_18d090(tag_index, handle);
 	s_platform_playback_view *class_playback = (s_platform_playback_view *)sound_get_class(tag_index);
 
-	if (!class_playback)
-	{
-		source = NULL;
-	}
-	else
+	source = NULL;
+	if (class_playback)
 	{
 		void *filter = tag_block_get_first(class_playback->filter_count, class_playback->filters);
 		void *pitch_lfo = tag_block_get_first(class_playback->pitch_lfo_count, class_playback->pitch_lfos);
@@ -537,7 +519,6 @@ void function_222770(long tag_index, long handle, s_effect_inputs const *inputs,
 		effects->filter = filter;
 		effects->pitch_lfo = pitch_lfo;
 		effects->filter_lfo = filter_lfo;
-		source = NULL;
 		if (playback_sound_effect_valid(effect))
 		{
 			source = class_playback;

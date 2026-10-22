@@ -65,6 +65,9 @@ public:
 	int function_2fa0d0(ray_2f97e0 const *ray, entries_2fa0d0 *entries, int first, int end, limits_2f97e0 const *limits);
 };
 
+// score 144 (was 144): retail's frame is 0xb4 and it keeps the entries' array
+// in esi with the entry's offset in edi; ours has a 0x94 frame and keeps the
+// array in ebx, so both loops differ in their registers
 // returns the range's new end
 // @retail 0x2fa0d0
 int ray_test_2f97e0::function_2fa0d0(ray_2f97e0 const *ray, entries_2fa0d0 *entries, int first, int end, limits_2f97e0 const *limits)

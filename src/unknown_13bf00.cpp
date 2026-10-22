@@ -306,41 +306,21 @@ static inline s_subtitle_slot_view *subtitle_slot_get(long index)
 	return index != NONE ? (s_subtitle_slot_view *)&g_54e8e0[index] : NULL;
 }
 
-static inline long controller_next(long index)
-{
-	long result;
-
-	switch (index)
-	{
-	case NONE:
-		result = 0;
-		break;
-	case 0:
-		result = 1;
-		break;
-	case 1:
-		result = 2;
-		break;
-	case 2:
-		result = 3;
-		break;
-	default:
-		result = NONE;
-		break;
-	}
-	return result;
-}
+/* the slot after this one (player_slot_iterator.cpp) */
+long player_slot_iterate_next(long index);
 
 /* whether a signed in player wants subtitles: always, or when the map's
    language isn't the game's */
+// score 17 (was 17): retail does not common the element address, it uses two
+// displacement-form instructions where ours emits a lea plus a load.
 // @retail 0x13cbf0
 bool function_13cbf0(void)
 {
 	long map_language;
 	long index;
 
-	get_current_language();
 	bool result = false;
+	get_current_language();
 	map_language = 0;
 	if (g_4e0350)
 	{
@@ -351,7 +331,7 @@ bool function_13cbf0(void)
 		}
 	}
 
-	for (index = 0; index != NONE; index = controller_next(index))
+	for (index = 0; index != NONE; index = player_slot_iterate_next(index))
 	{
 		if (TEST_FIELD_BIT(g_54e8e0[index].flag4))
 		{
@@ -366,7 +346,11 @@ bool function_13cbf0(void)
 			{
 				memset(&profile, 0, sizeof(profile));
 			}
-			if (profile.subtitles == 1 || (profile.subtitles == 0 && g_47ff38 != map_language))
+			if (profile.subtitles == 1)
+			{
+				result = true;
+			}
+			else if (profile.subtitles == 0 && g_47ff38 != map_language)
 			{
 				result = true;
 			}

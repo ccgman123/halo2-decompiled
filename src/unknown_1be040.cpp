@@ -58,26 +58,26 @@ point3f *function_b9dd0(long object_index, point3f *result);
 short __stdcall function_1c8df0(long object_index, point3f const *point, short team, short type,
 	void const *origin, long count, bool unknown, bool unknown2, bool unknown3, long *arg_9);
 
-// score 39 (was 39): retail keeps the actor pointer in EBX and the field it
-// tests in ECX,
-// ours keeps them in EBP and EDX.
+// score 35 (was 39): retail keeps the actor index in EBX and the object it
+// looks up in EBP,
+// ours keeps them in EBP and EBX.
 // @retail 0x1be120
 bool __stdcall function_1be120(long actor_index, s_slot *slot)
 {
 	bool result = true;
 	s_actor_view *actor = actor_get(actor_index);
+	s_slot_09 *state = (s_slot_09 *)slot;
 
 	if (actor->unknown040)
 	{
 		result = false;
 		if (actor->unknown5ac != NONE && actor->unknown5b0 == 6)
 		{
-			s_slot_09 *state = (s_slot_09 *)slot;
 			s_slot_object_view *object = object_get(actor->unknown5ac);
 			point3f position;
 			s_2641c0 origin;
-			function_b9dd0(actor->unknown5ac, &position);
 			state->unknown0c = false;
+			function_b9dd0(actor->unknown5ac, &position);
 			if (function_2641c0(actor_index, &origin, &position) &&
 				function_1c8df0(actor->unknown5ac, &position, *(short *)((byte *)object + 0x2c),
 					*(short *)((byte *)&origin + 0x28), (point3f const *)&origin, 1,

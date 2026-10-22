@@ -1028,9 +1028,11 @@ void c_game_engine_45c948::v32(long player_index, long list_pointer)
 
 PRIVATE __forceinline void territory_marker_extents_include(s_state_2bf *state, long index, point3f const *origin, point3f const *point)
 {
-    real dx = point->x - origin->x;
-    real dy = point->y - origin->y;
-    real distance = (real)sqrt(dx * dx + dy * dy);
+    vector3f delta;
+    vector3d_from_points3d(origin, point, &delta);
+    real square = delta.i * delta.i;
+    square += delta.j * delta.j;
+    real distance = (real)sqrt(square);
     real below = origin->z - point->z;
     real above = point->z - origin->z + 0.8f;
     state->f0[index] = MAX(state->f0[index], distance);
@@ -1043,14 +1045,15 @@ PRIVATE __forceinline void territory_marker_position_copy(point3f *destination, 
     *destination = *source;
 }
 
+// score 29 (was 29): the same xmm4 radius argument as 0x2c0980, plus a
+// different stack layout for the two out-pointers.
 // @retail 0x2bf5b0
 void c_game_engine_45c948::v12()
 {
 	s_state_2bf *state = g_51eccc;
 	s_palette_source_globals *globals = g_4e0350;
 
-	word *volatile marker = state->w60;
-	for (long i = 0; i < 8; i++, marker++)
+	for (long i = 0; i < 8; i++)
 	{
 		short n = g_4e6948->w22c;
 
@@ -1061,7 +1064,7 @@ void c_game_engine_45c948::v12()
 
 			if (count >= 1)
 			{
-				*marker = (word)ids[0];
+				state->w60[i] = (word)ids[0];
 				point3f p0;
 				territory_marker_position_copy(&p0, &globals->marker_entries[ids[0]].position);
 				state->f0[i] = 1.0f;
@@ -1078,6 +1081,9 @@ void c_game_engine_45c948::v12()
 	}
 }
 
+// score 14 (was 14): retail loads the engine global g_4e6948 into edx at the
+// top of the function, ours loads it just before the mode test, so the load
+// and the compare come in the other order.
 // @retail 0x2bf480
 void c_game_engine_45c948::v6(long a)
 {
@@ -1133,12 +1139,13 @@ void territories_update_players()
 
 				if (marker != NONE)
 				{
-					point3f center = g_4e0350->marker_entries[marker].position;
+					point3f center;
+					territory_marker_position_copy(&center, &g_4e0350->marker_entries[marker].position);
 					real dx = position.x - center.x;
 					real dy = position.y - center.y;
 					real distance_squared = dy * dy + dx * dx;
 
-					if (state->f0[i] * state->f0[i] > distance_squared &&
+					if (distance_squared < state->f0[i] * state->f0[i] &&
 						state->f40[i] > position.z - center.z &&
 						state->f20[i] > center.z - position.z)
 					{
@@ -1161,7 +1168,6 @@ void territories_update_players()
 			if (!inside)
 			{
 				long time;
-				long total;
 
 				if (state->entries90[player].a != 0xff)
 				{
@@ -1171,26 +1177,20 @@ void territories_update_players()
 				}
 				if (state->entries90[player].time_inside > 0)
 				{
-					time = state->entries90[player].time_inside + -3;
-					time = time > 0 ? time : 0;
+					time = MAX(state->entries90[player].time_inside - 3, 0);
 					state->entries90[player].time_outside = 0;
 					state->entries90[player].time_inside = (short)time;
-					total = (short)state->w110;
+					state->entries90[player].b = (byte)((short)time * 63 / (short)state->w110);
+					game_engine_globals_changed_mask_2bf(1 << (player + 6));
 				}
 				else if (state->entries90[player].time_outside > 0)
 				{
-					time = state->entries90[player].time_outside + -3;
-					time = time > 0 ? time : 0;
+					time = MAX(state->entries90[player].time_outside - 3, 0);
 					state->entries90[player].time_inside = 0;
 					state->entries90[player].time_outside = (short)time;
-					total = (short)state->w112;
+					state->entries90[player].b = (byte)((short)time * 63 / (short)state->w112);
+					game_engine_globals_changed_mask_2bf(1 << (player + 6));
 				}
-				else
-				{
-					continue;
-				}
-				state->entries90[player].b = (byte)((short)time * 63 / total);
-				game_engine_globals_changed_mask_2bf(1 << (player + 6));
 			}
 		}
 		else
@@ -1396,6 +1396,10 @@ struct s_territory_tag
 	s_territory_tag_data *data;
 };
 
+// score 24 (was 24): the tag's data pointer is loaded into ecx where retail
+// keeps it in eax, the marker index is kept in edx where retail uses eax, and
+// the colour mask is read at the top of the function instead of just before
+// it is changed.
 // @retail 0x2c0980
 long territory_create_item(long player_index, long territory)
 {
@@ -1713,6 +1717,8 @@ void territory_marker_color(long player_index, long territory, s_color_bits *col
 	}
 }
 
+// score 50 (was 50): the stack slots of the outer frame differ ([esp+0x14]
+// where retail has [esp+0x10]).
 // @retail 0x2bf960
 void c_game_engine_45c948::v14(long local_player)
 {

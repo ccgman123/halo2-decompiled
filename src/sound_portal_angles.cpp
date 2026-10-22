@@ -37,6 +37,8 @@ struct s_bsp3d_disk;
 real function_14b240(s_14b240_owner const *owner, s_bsp3d_disk const *disk, point3f const *point);
 real function_50650(real cosine);
 
+// score 20 (was 20): the whole block is one consistent XMM4/XMM5 swap: ours loads the
+// offset's k into xmm5 and its i into xmm4, retail loads them the other way round.
 // @retail 0x18ab70
 void function_18ab70(s_sound_portal_bsp const *bsp, long portal_index, s_sound_listener_rotation const *listener,
 	bool reverse, point3f const *point, real radius, s_sound_portal_angles *angles)

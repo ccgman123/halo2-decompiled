@@ -200,6 +200,9 @@ void function_1fc660(s_tracked_point *tracked, s_tracking_state const *state, s_
 }
 
 /* the tracked velocity, its change limited to half a unit per second */
+// score 56 (was 56): retail loads the float into xmm3 first and then sign
+// extends the word into EDI, while ours writes the word with a 16-bit store
+// to DI and loads the float into xmm0.
 // @retail 0x1fc4b0
 void function_1fc4b0(s_tracked_point *tracked, s_tracking_state const *state, s_tracking_output *output)
 {

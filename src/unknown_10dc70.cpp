@@ -310,7 +310,8 @@ void function_10de40(s_vibration_curve_set *set, s_vibration_output *output, rea
 					}
 				}
 
-				result = (result - previous[c]) * blend + previous[c];
+				real prior_value = previous[c];
+				result = (result - prior_value) * blend + prior_value;
 				real magnitude = (real)fabs(result);
 				if (!(magnitude < 0.0001f))
 				{

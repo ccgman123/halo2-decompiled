@@ -529,7 +529,7 @@ PRIVATE __forceinline void motion_cross(vector3f const &a, vector3f const &b, ve
 }
 
 // @retail 0x1faa20
-void function_1faa20(byte const *state, vector3f *up, vector3f *forward, long *ticks)
+void function_1faa20(vector3f *up, byte const *state, vector3f *forward, long *ticks)
 {
     if (*ticks > 0)
     {

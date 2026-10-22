@@ -127,6 +127,8 @@ bool g_4686a4 = true;
 
 bool function_0c7070(long object_index);
 
+// score 6 (was 6): the parameter is masked in ECX where retail masks it in EAX; the argument is
+// passed in the other register.
 // @retail 0x111010
 bool function_111010(long unit_index)
 {
@@ -385,6 +387,8 @@ bool function_1d9320(s_1d9240 *slot);
 void function_1d90e0(long render_model_index, long node_index, transform4x3f *nodes, transform4x3f const *marker_matrix,
 	transform4x3f const *target_matrix, real weight, long node_count);
 
+// score 46 (was 46): the global is loaded into EBX and the stack slot into ESI; retail loads them
+// in the opposite order.
 // @retail 0x113980
 void __stdcall function_113980(long object_index, long target_index, bool alternate, real weight,
 	s_animation_state *state, s_graph_pair_iterator *iterator, long node_count, transform4x3f *nodes)
@@ -628,14 +632,7 @@ void function_113870(long unit_index)
 }
 
 
-/* retail calls 0x1cb410 out of line here */
-#pragma inline_depth(0)
-PRIVATE __forceinline bool channel_start_114330(s_animation_state *state, c_animation_channel *channel,
-	c_type_709360 animation_id)
-{
-	return state->channel_start(channel, animation_id, 0x10000551, NONE, NONE, 1, 0x803f);
-}
-#pragma inline_depth(255)
+#include "channel_start_out_of_line.h"
 
 // @retail 0x114330
 void function_114330(long unit_index)
@@ -651,7 +648,7 @@ void function_114330(long unit_index)
 			weapon[1], 0x10000551, NULL, NULL, NULL);
 
 		if (animation_id.index != NONE &&
-			channel_start_114330(state, &control->channel_dc, animation_id))
+			channel_start_out_of_line(state, &control->channel_dc, animation_id, 0x10000551, NONE, NONE, 1, 0x803f))
 		{
 			control->flag7 = false;
 		}
@@ -768,7 +765,7 @@ void function_113740(long unit_index)
 }
 
 // @retail 0x1137b0
-real function_1137b0(long set, bool other, real minimum, bool changed, long current_set)
+real function_1137b0(bool other, real minimum, bool changed, long set, long current_set)
 {
 	real result = 0.267f;
 
@@ -876,7 +873,7 @@ bool __stdcall function_10f430(long unit_index, long mode, long weapon_class, lo
 		}
 		if (mode_changed || set_changed)
 		{
-			real seconds = function_1137b0(set, false, blend, mode_changed, current_set);
+			real seconds = function_1137b0(false, blend, mode_changed, set, current_set);
 
 			if (seconds > 0.0f && !(bool)(((dword)(short)state->flags >> 4) & 1))
 				function_ba350(unit_index, seconds);
@@ -1012,7 +1009,7 @@ bool function_10fd40(long unit_index, long weapon_type, long weapon_class, bool 
 
 		if (class_changed || type_changed)
 		{
-			real seconds = function_1137b0(state->unknown7c, true, 0.0f, false, state->unknown7c);
+			real seconds = function_1137b0(true, 0.0f, false, state->unknown7c, state->unknown7c);
 
 			channel_refresh_if_valid(state, &control->channel_9c, 0x7000101, 0x7000101);
 			channel_refresh_if_valid(state, &control->channel_dc, 0x7000101, 0x7000101);
@@ -1171,6 +1168,8 @@ bool function_111490(long unit_index)
 }
 
 
+// score 1 (was 1): the argument is copied into EAX where retail passes it in ECX, because the
+// callee at 0xc7070 keeps its parameter in ECX.
 // @retail 0x1112f0
 bool function_1112f0(long unit_index)
 {

@@ -38,10 +38,14 @@ PRIVATE __forceinline real function_29ab91(vector3f const *arg_0)
 PRIVATE __forceinline real function_29ab92(vector2f *arg_0)
 {
 	real local_0 = (real)sqrt((double)arg_0->j * arg_0->j + (double)arg_0->i * arg_0->i);
-	if (0.0001f > fabs((double)local_0)) return 0.0f;
-	real local_1 = 1.0f / local_0;
-	arg_0->i *= local_1;
-	arg_0->j *= local_1;
+	if (!(0.0001f > fabs((double)local_0)))
+	{
+		real local_1 = 1.0f / local_0;
+		arg_0->i *= local_1;
+		arg_0->j *= local_1;
+	}
+	else
+		local_0 = 0.0f;
 	return local_0;
 }
 PRIVATE __forceinline real function_29ab93(real arg_0, real arg_1, real arg_2)

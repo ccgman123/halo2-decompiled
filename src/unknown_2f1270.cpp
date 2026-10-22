@@ -81,20 +81,22 @@ inline __m128 splat_2f1270(float value)
 	return _mm_shuffle_ps(single, single, 0);
 }
 
+// score 24 (was 26): retail keeps the result of the query in a stack slot
+// that ours drops, and the two sides and the triangle come out of the
+// registers in another order.
 // @retail 0x2f1270
 void class_2f1270::function_2f1270(void const *a_, void const *b_, void const *input_, void *collector)
 {
 	timer_add_2ebc80("TtSphereTriangle");
 	body_2f1270 const *a = (body_2f1270 const *)a_;
 	body_2f1270 const *b = (body_2f1270 const *)b_;
+	contact_2f1270 contact;
+	contact.a = a;
+	contact.b = b;
 	rounded_2f1270 const *sphere = a->shape;
 	rounded_2f1270 const *triangle = b->shape;
 	__m128 const *centre = &a->placement->transform.position;
 	transform_2f1270 const *frame = &b->placement->transform;
-	closest_308d90 closest;
-	contact_2f1270 contact;
-	contact.a = a;
-	contact.b = b;
 	__m128 corners[3];
 	__m128 *out = corners;
 	__m128 const *in = triangle->corners;
@@ -102,18 +104,24 @@ void class_2f1270::function_2f1270(void const *a_, void const *b_, void const *i
 	{
 		transform_2f1270_point(out[i], frame, in[i]);
 	}
-	int status = function_308d90(centre, corners, terms, &closest);
-	float const radii = sphere->radius + triangle->radius;
-	if (radii + ((input_2f1270 const *)input_)->tolerance > closest.distance)
 	{
-		contact.position = _mm_add_ps(*centre, _mm_mul_ps(splat_2f1270(triangle->radius - closest.distance), closest.normal));
-		contact.position.m128_f32[3] = closest.distance - radii;
-		contact.normal = closest.normal;
-		((collector_2f1270 *)collector)->slot_1(&contact);
+		closest_308d90 closest;
+		int status = function_308d90(centre, corners, terms, &closest);
+		float const radii = sphere->radius + b->shape->radius;
+		if (radii + ((input_2f1270 const *)input_)->tolerance > closest.distance)
+		{
+			contact.position = _mm_add_ps(*centre, _mm_mul_ps(splat_2f1270(b->shape->radius - closest.distance), closest.normal));
+			contact.position.m128_f32[3] = closest.distance - radii;
+			contact.normal = closest.normal;
+			((collector_2f1270 *)collector)->slot_1(&contact);
+		}
 	}
 	timer_add_2ebc80("Et");
 }
 
+// score 47: retail's frame is 0xa4 bytes and ours 0x94, so the query's
+// result, the contact and the closest point sit at other offsets, and
+// retail keeps the result of the query in a stack slot that ours drops.
 // @retail 0x2f13e0
 void __cdecl function_2f13e0(void const *a_, void const *b_, void const *input_, void *collector)
 {
@@ -122,14 +130,13 @@ void __cdecl function_2f13e0(void const *a_, void const *b_, void const *input_,
 	body_2f1270 const *b = (body_2f1270 const *)b_;
 	float terms[4];
 	function_308910(b->shape->corners, terms);
+	contact_2f1270 contact;
+	contact.a = a;
+	contact.b = b;
 	rounded_2f1270 const *sphere = a->shape;
 	rounded_2f1270 const *triangle = b->shape;
 	__m128 const *centre = &a->placement->transform.position;
 	transform_2f1270 const *frame = &b->placement->transform;
-	closest_308d90 closest;
-	contact_2f1270 contact;
-	contact.a = a;
-	contact.b = b;
 	__m128 corners[3];
 	__m128 *out = corners;
 	__m128 const *in = triangle->corners;
@@ -137,14 +144,17 @@ void __cdecl function_2f13e0(void const *a_, void const *b_, void const *input_,
 	{
 		transform_2f1270_point(out[i], frame, in[i]);
 	}
-	int status = function_308d90(centre, corners, terms, &closest);
-	float const radii = sphere->radius + triangle->radius;
-	if (radii + ((input_2f1270 const *)input_)->tolerance > closest.distance)
 	{
-		contact.position = _mm_add_ps(*centre, _mm_mul_ps(splat_2f1270(triangle->radius - closest.distance), closest.normal));
-		contact.position.m128_f32[3] = closest.distance - radii;
-		contact.normal = closest.normal;
-		((collector_2f1270 *)collector)->slot_1(&contact);
+		closest_308d90 closest;
+		int status = function_308d90(centre, corners, terms, &closest);
+		float const radii = sphere->radius + b->shape->radius;
+		if (radii + ((input_2f1270 const *)input_)->tolerance > closest.distance)
+		{
+			contact.position = _mm_add_ps(*centre, _mm_mul_ps(splat_2f1270(b->shape->radius - closest.distance), closest.normal));
+			contact.position.m128_f32[3] = closest.distance - radii;
+			contact.normal = closest.normal;
+			((collector_2f1270 *)collector)->slot_1(&contact);
+		}
 	}
 	timer_add_2ebc80("Et");
 }

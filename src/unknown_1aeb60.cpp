@@ -7,6 +7,7 @@
 #include "ai_actor.h"
 #include "unknown_1fb7e0.h"
 #include "unknown_26b230.h"
+#include "unknown_11c010.h"
 
 /* the state of a slot of type 0xe */
 struct s_slot_0e
@@ -223,6 +224,8 @@ bool __stdcall function_1aefc0(long actor_index, s_slot *slot)
 	return true;
 }
 
+// score 8 (was 8): the branch on the flag falls through where retail jumps to the end of the
+// block, so the two halves are laid out the other way round.
 // @retail 0x1af0a0
 short __stdcall function_1af0a0(long actor_index, s_slot *slot, s_slot *arg_2)
 {
@@ -331,6 +334,8 @@ struct s_unit_state_0f
 
 static __forceinline long real_to_long(real value);
 
+// score 114 (was 114): the argument is read into ECX and the other value into EDX; retail reads them
+// in the opposite order.
 // @retail 0x1afb30
 void __stdcall function_1afb30(long actor_index, s_slot *slot)
 {
@@ -467,7 +472,6 @@ struct s_bsp3d;
 extern s_bsp3d *g_4e033c;
 long function_14a280(s_bsp3d *arg_0, long arg_2, point3f *arg_1);
 long function_baf40(long arg_0);
-bool function_11c010(short arg_0, short arg_1);
 struct s_object_motion_view;
 void function_2640c0(long arg_0, s_object_motion_view *arg_1);
 void function_1e3b00(long arg_0, long arg_1, point3f const *arg_2, void const *arg_3, void const *arg_4, point3f *arg_5);
@@ -518,6 +522,8 @@ struct s_1af5c6
 	point3f field_10;
 };
 
+// score 20 (was 20): the index is masked in EAX where retail masks it in ECX; the argument is
+// passed in the other register.
 // @retail 0x1af5c0
 long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 {
@@ -555,7 +561,7 @@ long function_1af5c0(long arg_0, long arg_1, point3f const *arg_2, long arg_3)
 		local_10 = local_9.field_0;
 	bool local_11 = local_0->unknown26c != NONE;
 	short local_15 = local_2->field_2c;
-	if ((short)local_10 != NONE && local_15 != NONE && !function_11c010((short)local_10, local_15))
+	if (!clusters_visible_11c010(local_10, local_15))
 		return 4;
 	local_7.field_24 = NONE;
 	long local_12 = 0x15808c2f;

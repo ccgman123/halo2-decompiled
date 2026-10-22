@@ -22,9 +22,8 @@ void __stdcall function_1a9760(long arg_0, s_slot *arg_1)
     vector3f local_2 = local_0->unknown37c;
     vector3f local_3;
     local_0->unknown456 = true;
-    local_3.i = (local_0->position.x + local_0->unknown258.i * 0.5f) - local_0->unknown370.x;
-    local_3.j = (local_0->position.y + local_0->unknown258.j * 0.5f) - local_0->unknown370.y;
-    local_3.k = (local_0->position.z + local_0->unknown258.k * 0.5f) - local_0->unknown370.z;
+    for (long component = 0; component < 3; ++component)
+        local_3.n[component] = (local_0->position.n[component] + local_0->unknown258.n[component] * 0.5f) - local_0->unknown370.n[component];
     real local_4 = (real)sqrt((double)(local_2.j * local_2.j + (local_2.i * local_2.i + local_2.k * local_2.k)));
     if (!((real)fabs((double)local_4) < 0.0001f))
     {

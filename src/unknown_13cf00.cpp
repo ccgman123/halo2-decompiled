@@ -23,17 +23,16 @@ public:
 	void function_1fa50(short_rectangle2d const *arg_1, void const *arg_2, void const *arg_3, long arg_4, real arg_5, long arg_6, void const *arg_7) const;
 };
 
+long function_122540(long font);
+
 // @retail 0x13cf00
 void function_13cf00(void)
 {
 	if (function_13cbf0())
 	{
 		byte *local_1 = (byte *)g_4e0350;
-		volatile long local_2 = 0;
-		s_font_header *local_3 = font_get(g_4e28f4[9]);
-		long local_4 = 10;
-		if (local_3)
-			local_4 = local_3->leading_height + local_3->descending_height + local_3->ascending_height;
+		long local_2 = 0;
+		long local_4 = function_122540(9);
 		function_13e8a0();
 		font_get(g_4e28f4[9]);
 		g_4e73a0.font = 9;
@@ -54,7 +53,7 @@ void function_13cf00(void)
 			if (local_6.bottom > 444)
 				local_6.bottom = 444;
 			long local_9 = *(long *)local_5;
-			volatile bool local_10 = false;
+			bool local_10 = false;
 			word local_11[256];
 			if (local_9)
 			{

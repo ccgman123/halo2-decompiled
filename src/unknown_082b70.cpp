@@ -80,6 +80,8 @@ static __forceinline long object_query_weapon(long unit_index, short slot)
 	return result;
 }
 
+// score 65 (was 65): the value at [edx+0x10] is compared in a different register: retail
+// loads it into edx and keeps eax for the index, ours loads it into eax.
 // @retail 0x82c10
 void __stdcall function_82c10(long object_index, long *weapons)
 {
@@ -133,6 +135,8 @@ struct s_082b70_player
 	byte unknown030[0x21c - 0x30];
 };
 
+// score 48 (was 62): retail reads another global for the record pointer and keeps it in edx,
+// ours reads a different global and keeps the pointer in eax.
 // @retail 0x828b0
 bool function_828b0(long player_index, s_player_object_motion *result)
 {
@@ -277,6 +281,8 @@ void function_82d20(long object_index, s_object_relevance_source *source, s_weap
 
 bool motion_sensor_object_moving(long object_index);
 
+// score 57 (was 57): the prologue differs: retail pushes ebp and reads the second argument
+// into ebp, ours copies it into ebx and pushes ebp and edi later.
 // @retail 0x823d0
 void function_823d0(s_weapon_activity_result *output, const byte *input, long object_index)
 {

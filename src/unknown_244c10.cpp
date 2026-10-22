@@ -58,7 +58,6 @@ void c_244c10::function_244c10(s_244c10 const *arg_0, void const *arg_1)
 #include "unknown_1efac0.h"
 #include "unknown_1eb350.h"
 #include "unknown_1cec30.h"
-#include <float.h>
 
 #include "unknown_244980.h"
 
@@ -98,12 +97,14 @@ bool function_244980(long cluster_index, point3f const *point, vector3f const *v
     {
         c_marker_object reference((dword)cluster, (dword)g_4e0348);
         c_shape_library_base_a query((c_havok_reference_counted *)&reference, *(long *)(cluster + 0xac));
-        real const &end_z = vector->k + point->z;
-        real const &end_y = vector->j + point->y;
+        point3f end;
         s_244980_workspace workspace;
         s_244980_ray ray;
-        ray.field_24 = 0;
         s_244980_output output;
+        end.x = point->x + vector->i;
+        end.y = point->y + vector->j;
+        end.z = point->z + vector->k;
+        ray.field_24 = 0;
         output.field_0c = 0;
         output.index = NONE;
         output.field_10 = 0;
@@ -115,9 +116,10 @@ bool function_244980(long cluster_index, point3f const *point, vector3f const *v
         output.workspace = &workspace;
         c_244c10 callback;
         workspace.minimum.m_quad = _mm_setzero_ps();
-        workspace.minimum.m_quad.m128_f32[3] = FLT_MAX;
+        workspace.minimum.m_quad.m128_f32[3] = 1e30f;
         workspace.maximum.m_quad = _mm_setzero_ps();
-        workspace.maximum.m_quad.m128_f32[3] = FLT_MAX;
+        workspace.maximum.m_quad.m128_f32[3] = 1e30f;
+        callback.field_04 = ((real *)result)[1];
         callback.field_1c = result;
         callback.field_08 = flags;
         ray.first.m_quad.m128_f32[0] = point->x;
@@ -130,11 +132,9 @@ bool function_244980(long cluster_index, point3f const *point, vector3f const *v
         reference.flags = 0;
         query.allocation_size = 0;
         ray.first.m_quad.m128_f32[3] = 0.0f;
-        callback.field_04 = ((real *)result)[1];
-        real const &end_x = point->x + vector->i;
-        ray.second.m_quad.m128_f32[0] = end_x;
-        ray.second.m_quad.m128_f32[1] = end_y;
-        ray.second.m_quad.m128_f32[2] = end_z;
+        ray.second.m_quad.m128_f32[0] = end.x;
+        ray.second.m_quad.m128_f32[1] = end.y;
+        ray.second.m_quad.m128_f32[2] = end.z;
         ray.second.m_quad.m128_f32[3] = 0.0f;
         workspace.transform.m_rotation.m_col0.m_quad = _mm_setzero_ps();
         workspace.transform.m_rotation.m_col1.m_quad = _mm_setzero_ps();

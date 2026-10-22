@@ -423,27 +423,6 @@ bool __stdcall function_1f8a70(long actor_index, long unknown)
 		((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
 		route_mode = 1;
 		break;
-	case 4:
-	{
-		s_262b40_result *target = function_262b40(((s_1f8a70_actor *)actor)->frame.target.reference);
-		if (!target)
-			goto failed;
-		((s_1f8a70_actor *)actor)->frame.destination = *(s_type_c3b527 *)target;
-		((s_1f8a70_actor *)actor)->frame.destination_node = *(long *)((byte *)target + 0x14);
-		((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
-		break;
-	}
-	case 5:
-	{
-		s_262b40_result *target = function_262b40(((s_1f8a70_actor *)actor)->frame.target.reference);
-		if (!target)
-			goto failed;
-		((s_1f8a70_actor *)actor)->frame.destination = *(s_type_c3b527 *)target;
-		((s_1f8a70_actor *)actor)->frame.destination_node = NONE;
-		((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
-		route_mode = 1;
-		break;
-	}
 	case 6:
 	{
 		s_262b40_result *target = function_262b40(((s_1f8a70_actor *)actor)->frame.target.reference);
@@ -479,6 +458,27 @@ bool __stdcall function_1f8a70(long actor_index, long unknown)
 			((s_1f8a70_actor *)actor)->frame.destination = state->unknown48;
 		((s_1f8a70_actor *)actor)->frame.destination_node = *(long *)((byte *)state + 0x44);
 		((s_1f8a70_actor *)actor)->frame.destination_radius = ((s_1f8a70_actor *)actor)->frame.radius;
+		break;
+	}
+	case 4:
+	{
+		s_262b40_result *target = function_262b40(((s_1f8a70_actor *)actor)->frame.target.reference);
+		if (!target)
+			goto failed;
+		((s_1f8a70_actor *)actor)->frame.destination = *(s_type_c3b527 *)target;
+		((s_1f8a70_actor *)actor)->frame.destination_node = *(long *)((byte *)target + 0x14);
+		((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
+		break;
+	}
+	case 5:
+	{
+		s_262b40_result *target = function_262b40(((s_1f8a70_actor *)actor)->frame.target.reference);
+		if (!target)
+			goto failed;
+		((s_1f8a70_actor *)actor)->frame.destination = *(s_type_c3b527 *)target;
+		((s_1f8a70_actor *)actor)->frame.destination_node = NONE;
+		((s_1f8a70_actor *)actor)->frame.destination_radius = 0.0f;
+		route_mode = 1;
 		break;
 	}
 	default:

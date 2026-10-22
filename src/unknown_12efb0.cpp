@@ -64,7 +64,7 @@ long scenario_fog_clusters_find(long cluster_index, point3f const *point, s_fog_
 long function_12eb00(long arg_0, s_fog_cluster_distance *arg_1, s_12eb00 *arg_2);
 long function_130f60(s_palette_owner const *owner, long *palette_index);
 void function_131030(long tag_index, vector3f const *view_direction, s_fog_accumulator *first, s_fog_accumulator *second, s_fog_accumulator *third);
-void function_1317a0(s_weighted_accumulator *acc, real const *a, real const *b, real c0, real c1, real c2, real c3, real t);
+void function_1317a0(real const *a, real const *b, real c0, real c1, real c2, real c3, real t, s_weighted_accumulator *acc);
 
 real g_547f80 = 1.0f;
 
@@ -192,7 +192,7 @@ void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_
 						real const *local_22 = local_19 + 0x22;
 						if (local_22[7] > 0.0f)
 						{
-							function_1317a0(&local_10, local_22, local_22 + 3, local_22[6], local_22[7], local_22[8], local_22[9], local_21);
+							function_1317a0(local_22, local_22 + 3, local_22[6], local_22[7], local_22[8], local_22[9], local_21, &local_10);
 							if (local_12->cluster_index == arg_0 || local_21 > local_3)
 							{
 								local_2 = *(long *)((byte *)local_18 + 0xd4);
@@ -230,7 +230,7 @@ void function_12efb0(long arg_0, point3f const *arg_1, vector3f const *arg_2, s_
 					real const *local_29 = *(real **)(local_23 + 0x64);
 					if (*(long *)((byte *)local_29 + 0x4c) != NONE && local_29[7] > 0.0f)
 					{
-						function_1317a0(&local_10, local_29, local_29 + 3, local_29[6], local_29[7], local_29[8], local_29[9], local_25);
+						function_1317a0(local_29, local_29 + 3, local_29[6], local_29[7], local_29[8], local_29[9], local_25, &local_10);
 						if (local_12->cluster_index == arg_0 || local_25 > local_3)
 						{
 							local_2 = *(long *)((byte *)local_29 + 0x4c);

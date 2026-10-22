@@ -40,6 +40,7 @@ short __stdcall function_1c8df0(long arg_0, point3f const *arg_4, short arg_3, s
  }
  else
  {
+  vector3f local_5;
   s_collision_result_1697c0 local_6;
   local_6.field_24 = NONE;
   long local_4 = arg_8 ? 0x15808c2f : 0x5808c2f;
@@ -49,7 +50,6 @@ short __stdcall function_1c8df0(long arg_0, point3f const *arg_4, short arg_3, s
    local_4 &= ~0x20;
   bool local_7;
   {
-   vector3f local_5;
    vector3d_from_points3d(local_3, arg_4, &local_5);
    if (!function_1697c0(local_4, local_3, &local_5, arg_0, NONE, &local_6))
     local_7 = true;

@@ -152,7 +152,9 @@ void pair_state_2fefd0::function_2ff0c0(convex_2fefd0 const *first, triangle_2ff
 		placed++;
 		corner++;
 	}
-	__m128 normal = cross_2ff0c0(_mm_sub_ps(corners[1].value, corners[0].value), _mm_sub_ps(corners[2].value, corners[1].value));
+	__m128 const ab = _mm_sub_ps(corners[1].value, corners[0].value);
+	__m128 const cb = _mm_sub_ps(corners[2].value, corners[1].value);
+	__m128 normal = cross_2ff0c0(ab, cb);
 
 	__m128 centre;
 	first->centre(&centre);
@@ -223,6 +225,11 @@ public:
 // runs a command stream until a command gives an offset, and adds the
 // position's offset plus that one to the list; commands before it skip their
 // operands or move the position
+// score 166 (was 166): retail reads the command's byte before it pushes the
+// registers and into another register, and the jump table and the table of
+// command lengths sit at other addresses than retail's. (The fast check's
+// number moves with the reduced image it builds — 150, 169, 179, 182 for the
+// same source; the full check's 166 stands.)
 // @retail 0x2ff210
 void offset_list_2ff210::function_2ff210(position_2ff210 const *position, unsigned char const *commands)
 {
@@ -356,6 +363,9 @@ found:
 }
 
 // the same for a stream whose commands 0x10 to 0x2b have other operands
+// score 92 (was 92): retail reads the command's byte before it pushes the
+// registers and into another register, and the table of command lengths sits
+// at another offset within the second argument.
 // @retail 0x2ff570
 void offset_list_2ff210::function_2ff570(position_2ff210 const *position, unsigned char const *commands)
 {

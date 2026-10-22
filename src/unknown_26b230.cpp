@@ -433,45 +433,30 @@ PRIVATE __forceinline bool next_clump_in_pool(s_clump_pool_iterator *iterator)
 long function_26b900(long prop_index, long actor_index, long clump_index)
 {
 	bool result = function_26b8a0(prop_index, actor_index);
-	struct { s_clump_pool_iterator iterator; volatile bool saved_result; } frame;
-	frame.saved_result = result;
-
 	if (!result)
 	{
 		s_clump *clump = (s_clump *)(g_502420->data + (clump_index & 0xffff) * sizeof(s_clump));
-		s_clump *const *clump_reference = &clump;
-		long team = ((s_clump volatile *)*clump_reference)->team;
-		long side = function_20f040((short)team);
+		short side = (short)function_20f040(clump->team);
 		s_clump_prop *prop = (s_clump_prop *)(g_50241c->data + (prop_index & 0xffff) * sizeof(s_clump_prop));
-
-		s_clump *volatile other;
-
+		s_clump_pool_iterator iterator;
 		if (g_4f55d0->active)
 		{
-			frame.iterator.pool.data = g_502420;
-			frame.iterator.pool.index = NONE;
+			iterator.pool.data = g_502420;
+			iterator.pool.index = NONE;
 		}
-
-		while (next_clump_in_pool(&frame.iterator))
+		while (next_clump_in_pool(&iterator))
 		{
-			other = *(s_clump *volatile *)&frame.iterator.current;
-			if (clump_index != frame.iterator.pool.datum_index && (short)side == (short)function_20f040(other->team))
+			if (clump_index != iterator.pool.datum_index && side == (short)function_20f040(iterator.current->team))
 			{
-				long other_prop_index = function_26b230(frame.iterator.pool.datum_index, prop->type);
-				if (other_prop_index != NONE)
+				long other_prop_index = function_26b230(iterator.pool.datum_index, prop->type);
+				if (other_prop_index != NONE && function_26b8a0(other_prop_index, NONE))
 				{
-					if (function_26b8a0(other_prop_index, NONE))
-					{
-						result = true;
-						goto done;
-					}
-					result = frame.saved_result;
+					result = true;
+					break;
 				}
 			}
 		}
 	}
-
-done:
 	return result;
 }
 
@@ -1300,9 +1285,9 @@ PRIVATE __forceinline long clump_object_actor_index(long object_index)
 {
 	s_clump_owner_object_view *object = (s_clump_owner_object_view *)((s_object_header_view *)g_4e0300->data)[object_index & 0xffff].object;
 	long result = NONE;
-	if (object->type == 0xc && object->owner_kind == 0)
+	if (object->type == 0xc)
 	{
-		byte *owner = (byte *)object + object->owner_offset;
+		byte *owner = object->owner_kind == 0 ? (byte *)object + object->owner_offset : NULL;
 		if (owner)
 			result = *(long *)(owner + 4);
 	}
@@ -1323,7 +1308,7 @@ PRIVATE __forceinline s_type_76cf92 *clump_next_prop(s_iterator *iterator)
 }
 
 // @retail 0x26b120
-long function_26b120(long object_index, long clump_index)
+long function_26b120(long clump_index, long object_index)
 {
 	long result = NONE;
 	long actor_index = clump_object_actor_index(object_index);
@@ -1332,13 +1317,12 @@ long function_26b120(long object_index, long clump_index)
 	s_type_76cf92 *prop;
 	while ((prop = clump_next_prop(&iterator)) != NULL)
 	{
-		if (*(long *)((byte *)prop + 8) == object_index)
+		if (*(long *)((byte *)prop + 8) == object_index ||
+			(prop->unknown22 && actor_index != NONE && actor_index == prop->actor_index))
 		{
 			result = iterator.index;
 			break;
 		}
-		if (prop->unknown22 && actor_index != NONE && actor_index == prop->actor_index)
-			return iterator.index;
 	}
 	return result;
 }
@@ -1690,38 +1674,38 @@ void function_269580(long destination_index, long source_index)
 // @retail 0x26ace0
 long function_26ace0(long object_index, long actor_index, short type)
 {
-	long const *actor_reference = &actor_index;
-	short const *type_reference = &type;
 	s_actor_view *actor = actor_get(actor_index);
 	long result = NONE;
-	long const *result_reference = &result;
-	long clump_index = actor->unknown07c;
-	if (clump_index != NONE)
+	if (actor->unknown07c != NONE)
 	{
-		s_clump_activity_view *volatile clump = (s_clump_activity_view *)(g_502420->data + (clump_index & 0xffff) * sizeof(s_clump_activity_view));
-		long prop_index = function_26b120(object_index, clump_index);
+		s_clump_activity_view *clump = (s_clump_activity_view *)(g_502420->data + (actor->unknown07c & 0xffff) * sizeof(s_clump_activity_view));
+		long prop_index = function_26b120(actor->unknown07c, object_index);
 		if (prop_index == NONE)
 		{
 			prop_index = function_26a740(object_index, clump);
-			if (prop_index == NONE) goto done;
-			((s_prop_copy_view *)(g_50241c->data + (prop_index & 0xffff) * sizeof(s_prop_copy_view)))->field0c = *type_reference;
-			function_26a960((s_clump *)clump, prop_index);
-		}
-		long next = ((s_clump_prop *)(g_50241c->data + (prop_index & 0xffff) * sizeof(s_clump_prop)))->first_node;
-		while (next != NONE)
-		{
-			long index = next;
-			s_clump_link_view *node = (s_clump_link_view *)(g_502418->data + (index & 0xffff) * sizeof(s_clump_link_view));
-			next = node->next;
-			if (node->actor_index == *actor_reference)
+			if (prop_index != NONE)
 			{
-				result = index;
+				((s_prop_copy_view *)(g_50241c->data + (prop_index & 0xffff) * sizeof(s_prop_copy_view)))->field0c = type;
+				function_26a960((s_clump *)clump, prop_index);
+			}
+			else
+			{
+				return NONE;
+			}
+		}
+		s_iterator nodes;
+		nodes.next = ((s_clump_prop *)(g_50241c->data + (prop_index & 0xffff) * sizeof(s_clump_prop)))->first_node;
+		s_clump_node *node;
+		while ((node = clump_next_node(&nodes)) != NULL)
+		{
+			if (node->actor_index == actor_index)
+			{
+				result = nodes.index;
 				break;
 			}
 		}
 	}
-done:
-	return *result_reference;
+	return result;
 }
 
 void function_269250(long clump_index, long actor_index);
@@ -1815,7 +1799,7 @@ void function_269250(long clump_index, long actor_index)
 		long object_slot = node->object_index & 0xffff;
 		if (g_4de300[object_slot] != g_4de2fc)
 			g_4de300[object_slot] = g_4de2fc;
-		long prop_index = function_26b120(node->object_index, clump_index);
+		long prop_index = function_26b120(clump_index, node->object_index);
 		if (prop_index != NONE)
 		{
 			s_clump_prop *prop = (s_clump_prop *)(g_50241c->data + (prop_index & 0xffff) * sizeof(s_clump_prop));

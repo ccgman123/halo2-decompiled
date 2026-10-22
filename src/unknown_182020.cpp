@@ -167,7 +167,7 @@ void function_182b90(c_material_shape *shape, hkEntity const *entity,
 		long component_index = havok_entity_component_index_get(entity);
 		if (component_index != NONE)
 		{
-			long object_index = havok_component_get(component_index)->object_index;
+			long const &object_index = havok_component_get(component_index)->object_index;
 			long type = material_object_header_get(object_index)->type;
 			if (type == 0)
 			{

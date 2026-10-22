@@ -193,6 +193,8 @@ void juggernaut_set(long player_index, bool juggernaut)
 	juggernaut_update_teams();
 }
 
+// score 20 (was 20): the loop counter and the g_510c9c pointer sit in the other two callee-saved
+// registers than retail; the instruction order is the same.
 // @retail 0x192a30
 void function_192a30(long excluded_player_index)
 {
@@ -279,6 +281,8 @@ void c_juggernaut_engine::v15(long player_index)
 	}
 }
 
+// score 5 (was 5): the first bit test shifts by the low byte of the player index; retail shifts
+// by the 16-bit masked index and computes that mask before the shift.
 // @retail 0x192530
 void c_juggernaut_engine::v18()
 {

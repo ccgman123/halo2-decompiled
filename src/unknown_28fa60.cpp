@@ -52,27 +52,27 @@ bool function_28fa60(long arg_0, point3f const *arg_1, s_actor_object_sample *ar
 {
 	s_ai_object_iterator local_0;
 	s_perception_datum *volatile local_11 = perception_get(arg_0);
-	local_0.next_index = perception_get(arg_0)->object_index;
-	long local_2 = NONE;
 	real local_1 = 3.4028234663852886e+38f;
 	bool result = false;
+	local_0.next_index = perception_get(arg_0)->object_index;
+	dword local_2 = NONE;
 	s_handler_object_view *local_3;
 	while ((local_3 = function_28fa62(&local_0)) != NULL)
 	{
 		s_28fa60 *local_4 = function_28fa61(local_3);
 		real local_5 = arg_1->x - local_4->field_14.x;
-		real local_6 = arg_1->y - local_4->field_14.y;
-		real local_7 = arg_1->z - local_4->field_14.z;
 		real local_8 = local_5 * local_5;
+		real local_6 = arg_1->y - local_4->field_14.y;
 		local_8 += local_6 * local_6;
-		local_8 += local_7 * local_7;
+		real local_7 = arg_1->z - local_4->field_14.z;
+		local_8 = local_8 + (local_7 * local_7);
 		if (local_1 > local_8)
 		{
 			local_1 = local_8;
 			local_2 = local_0.index;
 		}
 	}
-	if (local_2 != NONE)
+	if (NONE != local_2)
 	{
 		function_1e3a00(local_2, arg_2);
 		result = true;

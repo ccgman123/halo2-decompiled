@@ -757,13 +757,15 @@ void function_85650(c_simulation_view *view, s_network_observer *observer, const
  }
  dword types[4];
  c_connection_client *clients[4];
- long count = 0;
+ long count;
  if (view->type == 3 || view->type == 4)
  {
   types[0] = 0x1a;
   clients[0] = (c_connection_client *)&((c_replication_view_storage *)view->data)->aggregate;
   count = 1;
  }
+ else
+  count = 0;
  bool active = view->world->state != 3 && view->world->state != 5;
  s_connection_callback *callback = (s_connection_callback *)view->unknown44;
  link_connection_callback_initialize(callback, clients, view,
@@ -852,6 +854,8 @@ static __forceinline byte *view_allocate_buffer(long size, long owner, long rele
  return (byte *)function_80e14(size, owner, 0, release, 30, 0.1f);
 }
 
+// score 22 (was 22): the dword local is written before the byte local; retail writes the byte
+// first and then the dword into the structure.
 // @retail 0x862e0
 bool function_862e0(c_simulation_view *view)
 {
@@ -900,6 +904,8 @@ bool function_862e0(c_simulation_view *view)
 
 bool function_685f0(void *block, long *size, byte *destination, long capacity);
 
+// score 2 (was 2): the constant 0xffff is loaded before the address of the buffer; retail loads
+// the address first.
 // @retail 0x869a0
 bool function_869a0(c_simulation_view *view, void *block)
 {
@@ -927,6 +933,8 @@ bool function_869a0(c_simulation_view *view, void *block)
 
 bool function_68670(byte *source, long size, void *block);
 
+// score 97 (was 97): the two fields of the record are read into the registers in the opposite
+// order (+0x1c before +0x18), so the rest of the block follows differently.
 // @retail 0x865d0
 void __stdcall function_865d0(c_simulation_view *view)
 {

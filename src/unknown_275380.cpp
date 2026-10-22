@@ -68,6 +68,8 @@ __forceinline void function_275384(s_type_c3b527 const *arg_0, point3f *arg_1)
 }
 
 
+// score 47 (was 47): every local of the outer frame sits 0xc bytes higher
+// in retail's frame ([esp+0x2c] where ours has [esp+0x20]).
 // @retail 0x275380
 void function_275380(long arg_0)
 {

@@ -307,6 +307,8 @@ short __stdcall function_1c1160(long actor_index, s_slot *slot, bool active)
 	return result;
 }
 
+// score 17 (was 17): the chosen reference is kept in a local that lands in the
+// dead slot argument slot here and in a different register in retail.
 // @retail 0x1c1320
 bool __stdcall function_1c1320(long actor_index, s_slot *slot)
 {

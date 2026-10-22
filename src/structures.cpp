@@ -197,7 +197,7 @@ bool function_14b120(s_surface_query_source source, void *surface)
         {
             result = function_14a8e0((s_structure_collision_result const *)source.collision,
                 *(long *)((byte *)triangle + 0xc), triangle);
-            return result;
+            goto done;
         }
         if (!excluded)
         {
@@ -209,6 +209,7 @@ bool function_14b120(s_surface_query_source source, void *surface)
     }
     if (!excluded && found)
         result = structure_get_lightmap_triangle(collision, triangle);
+done:
     return result;
 }
 

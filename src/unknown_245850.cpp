@@ -30,6 +30,8 @@ struct s_245850
 
 #pragma inline_depth(0)
 // @retail 0x245850
+// score 14 (was 14): the plane index is loaded with a 16 bit move where retail sign extends it,
+// and the two float sums emit their products in a different order.
 void function_245850(long arg_0, s_source_245400 const *arg_1,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
 	long arg_5, long arg_6, s_collection_245270 *arg_7)
@@ -81,6 +83,8 @@ struct s_245aa0
 };
 
 // @retail 0x245aa0
+// score 3 (was 3): the source argument of the function_245540 call is loaded into EDX here and
+// into ECX in retail; the register comes from the callee's argument assignment.
 void function_245aa0(s_245aa0 const *arg_0, s_source_245400 const *arg_1,
 	transform4x3f const *arg_2, real arg_3, real arg_4,
 	long arg_5, long arg_6, s_collection_245270 *arg_7)

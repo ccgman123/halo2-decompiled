@@ -506,6 +506,8 @@ struct s_invite_message_view
 };
 
 /* joins the game a message invites the selected player to */
+// score 2 (was 2): retail stores the type before the second half of the
+// FILETIME copy, ours stores it after, so the two stores trade places.
 // @retail 0x238f3f
 void __stdcall function_238f3f(long controller_index, void *message, unsigned __int64 session_id)
 {

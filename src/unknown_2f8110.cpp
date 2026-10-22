@@ -90,14 +90,19 @@ public:
 	virtual void add_contact(contact_2f8110 const *contact) {}
 };
 
+// score 77 (was 81): the contact's two sides are set before the call that
+// works out the terms, as retail does; ours still keeps the triangle's shape
+// in esi where retail keeps it in ecx, and keeps the sphere count in a stack
+// slot where retail reads it from the shape
 // @retail 0x2f8110
 void __cdecl function_2f8110(void const *a, void const *b, void const *input, void *collector)
 {
 	timer_add_2ebc80("TtMultiSphereTriangle");
 	body_2f8110 const *side_a = (body_2f8110 const *)a;
 	body_2f8110 const *side_b = (body_2f8110 const *)b;
-	spheres_2f8110 const *spheres = (spheres_2f8110 const *)side_a->shape;
 	triangle_2f8110 const *triangle = (triangle_2f8110 const *)side_b->shape;
+	spheres_2f8110 const *spheres = (spheres_2f8110 const *)side_a->shape;
+	long const sphere_count = spheres->count;
 	__m128 corners[3];
 	{
 		c_query_transform const *frame = &side_b->placement->transform;
@@ -110,7 +115,6 @@ void __cdecl function_2f8110(void const *a, void const *b, void const *input, vo
 			corner++;
 		}
 	}
-	long const sphere_count = spheres->count;
 	__m128 centres[8];
 	{
 		c_query_transform const *frame = &side_a->placement->transform;
@@ -124,10 +128,10 @@ void __cdecl function_2f8110(void const *a, void const *b, void const *input, vo
 		}
 	}
 	float terms[4];
-	function_308910(triangle->corners, terms);
 	contact_2f8110 contact;
 	contact.a = a;
 	contact.b = b;
+	function_308910(triangle->corners, terms);
 	__m128 const *centre = centres;
 	__m128 const *sphere = spheres->spheres;
 	for (int count = sphere_count; count > 0; count--)

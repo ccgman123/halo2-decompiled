@@ -1,4 +1,5 @@
 #include "unknown_11c920.h"
+#include "data_array.h"
 #include "unknown_08b110.h"
 #include "unknown_096ed0.h"
 #include "unknown_067e10.h"
@@ -118,25 +119,33 @@ void replication_node_start(s_node_450d1c *node, s_owner_450d1c *owner, dword ma
 	}
 }
 
+struct s_699a0_entry
+{
+	long state;
+	long handle;
+	byte unknown08[0x88];
+};
+struct s_699a0_table
+{
+	byte unknown00[0x8fc];
+	s_699a0_entry entries[16];
+};
+
 // @retail 0x699a0
 long function_699a0(long index, void *table)
 {
 	long handle = NONE;
 	if (index < 16)
 	{
-		if (index != NONE && index >= 0 && index < g_4e8c24->high_water_index)
-		{
-			byte *record = g_4e8c24->data + g_4e8c24->size * index;
-			if (*(word *)record != 0)
-				handle = *(long *)(record + 0x2c);
-		}
+		byte *record = datum_get_absolute_inlined(g_4e8c24, index);
+		if (record)
+			handle = *(long *)(record + 0x2c);
 	}
 	else if (index < 32)
 	{
-		/* retail tests the word at (index - 16) * 0x90 + 0x8fc, 4 bytes
-		   below the entry's handle */
-		if (*(long *)((byte *)table + (index - 16) * 0x90 + 0x8fc) != NONE)
-			handle = *(long *)((byte *)table + index * 0x90);
+		s_699a0_entry *entry = &((s_699a0_table *)table)->entries[index - 16];
+		if (entry->state != NONE)
+			handle = entry->handle;
 	}
 	return handle;
 }

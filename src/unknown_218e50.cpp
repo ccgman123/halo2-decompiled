@@ -13,6 +13,8 @@ static inline s_sound_permutation_set *sound_permutation_set_get(s_sound_promoti
 }
 
 // @retail 0x218e50
+// score 40 (was 40): the argument is read into BP where retail reads it into EBP, so the values are
+// kept in the 16 bit registers instead of the 32 bit ones.
 real function_218e50(long tag_index, short set_index, short permutation_index, short sample_index)
 {
 	s_sound_promotion_tag *sound = (s_sound_promotion_tag *)g_4e3b44[tag_index & 0xffff].bytes;

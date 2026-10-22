@@ -120,6 +120,8 @@ bool __stdcall function_71d70(c_session_state_matchmaking *arg_0)
 }
 #pragma inline_depth(255)
 
+// score 37 (was 37): the session state test is inverted (je against jne) and the shared tail
+// block is placed on the other side of the branch.
 // @retail 0x712d0
 bool function_712d0(c_session_state_matchmaking *arg_0)
 {

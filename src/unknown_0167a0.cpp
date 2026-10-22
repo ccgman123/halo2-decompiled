@@ -1025,6 +1025,9 @@ void __stdcall function_17b60(byte *context, s_packed_shader_range const *range)
     }
 }
 
+// score 51 (was 51): the switch on the procedure id is compiled to a different table: retail
+// reads the entry with movzx ecx from a table at another base, ours uses
+// esi and another table.
 // @retail 0x1ab50
 void __stdcall function_1ab50(byte *state, s_packed_shader_range const *range)
 {
@@ -1070,6 +1073,8 @@ void __stdcall function_1ab50(byte *state, s_packed_shader_range const *range)
 }
 
 
+// score 54 (was 54): the two arguments land in different registers (retail uses ebp for the
+// second and ecx for the first) and the bit-field extraction order differs.
 // @retail 0x19be0 standard
 void __stdcall function_19be0(byte *state, word const *range)
 {
@@ -1089,6 +1094,9 @@ void __stdcall function_19be0(byte *state, word const *range)
 
 
 
+// score 39 (was 39): the jump table's targets and the shifts around it differ: retail shifts
+// the word at esp+0x18 and keeps the index in ecx, ours keeps it in esi
+// and shifts later.
 // @retail 0x18560
 void __stdcall function_18560(byte *context, s_packed_shader_range const *range)
 {
@@ -1280,39 +1288,33 @@ void function_1ae70(byte *state)
     for (long mask = 0; mask < 2; ++mask)
         vector_pending[mask] = ((dword *)(state + 0x38))[mask] & ((dword *)(state + 0x4c))[mask];
     last_pending = *(dword *)(state + 0x40) & *(dword *)(state + 0x54);
-    long scalar_base = 0;
-    dword *scalar_masks = scalar_pending;
-    for (; scalar_base < 64; scalar_base += 32)
+    for (long mask = 0; mask < 2; ++mask)
     {
-        dword remaining = *scalar_masks;
+        dword remaining = scalar_pending[mask];
         while (remaining)
         {
             long bit;
             __asm { bsf ecx, remaining }
             __asm { mov bit, ecx }
-            long index = scalar_base + bit;
+            long index = mask * 32 + bit;
             ((real *)(state + 0x5c))[index] = function_336f0(index);
             remaining &= ~(1 << bit);
             ((dword *)(state + 0x30))[index >> 5] &= ~(1 << (index & 31));
         }
-        scalar_masks++;
     }
-    long vector_base = 0;
-    dword *vector_masks = vector_pending;
-    for (; vector_base < 64; vector_base += 32)
+    for (long mask = 0; mask < 2; ++mask)
     {
-        dword remaining = *vector_masks;
+        dword remaining = vector_pending[mask];
         while (remaining)
         {
             long bit;
             __asm { bsf ecx, remaining }
             __asm { mov bit, ecx }
-            long index = vector_base + bit;
+            long index = mask * 32 + bit;
             function_33980(index, (vector3f *)(state + 0x108 + index * 12));
             remaining &= ~(1 << bit);
             ((dword *)(state + 0x38))[index >> 5] &= ~(1 << (index & 31));
         }
-        vector_masks++;
     }
     dword remaining = last_pending;
     while (remaining)

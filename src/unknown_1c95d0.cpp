@@ -35,6 +35,11 @@ long function_26b230(long clump_index, long prop_index);
 extern s_record_pool *g_502420;
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// score 59 (was 66): the length now matches retail; what is left is that
+// retail loads the updated field into xmm1 and adds the clamped amount into
+// it, while ours loads it into xmm2 before the compare and adds it into xmm0,
+// and the stores of the event fields and the register setup of the two calls
+// are in another order.
 // @retail 0x1c95d0
 void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
 {
@@ -93,7 +98,8 @@ void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
    function_20ba60(0, arg_0, local_1, NONE, arg_2, local_2 ? &local_3 : NULL);
    if (local_0->field_12c != NONE)
    {
-    s_actor_view *local_4 = actor_get(local_0->field_12c);
+    long actor_index = local_0->field_12c;
+    s_actor_view *local_4 = actor_get(actor_index);
     s_1fbac0_event local_8;
     local_8.unknown00 = 0;
     local_8.unknown02 = 1;
@@ -102,7 +108,7 @@ void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
     local_8.data.unknown08 = 0;
     local_8.data.unknown0c = 0;
     local_8.data.unknown10 = 0;
-    function_1fbac0(local_0->field_12c, arg_0, true, 1, &local_8);
+    function_1fbac0(actor_index, arg_0, true, 1, &local_8);
     long local_9 = local_4->unknown07c;
     if (local_9 != NONE)
     {
@@ -110,7 +116,8 @@ void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
      if (local_10 != NONE)
      {
       s_1c95d2 *local_11 = &((s_1c95d2 *)g_50241c->data)[local_10 & 0xffff];
-      local_11->field_2c += arg_3 > 1.0f ? 1.0f : arg_3;
+      real current_value = local_11->field_2c;
+      local_11->field_2c = (arg_3 > 1.0f ? 1.0f : arg_3) + current_value;
      }
     }
    }

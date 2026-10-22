@@ -75,12 +75,13 @@ void function_133f70(s_133f70 const *arg_1, bool arg_2)
 		do
 		{
 			s_133f70 const *local_2 = local_12;
-			if (local_13 <= 0x18 || !arg_2 || *(long *)local_12->field_48[local_1] == *(long *)local_12->field_48[0])
+			byte *const *source_cursor = &local_2->field_48[local_1];
+			if (local_13 <= 0x18 || !arg_2 || *(long *)*source_cursor == *(long *)local_12->field_48[0])
 			{
 				s_133f70 local_3;
 				if (local_2->field_1c4 == 1)
 				{
-					long local_4 = *(long *)*(byte *const *)((byte const *)local_2 + local_13 + 0x30);
+					long local_4 = *(long *)*source_cursor;
 					byte const *local_5 = *(byte **)(g_4e0300->data + (local_4 & 0xffff) * 12 + 8);
 					if (local_5[0xaa] == 2)
 					{
@@ -103,9 +104,12 @@ void function_133f70(s_133f70 const *arg_1, bool arg_2)
 					| local_2->field_1ac | local_2->field_1b0;
 				for (long local_8 = 0; local_8 < *(long const *)((byte const *)local_2 + local_13); local_8++)
 				{
-					long local_9 = *((byte const *)local_2 + 0x75 + local_14 + local_8);
-					if (local_9 == 0xff)
-					local_9 = NONE;
+					byte selected = *((byte const *)local_2 + 0x75 + local_14 + local_8);
+					long local_9;
+					if (selected == 0xff)
+						local_9 = NONE;
+					else
+						local_9 = selected;
 					bool local_10 = (local_2->field_170 & 2) && (bool)((local_2->field_170 >> 3) & 1);
 					bool local_11 = (local_2->field_170 & 2) && (bool)((local_2->field_170 >> 4) & 1);
 					function_2cbf0(local_9, local_2->field_2c[local_1], local_2->field_16a, local_7,

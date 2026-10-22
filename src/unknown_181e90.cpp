@@ -127,8 +127,8 @@ bool function_355e0(long tag, long index, real *first, real *second);
 // @retail 0x181db0
 bool function_181db0(long index, vector3f *result)
 {
+	s_motion_entry *entry = &((s_motion_globals_view *)g_4e0348)->entries[index];
 	s_motion_globals_view *globals = (s_motion_globals_view *)g_4e0348;
-	s_motion_entry *entry = &globals->entries[index];
 	bool valid = false;
 	if (entry->basis_index != NONE && globals->basis_count > entry->basis_index)
 	{

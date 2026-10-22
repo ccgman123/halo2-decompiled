@@ -383,8 +383,8 @@ struct s_placement_source_ab
 	byte unknown00[0xaa];
 	byte type;
 	byte unknownab[0xc0 - 0xab];
-	byte flags_c0;
-	byte unknownc1[0x138 - 0xc1];
+	word flags_c0;
+	byte unknownc2[0x138 - 0xc2];
 	short team;
 	byte unknown13a[2];
 	long player_index;
@@ -410,11 +410,11 @@ void function_b7930(void *data, long tag_index, long object_index, s_effect_owne
 	s_placement_source_ab *object = (s_placement_source_ab *)function_badc0(object_index, NONE);
 	placement->team = NONE;
 	placement->player_index = NONE;
-	placement->object_index = object ? object_index : NONE;
 	if (object)
 	{
+		placement->object_index = object_index;
 		dword flags = *(volatile dword *)&placement->flags;
-		if ((bool)(((dword)object->flags_c0 >> 2) & 1))
+		if ((bool)((object->flags_c0 >> 2) & 1))
 			flags |= 0x20;
 		else
 			flags &= ~0x20;
@@ -425,6 +425,8 @@ void function_b7930(void *data, long tag_index, long object_index, s_effect_owne
 			placement->team = object->team;
 		}
 	}
+	else
+		placement->object_index = NONE;
 	if (owner)
 		placement->owner = *owner;
 	else
@@ -675,6 +677,7 @@ done:
 }
 
 #include "unknown_1cafc0.h"
+#include "channel_start_out_of_line.h"
 #include <math.h>
 struct s_16760c_render_model;
 bool __stdcall function_bab40(long object_index, long name, real *value);
@@ -697,7 +700,8 @@ void __stdcall function_bd970(long object_index, s_16760c_render_model *render_m
         short kind = *(short *)(entry->unknown08 + 2);
         if (animation_id.index != NONE)
             function_1dd9d0(graph, animation_id);
-        if (name && state->graph_tag_index != NONE && state->channel_start(&channel, animation_id, NONE, NONE, NONE, NONE, 0x7f))
+        if (name && state->graph_tag_index != NONE &&
+            channel_start_out_of_line(state, &channel, animation_id, NONE, NONE, NONE, NONE, 0x7f))
         {
             s_animation *animation = 0;
             if (channel.animation_id.index != NONE)

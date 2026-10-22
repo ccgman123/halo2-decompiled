@@ -102,6 +102,9 @@ PRIVATE inline s_projectile_choice *projectile_choice_get(short type)
 }
 
 // @retail 0x1ff200
+// score 51 (was 51): ours clears the low byte of the flags register where retail clears DL, and loads
+// the record pool's pointer into EDI where retail uses EDX; the arguments of the
+// call are pushed in a different order.
 bool function_1ff200(short type, point3f const *origin, real speed, point3f const *target,
 	real const *limit, bool alternate, vector3f *direction, real *speed_out, real *time,
 	vector3f *velocity, real *gravity)
@@ -314,10 +317,20 @@ bool function_1ff7d0(long actor_index, point3f const *point, real enemy_radius, 
 }
 
 long function_1e1f20(long actor_index);
+void *function_1e5240(long actor_index);
 point3f *function_b9dd0(long object_index, point3f *result);
 void function_1fc710(long actor_index, point3f *position);
 real function_30bf0(vector3f *v);
 real function_11ce20(vector3f const *a, vector3f const *b);
+
+/* an object's per-region state: 8 bytes each, +0x120 bytes of them at the
+   object's +0x122 offset; the byte at +2 is 0xff for a region that is gone */
+struct s_object_region_1ff
+{
+    byte unknown00[2];
+    byte unknown02;
+    byte unknown03[5];
+};
 
 // @retail 0x1ffe00
 bool __stdcall function_1ffe00(long actor_index, long object_index)
@@ -326,10 +339,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index)
     s_slot_object_view *object = object_get(object_index);
     byte *definition = g_4e3b44[object->tag_index & 0xffff].bytes;
     bool result = false;
-    byte *weapon_settings = NULL;
-    long weapon_index = function_1e1f20(actor_index);
-    if (weapon_index != NONE)
-        weapon_settings = (byte *)function_1e5280(actor_index, object_get(weapon_index)->tag_index);
+    byte *weapon_settings = (byte *)function_1e5240(actor_index);
     real best_score = 0.0f;
     long best = NONE;
     if (object->type != 0 || object->player_index == NONE)
@@ -338,11 +348,14 @@ bool __stdcall function_1ffe00(long actor_index, long object_index)
         function_b9dd0(object_index, &center);
         if (weapon_settings)
         {
-            real z = center.z - actor->position.z;
             real x = center.x - actor->position.x;
             real y = center.y - actor->position.y;
+            real z = center.z - actor->position.z;
             real range = *(real *)(weapon_settings + 0x20);
-            if (z * z + x * x + y * y < range * range)
+            real distance_squared = z * z;
+            distance_squared += x * x;
+            distance_squared += y * y;
+            if (distance_squared < range * range)
             {
                 long model_index = *(long *)(definition + 0x38);
                 if (model_index != NONE)
@@ -360,10 +373,10 @@ bool __stdcall function_1ffe00(long actor_index, long object_index)
                             if (region >= 0)
                             {
                                 byte *current = (byte *)object_get(object_index);
-                                if (region >= (*(short *)(current + 0x120) >> 3))
+                                if (region >= (long)(*(short *)(current + 0x120) / sizeof(s_object_region_1ff)))
                                     continue;
-                                byte *regions = current + *(short *)(current + 0x122);
-                                if (regions[region * 8 + 2] == 0xff)
+                                s_object_region_1ff *regions = (s_object_region_1ff *)(current + *(short *)(current + 0x122));
+                                if (regions[region].unknown02 == 0xff)
                                     continue;
                             }
                             s_object_marker marker;
@@ -375,7 +388,7 @@ bool __stdcall function_1ffe00(long actor_index, long object_index)
                                 direction.k = origin.z - marker.matrix.position.z;
                                 if (function_30bf0(&direction) != 0.0f)
                                 {
-                                    real angle = function_11ce20(&direction, &marker.matrix.forward);
+                                    real angle = function_11ce20(&marker.matrix.forward, &direction);
                                     if (angle < 1.5707963705062866f && angle < *(real *)(entry + 8))
                                     {
                                         real score = 1.0f - angle * 0.6366197466850281f;
@@ -390,17 +403,18 @@ bool __stdcall function_1ffe00(long actor_index, long object_index)
                                 }
                             }
                         }
-                        if (best != NONE)
-                        {
-                            *(long *)((byte *)actor + 0x33c) = best;
-                            return true;
-                        }
                     }
                 }
             }
         }
     }
-    *(long *)((byte *)actor + 0x33c) = 0;
+    if (best != NONE)
+    {
+        *(long *)((byte *)actor + 0x33c) = best;
+        result = true;
+    }
+    else
+        *(long *)((byte *)actor + 0x33c) = 0;
     return result;
 }
 
@@ -409,6 +423,8 @@ bool function_1c9290(long arg_0, point3f const *arg_1, vector3f const *arg_2,
 real normalize2d(point2f *arg_0);
 
 // @retail 0x1ff010
+// score 2 (was 2): the two factors of the multiply are in the opposite order: ours keeps the value
+// read from the structure in the destination register, retail the one from the stack.
 bool __stdcall function_1ff010(long arg_0, point3f const *arg_1)
 {
     bool local_0 = false;

@@ -79,9 +79,9 @@ void function_1fe620(long arg_0, byte const *arg_1, byte const *arg_2)
     real second_limit = *(real const *)(arg_1 + 0x1c);
     real first_lower = 0.0f - first_limit;
     real second_lower = 0.0f - second_limit;
-    real local_13 = slot_random_range(first_lower, first_limit);
+    real local_13 = function_259d0(&g_4e7408->unknown0, __FILE__, __LINE__, first_lower, first_limit);
     real local_14 = slot_random_range(second_lower, second_limit) + local_13;
-    real local_15 = slot_random_range(*(real const *)(arg_1 + 0x14),
+    real local_15 = function_259d0(&g_4e7408->unknown0, __FILE__, __LINE__, *(real const *)(arg_1 + 0x14),
         *(real const *)(arg_1 + 0x18));
     real local_16 = *(real const *)(arg_1 + 0x3c);
     if (local_12 > 0.0f && local_9 > 0.0f && atan2(local_12, local_9) > local_16)
