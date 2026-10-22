@@ -1471,12 +1471,9 @@ bool function_1a5b00(long object_index, short team, bool *has_hostile);
 // @retail 0x1a5910
 bool __stdcall function_1a5910(long object_index, long excluded_index, short team, bool *has_hostile)
 {
-	/* Keep the recursive entry arguments in their stack slots. */
-	long const *local_object = &object_index;
-	long const *local_excluded = &excluded_index;
 	bool result;
 	*has_hostile = false;
-	if (*local_object != *local_excluded)
+	if (object_index != excluded_index)
 	{
 		result = true;
 		s_object_header *header = OBJECT_HEADER(object_index);

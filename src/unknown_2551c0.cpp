@@ -72,6 +72,8 @@ short __stdcall function_2551c0(long actor_index)
 	return local_0;
 }
 
+// score 117 (was 117): our frame is four bytes larger than retail's and the
+// inlined rotation helper runs on a different SSE schedule.
 // @retail 0x2551f0
 bool __stdcall function_2551f0(long actor_index, s_slot *slot)
 {
@@ -225,6 +227,8 @@ struct s_2556c0
 	byte field_6[10];
 };
 
+// score 1 (was 1): the byte test uses the other SIB base and index slot;
+// the address is the same.
 // @retail 0x2556b0
 long function_2556b0(point3f const *arg_0, vector3f const *arg_1, long arg_2, real *arg_3)
 {

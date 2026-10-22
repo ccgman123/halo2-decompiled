@@ -637,20 +637,10 @@ void motion_sensor_build_sample(long local_player_index)
 	sample->count = 0;
 	if (unit_index != NONE)
 	{
-		real angle = 0.0f - (g_4ed284->entries[local_player_index].yaw + 1.5707964f);
-		real sine;
-		__asm {
-			fld angle
-			fsin
-			fstp sine
-		}
+		real facing = g_4ed284->entries[local_player_index].yaw + 1.5707964f;
+		real sine = (real)sin(-facing);
 		real scale = 1.0f / g_510c94->motion_sensor_range;
-		real cosine;
-		__asm {
-			fld angle
-			fcos
-			fstp cosine
-		}
+		real cosine = (real)cos(-facing);
 		point3f origin;
 		function_cafc0(unit_index, &origin);
 

@@ -35,6 +35,11 @@ long function_26b230(long clump_index, long prop_index);
 extern s_record_pool *g_502420;
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// score 59 (was 66): the length now matches retail; what is left is that
+// retail loads the updated field into xmm1 and adds the clamped amount into
+// it, while ours loads it into xmm2 before the compare and adds it into xmm0,
+// and the stores of the event fields and the register setup of the two calls
+// are in another order.
 // @retail 0x1c95d0
 void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
 {
@@ -111,7 +116,8 @@ void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
      if (local_10 != NONE)
      {
       s_1c95d2 *local_11 = &((s_1c95d2 *)g_50241c->data)[local_10 & 0xffff];
-      local_11->field_2c += arg_3 > 1.0f ? 1.0f : arg_3;
+      real current_value = local_11->field_2c;
+      local_11->field_2c = (arg_3 > 1.0f ? 1.0f : arg_3) + current_value;
      }
     }
    }

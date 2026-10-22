@@ -618,8 +618,17 @@ void __stdcall function_18a7b0(long datum_index)
 			{
 				bool resume = g_510c50 && ((s_510c50_looping_view *)g_510c50)->enabled && sound->type == 1 &&
 					((1 << ((s_loop_update_object_header *)g_4e0300->data)[sound->value10 & 0xffff].type) & 2);
-				long state = resume || ((1 << sound->value2) & 3) ? 1 : 0;
-				sound->value2 = (byte)state;
+				long state;
+				if (resume || ((1 << sound->value2) & 3))
+				{
+					state = 1;
+					sound->value2 = 1;
+				}
+				else
+				{
+					state = 0;
+					sound->value2 = 0;
+				}
 				if (function_21a250(sound->tag_index, play_flags, identifier, controller, &location, state, flags, 0.0f))
 				{
 					sound->flags |= 2;

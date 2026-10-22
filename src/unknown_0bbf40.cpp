@@ -302,6 +302,8 @@ s_object_gc_entry_ab g_440570[6] =
     {0, false, 0, 0}
 };
 
+// score 110 (was 110): the size constant is 0x2a08 where retail uses 0x2a04 and the prologue pushes
+// EBP where retail pushes EBX.
 // @retail 0xbf380
 void function_bf380()
 {
@@ -643,6 +645,8 @@ struct s_object_identifier_bbf40
 	char source;
 };
 
+// score 37 (was 41): the byte field is read into DL and the stack byte into CL; retail reads the
+// byte at +0xaa into DL and the stack byte into CL.
 // @retail 0xbf760
 long function_bf760(long const *unique_id)
 {
@@ -662,7 +666,7 @@ long function_bf760(long const *unique_id)
 		{
 			bool match = true;
 			match &= type == state.object->type;
-			match &= source == state.object->source;
+			match &= identifier->source == state.object->source;
 			match &= identifier->unique_id == state.object->unique_id;
 			if (match && source == 0)
 				match &= identifier->origin_bsp == state.object->origin_bsp;
@@ -740,6 +744,8 @@ void __stdcall function_bc300(long object_index)
 	record_pool_release(g_4e0300, object_index);
 }
 
+// score 42 (was 42): the mask is applied to the index before the record pointer is loaded; retail
+// loads the pointer first.
 // @retail 0xbc380
 bool function_bc380(long object_index, long block_offset, long size, long alignment_bits)
 {
@@ -806,6 +812,8 @@ static __forceinline byte *object_bytes_ab(long index)
     return (byte *)((s_object_header_0bbf40 *)g_4e0300->data)[index & 0xffff].object;
 }
 
+// score 101 (was 101): ours is thirteen bytes shorter and pushes EBP and ESI where retail pushes EBX
+// and EBP, so the saved registers differ.
 // @retail 0xbeb30
 bool __stdcall function_beb30(long object_index)
 {
@@ -1062,6 +1070,7 @@ void __stdcall function_c3260(long light_index, bool clear_object_flag);
 bool function_177610(long effect_index);
 void contrail_update(long contrail_index, bool detach, real dt);
 
+// score 2 (was 2): the flag bit is cleared after the store; retail clears it before the store.
 // @retail 0xbee60
 dword function_bee60(long object_index)
 {

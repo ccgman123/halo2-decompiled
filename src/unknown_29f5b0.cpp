@@ -938,6 +938,9 @@ void function_2a0580(long definition_index)
 long function_1765e0(point3f const *point, vector3f const *direction, vector3f const *normal, long tag_index, long mode, long deterministic);
 
 /* creates an effect at a cutscene flag, facing the flag's direction */
+// score 6 (was 6): only the order of the pushes: retail pushes esi and both
+// constant arguments before the x87 work, ours interleaves push esi and the
+// second push 1 with the fld/fcos; four source rewrites all scored 6.
 // @retail 0x2a05f0
 void function_2a05f0(long effect_index, short cutscene_flag_index)
 {

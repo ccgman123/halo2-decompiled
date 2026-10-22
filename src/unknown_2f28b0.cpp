@@ -298,7 +298,6 @@ found:
 		float const inverse_product = 1.0f / product;
 		float const inverse_length_squared = other_length_squared * inverse_product;
 		float const other_inverse_length_squared = inverse_product * length_squared;
-		__m128 const sign = *(__m128 const *)g_4124a0;
 		contact_point_2f28f0 *point = points + 1;
 		int end = 0;
 		int ends_clamped = 0xa;
@@ -376,8 +375,8 @@ found:
 			end_point = ends[1];
 			other_end_point = segment[1];
 			other_projection = other_length_squared - other_projection - cosine;
-			direction = _mm_xor_ps(direction, sign);
-			other_direction = _mm_xor_ps(other_direction, sign);
+			direction = _mm_xor_ps(direction, *(__m128 const *)g_4124a0);
+			other_direction = _mm_xor_ps(other_direction, *(__m128 const *)g_4124a0);
 			projection = length_squared - projection - cosine;
 			point++;
 			end++;
@@ -386,8 +385,6 @@ found:
 	}
 }
 
-// score 63 (was 66): the sign mask is held in xmm6 here and in xmm4 in retail,
-// and the scaled axis products take the other of the two registers.
 // @retail 0x2f28f0
 void __cdecl function_2f28f0(body_2f28f0 const *body, __m128 const *segment, float radius, contact_point_2f28f0 *points)
 {

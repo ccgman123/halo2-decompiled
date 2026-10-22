@@ -311,6 +311,8 @@ long player_slot_iterate_next(long index);
 
 /* whether a signed in player wants subtitles: always, or when the map's
    language isn't the game's */
+// score 17 (was 17): retail does not common the element address, it uses two
+// displacement-form instructions where ours emits a lea plus a load.
 // @retail 0x13cbf0
 bool function_13cbf0(void)
 {

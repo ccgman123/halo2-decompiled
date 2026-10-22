@@ -193,17 +193,18 @@ void function_124c00(long milliseconds)
 			gamepad->analog_button_frames_down[j] = down ? MIN(gamepad->analog_button_frames_down[j] + 1, 0xff) : 0;
 			gamepad->analog_button_msec_down[j] = down ? MIN(gamepad->analog_button_msec_down[j] + milliseconds, 0xffff) : 0;
 
+			byte value = gamepad->analog_buttons[j];
 			if (down)
 			{
-				threshold = gamepad->analog_buttons[j] < k_analog_button_release_margin ? 0 :
-					gamepad->analog_buttons[j] - k_analog_button_release_margin;
+				threshold = value < k_analog_button_release_margin ? 0 :
+					value - k_analog_button_release_margin;
 				if (threshold > gamepad->analog_button_thresholds[j])
 					gamepad->analog_button_thresholds[j] = threshold;
 			}
 			else
 			{
-				threshold = gamepad->analog_buttons[j] > 0xff - k_analog_button_press_margin ? 0xff :
-					gamepad->analog_buttons[j] + k_analog_button_press_margin;
+				threshold = value > 0xff - k_analog_button_press_margin ? 0xff :
+					value + k_analog_button_press_margin;
 				if (threshold < gamepad->analog_button_thresholds[j])
 					gamepad->analog_button_thresholds[j] = threshold;
 			}

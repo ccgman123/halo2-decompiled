@@ -81,6 +81,8 @@ static inline long bungienet_user_voice_setting(short kind)
 	return 1;
 }
 
+// score 11 (was 11): retail keeps the request pointer in ECX and reads the kind with a
+// 16-bit load; ours keeps the pointer in EAX, so the kind test becomes a memory compare.
 // @retail 0x8c5f0
 bool __stdcall bungienet_user_voice_apply(s_bungienet_user_request *request)
 {

@@ -65,6 +65,8 @@ static inline void *function_xc5914d(long thread_index, short size)
 	return result;
 }
 
+// score 12 (was 12): retail copies the argument pointer into EAX and returns it in a
+// register, ours reloads the result from the stack.
 // @retail 0x209d50
 long *__stdcall function_209d50(long thread_index, short parameter_count, short const *parameter_types, bool initialize)
 {

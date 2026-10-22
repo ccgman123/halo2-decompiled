@@ -513,7 +513,7 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 				function_246d80(&emitter_definition->color, cache->values, (color3f *)&color.red);
 			if ((bool)((emitter_definition->flags >> 2) & 1))
 				scale = function_246cd0(&emitter_definition->scale, cache->values) * multiplier;
-			mask = emitter_mask & 0xf80f;
+			dword particle_mask = emitter_mask & 0xf80f;
 			while (particle_index != NONE)
 			{
 				s_particle_175610 *particle = DATUM(g_51ec84, s_particle_175610, particle_index);
@@ -524,8 +524,8 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 					cache->field_50 = particle;
 					cache->mask &= 0xffff07f0;
 				}
-				function_173ba0(~cache->mask & mask, cache->field_48, cache->field_4c, cache->field_50, cache->values);
-				cache->mask |= mask;
+				function_173ba0(~cache->mask & particle_mask, cache->field_48, cache->field_4c, cache->field_50, cache->values);
+				cache->mask |= particle_mask;
 				particle_index = particle->next_index;
 				if (!(emitter_definition->flags & 1))
 					color.alpha = function_246cd0(&emitter_definition->alpha, cache->values);

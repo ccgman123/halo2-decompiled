@@ -335,18 +335,20 @@ void __stdcall function_185be0(long arg_0, long arg_1, real arg_2, real arg_3, s
             if (local_11 > 0) { local_11 = 0; *local_12 = 0; }
             else local_1->field_90 = 0;
         }
+        bool selected_active = local_11 != 0;
         function_185be4(&arg_5->field_18, 0x10000, local_3[7] != 0);
-        function_185be4(&arg_5->field_18, 0x200000, local_11 != 0);
-        function_185be4(&arg_5->field_18, 0x20000, local_11 != 0);
+        function_185be4(&arg_5->field_18, 0x200000, selected_active);
+        function_185be4(&arg_5->field_18, 0x20000, selected_active);
         if (g_4e6948->state != 2) function_185be4(&arg_5->field_18, 0x20000000, local_3[local_2.field_4d] != 0);
-        function_185be4(&arg_5->field_18, 0x800, local_11 != 0);
-        function_185be4(&arg_5->field_18, 0x4000, local_11 != 0);
+        function_185be4(&arg_5->field_18, 0x800, selected_active);
+        function_185be4(&arg_5->field_18, 0x4000, selected_active);
         function_185be4(&arg_5->field_18, 0x4000000, local_3[6] != 0);
         function_185be4(&arg_5->field_18, 0x80, local_3[12] != 0);
         function_185be4(&arg_5->field_18, 0x100, local_3[13] != 0);
-        function_185be4(&arg_5->field_18, 4, local_3[5] != 0);
-        function_185be4(&arg_5->field_18, 0x100000, local_3[5] != 0);
-        function_185be4(&arg_5->field_18, 0x2000000, local_3[5] != 0);
+        bool action_active = local_3[5] != 0;
+        function_185be4(&arg_5->field_18, 4, action_active);
+        function_185be4(&arg_5->field_18, 0x100000, action_active);
+        function_185be4(&arg_5->field_18, 0x2000000, action_active);
         local_1->field_93 = local_3[0] && ((g_510c50 && ((byte *)g_510c50)[5]) || local_1->field_93);
         function_185be4(&arg_5->field_18, 2, local_3[0] && !local_1->field_93);
         function_185be4(&arg_5->field_18, 0x10, local_3[4] != 0);

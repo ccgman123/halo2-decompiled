@@ -263,12 +263,7 @@ bool session_description_decode_buffer(const byte *data, long size, void *descri
 	{
 		s_bitstream stream;
 		stream.unknown08 = 1;
-		stream.data = (byte *)data;
-		stream.size_in_bytes = size;
-		stream.mode = 0;
-		stream.bit_position = 0;
-		stream.checkpoint_count = 0;
-		stream.error = false;
+		stream_set_buffer(&stream, data, size);
 		function_1947a0(&stream);
 		result = session_description_decode(&stream, description);
 		if (result && (stream.bit_position > (stream.size_in_bytes << 3) || stream.error))

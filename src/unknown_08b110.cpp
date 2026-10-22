@@ -22,7 +22,7 @@ void c_vtable_450c94::v3(s_node_450d1c *node, long a2, long a3, long key,
 	s_bitstream *stream, long reserved_bits)
 {
 	long index = (long)node;
-	stream->checkpoints[stream->checkpoint_count++] = stream->bit_position;
+	stream_save_position(stream);
 	stream_write_bit(stream, true);
 	stream_write_checked(stream, index, 5);
 	stream_write_bit(stream, (active_mask & (1 << index)) != 0);

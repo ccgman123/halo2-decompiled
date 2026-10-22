@@ -248,6 +248,12 @@ __forceinline __m128 normalized_309b50(__m128 const &v)
 }
 
 // the cross product of two vectors' first three terms
+// one point less another
+__forceinline __m128 edge_309b50(__m128 const &from, __m128 const &to)
+{
+	return _mm_sub_ps(from, to);
+}
+
 __forceinline __m128 cross_309b50(__m128 const &a, __m128 const &b)
 {
 	__m128 b_yzx = _mm_shuffle_ps(b, b, 0xc9);
@@ -269,17 +275,21 @@ __forceinline __m128 weighted_309b50(__m128 const *points, float const *weights)
 	return _mm_add_ps(_mm_add_ps(_mm_mul_ps(w0, points[0]), second), third);
 }
 
-// score 572 (was 738): the switch only jumps to labelled blocks written in
+// score 529 (was 572; 738 before round 47): the switch only jumps to labelled blocks written in
 // retail's order (four points down to none, then the three growth steps);
 // with the cases' code inside the switch our build laid it out from case 0
 // along the growth gotos. The second-shape points are declared before the
 // first-shape ones, which puts them in retail's slots, and the tetrahedron's
-// cross product is spelled out (the shared helper scored 696). Still: the
+// cross product is spelled out (the shared helper scored 696) with its edges
+// taken through a reference helper (so the second difference is read again
+// as retail does), the triangle's edges are named before the cross product
+// (arguments are evaluated last first), and the near-zero tests are written
+// !(x <= c) for retail's jp. Still: the
 // frame is 0x10 larger (retail shares 0x20 between the hull's new point, the
 // first step's answer and the collapsed case's along vector, and keeps the
-// weights at 0x20 and 0x30; ours at 0x40 and 0x20), retail reloads the second
-// difference for the tetrahedron's second edge and multiplies the other
-// product first, and retail's copies of the face's corners add the offset to
+// weights at 0x20 and 0x30; ours at 0x40 and 0x20), the three squared
+// lengths sit in other slots (retail: segment 0x54, height 0x58, triangle
+// 0x5c, point 0x10), and retail's copies of the face's corners add the offset to
 // the pointer before storing.
 // The penetration of the two shapes: 0 with the direction, point and
 // distance in `arg_0` (or nothing found by the first step), 2 when the
@@ -310,14 +320,14 @@ long class_309b50::function_309b50(long arg_0)
 		}
 	tetrahedron:
 		{
-			__m128 const a = _mm_sub_ps(differences[0], differences[1]);
-			__m128 const b = _mm_sub_ps(differences[1], differences[2]);
+			__m128 const a = edge_309b50(differences[0], differences[1]);
+			__m128 const b = edge_309b50(differences[1], differences[2]);
 			__m128 const a_yzx = _mm_shuffle_ps(a, a, 0xc9);
 			__m128 const b_zxy = _mm_shuffle_ps(b, b, 0xd2);
 			__m128 const a_zxy = _mm_shuffle_ps(a, a, 0xd2);
 			__m128 const b_yzx = _mm_shuffle_ps(b, b, 0xc9);
-			__m128 const first = _mm_mul_ps(a_yzx, b_zxy);
-			normal = _mm_sub_ps(first, _mm_mul_ps(a_zxy, b_yzx));
+			__m128 const second = _mm_mul_ps(a_zxy, b_yzx);
+			normal = _mm_sub_ps(_mm_mul_ps(a_yzx, b_zxy), second);
 			float const height = dot3_309b50(_mm_sub_ps(differences[3], differences[0]), normal);
 			if (!((float)fabs(height) <= 0.001f))
 			{
@@ -331,7 +341,9 @@ long class_309b50::function_309b50(long arg_0)
 		}
 	triangle:
 		{
-			normal = cross_309b50(_mm_sub_ps(differences[0], differences[1]), _mm_sub_ps(differences[1], differences[2]));
+			__m128 const a = _mm_sub_ps(differences[0], differences[1]);
+			__m128 const b = _mm_sub_ps(differences[1], differences[2]);
+			normal = cross_309b50(a, b);
 			float length_squared;
 			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(normal, normal)));
 			if (length_squared != 0.0f)
@@ -349,7 +361,7 @@ long class_309b50::function_309b50(long arg_0)
 			__m128 const along = _mm_sub_ps(differences[0], differences[1]);
 			float length_squared;
 			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(along, along)));
-			if (length_squared > 1e-06f)
+			if (!(length_squared <= 1e-06f))
 			{
 				goto grow_segment;
 			}
@@ -363,7 +375,7 @@ long class_309b50::function_309b50(long arg_0)
 		{
 			float length_squared;
 			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(differences[0], differences[0])));
-			if (length_squared > 1e-06f)
+			if (!(length_squared <= 1e-06f))
 			{
 				goto grow_point;
 			}

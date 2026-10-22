@@ -2,7 +2,7 @@
 // Havok (third-party physics library): a three-axis sweep of boxes
 // (axis_sweep_2e1090.h): the boxes a box reaches as it moves along a segment,
 // walked endpoint by endpoint through the three sorted axes.
-#include "axis_sweep_2e1090.h"
+#include "sweep_quantize_2e1090.h"
 #include "reference_counted_2d88a0.h"
 #include <math.h>
 
@@ -61,18 +61,6 @@ union vector_2e4660
 	float terms[4];
 	unsigned long bits[4];
 };
-
-// a corner's words, clamped to the moving box's range
-__forceinline void quantize_2e4660(class_2e1090 const *sweep, __m128 const &corner, unsigned long *words)
-{
-	vector_2e4660 quantized;
-	quantized.vector = _mm_add_ps(_mm_max_ps(_mm_min_ps(_mm_mul_ps(_mm_add_ps(corner, sweep->lower_offset), sweep->scale),
-		*(__m128 const *)g_4125f0), *(__m128 const *)g_4125e0), *(__m128 const *)g_4125c0);
-	words[0] = (unsigned short)(quantized.bits[0] >> 7);
-	words[1] = (unsigned short)(quantized.bits[1] >> 7);
-	words[2] = (unsigned short)(quantized.bits[2] >> 7);
-	words[3] = (unsigned short)(quantized.bits[3] >> 7);
-}
 
 // a box whose byte counts all three axes is passed on, unless it is a grid
 // cell's; the smaller distance left is kept
@@ -154,14 +142,17 @@ __forceinline void reach_all_2e3d40(char flags, element_2e1090 const *element, r
 		}
 	}
 }
-// score 672 (was 776): the word scan now indexes the elements, which gives
-// retail's four element pointers in slots, and each segment's slot of the
-// distances left is taken before the collector call. Still (2315 against 2334
-// bytes): retail loads the clamp constants into registers before the start
-// point, keeps the start point's fourth word in a dead 16-bit store, and its
-// frame is 0x10 larger; retail's four pointers point at the elements' owners
-// and start from the array, ours are offsets added to the array read again
-// (a local copy of the array merges them into one pointer, 776).
+// score 626 (was 672): the start point is quantized through the shared corner
+// helper in its own block (the clamps load first and the fourth word's dead
+// 16-bit store appears), and inverse and offset are vector locals with the
+// segment's end and delta in a nested block. Still (2350 against 2334 bytes):
+// the frame is 0x10 larger than retail's, with the start words at 0x40 and
+// the byte array at 0xcc where retail has 0x50 and 0x90 (retail's step array
+// reuses the dead start words' slot), so most stack operands differ; ours
+// pads the clearing loop's top where retail does not, keeps the axis walk's
+// counters in registers (retail: i times 4 and the axis pointer in slots),
+// and the word scan still indexes the elements (the card's element pointer
+// stepping 12, 8 or 4 scores 695).
 // each box a segment's end reaches from the start point, by the axes' high
 // nibbles (the low nibbles say which boxes hold the start point, and the
 // high ones start the same for each segment), is passed to that segment's
@@ -170,28 +161,20 @@ __forceinline void reach_all_2e3d40(char flags, element_2e1090 const *element, r
 // @retail 0x2e3d40
 void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660 *collectors, long collector_stride)
 {
-	__m128 const ceiling = *(__m128 const *)g_4125f0;
-	__m128 const floor = *(__m128 const *)g_4125e0;
-	vector_2e4660 quantized;
-	quantized.vector = _mm_add_ps(_mm_max_ps(_mm_min_ps(_mm_mul_ps(_mm_add_ps(rays->start, lower_offset), scale),
-		ceiling), floor), *(__m128 const *)g_4125c0);
-	unsigned long *const start_words = quantized.bits;
-	start_words[0] = (unsigned short)(quantized.bits[0] >> 7);
-	start_words[1] = (unsigned short)(quantized.bits[1] >> 7);
-	start_words[2] = (unsigned short)(quantized.bits[2] >> 7);
-	start_words[3] = (unsigned short)(quantized.bits[3] >> 7);
+	__declspec(align(16)) unsigned long start_words[4];
+	{
+		corner_words_2e1090 words;
+		quantize_corner_2e1090(rays->start, lower_offset, scale, *(__m128 const *)g_4125e0, *(__m128 const *)g_4125f0, words);
+		start_words[0] = words.words[0];
+		start_words[1] = words.words[1];
+		start_words[2] = words.words[2];
+		start_words[3] = words.words[3];
+	}
 	// one byte per box: the low nibble a bit for each axis whose interval
 	// holds the start point, the high nibble the same for the walk
-	long const count = elements.size;
+	int const count = elements.size;
 	bytes_2e1be0 flags(count + 16);
-	{
-		__m128 *block = (__m128 *)flags.data;
-		__m128 const zero = _mm_setzero_ps();
-		for (long blocks = count >> 4; blocks >= 0; blocks--)
-		{
-			_mm_store_ps((float *)block++, zero);
-		}
-	}
+	clear_blocks_2e1090(flags.data, count);
 	endpoint_2e0f80 *start_position[3];
 	{
 		endpoints_2e0f80 const *axis = rays->axes ? rays->axes : axes;
@@ -287,33 +270,33 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 	bits[0] = (char)0x88;
 
 	ray_collector_2e4660 *collector = collectors;
-	for (int r = 0; r < rays->count; r++)
+	for (int r = 0; r < rays->count; collector = (ray_collector_2e4660 *)((char *)collector + collector_stride), r++)
 	{
 		float distance_left = ((float *)left.data)[r];
 		endpoint_2e0f80 *position[3];
 		position[0] = start_position[0];
 		position[1] = start_position[1];
 		position[2] = start_position[2];
-		vector_2e4660 end;
-		end.vector = *(__m128 const *)(rays->ends + rays->end_stride * r);
-		vector_2e4660 direction;
-		direction.vector = _mm_sub_ps(end.vector, rays->start);
+		vector_2e4660 inverse;
+		vector_2e4660 offset;
 		long step[3];
-		float inverse[3];
-		float offset[3];
-		for (int i = 0; i < 3; i++)
 		{
-			float const scaled = direction.terms[i] * scale.m128_f32[i];
-			float const magnitude = (float)fabs(scaled);
-			float const start = (lower_offset.m128_f32[i] + rays->start.m128_f32[i]) * scale.m128_f32[i];
-			float const finish = (end.terms[i] + lower_offset.m128_f32[i]) * scale.m128_f32[i];
-			if (magnitude < start * 1.192092896e-07f || magnitude < 1.192092896e-07f * finish)
+			vector_2e4660 end;
+			end.vector = *(__m128 const *)(rays->ends + rays->end_stride * r);
+			vector_2e4660 direction;
+			direction.vector = _mm_sub_ps(end.vector, rays->start);
+			for (int i = 0; i < 3; i++)
 			{
-				inverse[i] = 0.0f;
-				offset[i] = -2.0f;
-			}
-			else
-			{
+				float const scaled = direction.terms[i] * scale.m128_f32[i];
+				float const magnitude = (float)fabs(scaled);
+				float const start = (lower_offset.m128_f32[i] + rays->start.m128_f32[i]) * scale.m128_f32[i];
+				float const finish = (end.terms[i] + lower_offset.m128_f32[i]) * scale.m128_f32[i];
+				if (magnitude < start * 1.192092896e-07f || magnitude < 1.192092896e-07f * finish)
+				{
+					inverse.terms[i] = 0.0f;
+					offset.terms[i] = -2.0f;
+					continue;
+				}
 				float const reciprocal = 1.0f / scaled;
 				step[i] = sizeof(endpoint_2e0f80);
 				if (scaled < 0.0f)
@@ -321,14 +304,14 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 					position[i]--;
 					step[i] = -(long)sizeof(endpoint_2e0f80);
 				}
-				inverse[i] = reciprocal;
-				offset[i] = (start - field_7c) * reciprocal;
+				inverse.terms[i] = reciprocal;
+				offset.terms[i] = (start - field_7c) * reciprocal;
 			}
 		}
 		float time[3];
-		time[0] = (float)position[0]->value * inverse[0] - offset[0];
-		time[1] = (float)position[1]->value * inverse[1] - offset[1];
-		time[2] = (float)position[2]->value * inverse[2] - offset[2];
+		time[0] = (float)position[0]->value * inverse.terms[0] - offset.terms[0];
+		time[1] = (float)position[1]->value * inverse.terms[1] - offset.terms[1];
+		time[2] = (float)position[2]->value * inverse.terms[2] - offset.terms[2];
 		for (;;)
 		{
 			int const axis = earliest_2e4660(time);
@@ -365,7 +348,7 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 				position[axis] = next;
 				if (p->value != next->value)
 				{
-					*next_time = (float)next->value * inverse[axis] - offset[axis];
+					*next_time = (float)next->value * inverse.terms[axis] - offset.terms[axis];
 					break;
 				}
 			}
@@ -383,74 +366,72 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 				word[1] = second | (second << 4);
 			}
 		}
-		collector = (ray_collector_2e4660 *)((char *)collector + collector_stride);
 	}
 }
-// score 755 (was 755): 2385 against 2305 bytes, first difference at +0x1d:
-// retail's frame is 0x30 larger (the corners, the flags and the per-axis arrays sit
-// elsewhere), it computes the upper corner before quantizing the lower one,
-// keeps a dead 16-bit store of each corner's fourth word, and keeps an
-// axis's lower word in ebx through its walks, so its toggles are single
-// `xor byte` instructions where ours load, xor and store through bl.
-// Retail also keeps the scale's address in a slot from the start, and its
-// scan of the start boxes keeps the collector in esi and the element pointer
-// in ebx (ours: ebx and a slot).
+// score 699 (was 755): both corners are formed first and quantized in one
+// block through the shared corner helper (the scale's address kept in a slot
+// and each corner's dead fourth-word store now as in retail), the walks read
+// the words from the aligned arrays, and inverse and the two offsets are
+// vector locals ahead of the step and toggle arrays. Still (2416 against 2305
+// bytes): the frame is 0x10 larger than retail's (retail's low offset reuses
+// the dead quantizing temp at 0x50), so the stack operands differ from the
+// first store on, and the later walks differ in registers and length.
 // each box the moving box overlaps at the start, then each box whose three
 // intervals it enters on the way, is passed to the collector, until the
 // collector's distance left is passed
 // @retail 0x2e4660
 void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *collector)
 {
-	vector_2e4660 lower;
-	vector_2e4660 upper;
-	unsigned long lower_words[4];
-	unsigned long upper_words[4];
-	lower.vector = _mm_sub_ps(ray->from, ray->extent);
-	upper.vector = _mm_add_ps(ray->from, ray->extent);
-	quantize_2e4660(this, lower.vector, lower_words);
-	quantize_2e4660(this, upper.vector, upper_words);
+	__declspec(align(16)) unsigned long lower_words[4];
+	__declspec(align(16)) unsigned long upper_words[4];
+	__m128 lower = _mm_sub_ps(ray->from, ray->extent);
+	__m128 upper = _mm_add_ps(ray->from, ray->extent);
+	{
+		corner_words_2e1090 words;
+		quantize_corner_2e1090(lower, lower_offset, scale, *(__m128 const *)g_4125e0, *(__m128 const *)g_4125f0, words);
+		lower_words[0] = words.words[0];
+		lower_words[1] = words.words[1];
+		lower_words[2] = words.words[2];
+		lower_words[3] = words.words[3];
+		quantize_corner_2e1090(upper, lower_offset, scale, *(__m128 const *)g_4125e0, *(__m128 const *)g_4125f0, words);
+		upper_words[0] = words.words[0];
+		upper_words[1] = words.words[1];
+		upper_words[2] = words.words[2];
+		upper_words[3] = words.words[3];
+	}
 
 	// one byte per box, a bit for each axis whose interval overlaps
-	long const count = elements.size;
+	int const count = elements.size;
 	bytes_2e1be0 flags(count + 16);
-	{
-		__m128 *block = (__m128 *)flags.data;
-		__m128 const zero = _mm_setzero_ps();
-		for (long blocks = count >> 4; blocks >= 0; blocks--)
-		{
-			_mm_store_ps((float *)block++, zero);
-		}
-	}
-	char *const bits = flags.data;
+	clear_blocks_2e1090(flags.data, count);
 	endpoint_2e0f80 *low_position[3];
 	endpoint_2e0f80 *high_position[3];
 	{
 		endpoints_2e0f80 const *axis = ray->axes ? ray->axes : axes;
+		char *const bits = flags.data;
 		int bit = 1;
 		for (int i = 0; i < 3; i++, axis++, bit <<= 1)
 		{
 			endpoint_2e0f80 *data = axis->data;
 			long const size = axis->size;
-			unsigned long const low = lower_words[i];
 			endpoint_2e0f80 *p;
 			endpoint_2e0f80 const *const middle = data + (size >> 1);
-			if (low < middle->value)
+			if (lower_words[i] < middle->value)
 			{
 				endpoint_2e0f80 *const end = data + size - 4;
-				for (p = data + 1; p < end && p[3].value <= low; p += 4)
+				for (p = data + 1; p < end && p[3].value <= lower_words[i]; p += 4)
 				{
 					bits[p[0].id] ^= bit;
 					bits[p[1].id] ^= bit;
 					bits[p[2].id] ^= bit;
 					bits[p[3].id] ^= bit;
 				}
-				for (; p->value <= low; p++)
+				for (; p->value <= lower_words[i]; p++)
 				{
 					bits[p->id] ^= bit;
 				}
 				low_position[i] = p;
-				unsigned long const high = upper_words[i];
-				for (; p->value <= high; p++)
+				for (; p->value <= upper_words[i]; p++)
 				{
 					bits[p->id] ^= ((p->value & 1) - 1) & bit;
 				}
@@ -466,13 +447,12 @@ void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *
 					bits[p[-2].id] ^= bit;
 					bits[p[-3].id] ^= bit;
 				}
-				unsigned long const high = upper_words[i];
-				for (; p->value > high; p--)
+				for (; p->value > upper_words[i]; p--)
 				{
 					bits[p->id] ^= bit;
 				}
 				high_position[i] = p + 1;
-				for (; p->value > low; p--)
+				for (; p->value > lower_words[i]; p--)
 				{
 					bits[p->id] ^= -(p->value & 1) & bit;
 				}
@@ -485,82 +465,88 @@ void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *
 	float left = 1.0f;
 	{
 		element_2e1090 const *element = elements.data;
-		unsigned long const *word = (unsigned long const *)bits;
-		unsigned long const *const words_end = word + (elements.size >> 2) + 1;
-		for (; word < words_end; word++, element += 4)
+		int const inner_count = elements.size;
+		unsigned long const *word = (unsigned long const *)flags.data;
+		unsigned long const *const words_end = word + (inner_count >> 2) + 1;
+		for (; word < words_end; element += 4, word++)
 		{
-			if ((*word + 0x01010101) & 0x08080808)
+			if (((*word + 0x01010101) & 0x08080808) == 0)
 			{
-				char const *bytes = (char const *)word;
-				reach_2e4660(bytes[0], element + 0, collector, &left);
-				reach_2e4660(bytes[1], element + 1, collector, &left);
-				reach_2e4660(bytes[2], element + 2, collector, &left);
-				reach_2e4660(bytes[3], element + 3, collector, &left);
+				continue;
 			}
+			char const *bytes = (char const *)word;
+			reach_2e4660(bytes[0], element + 0, collector, &left);
+			reach_2e4660(bytes[1], element + 1, collector, &left);
+			reach_2e4660(bytes[2], element + 2, collector, &left);
+			reach_2e4660(bytes[3], element + 3, collector, &left);
 		}
 	}
 
 	// each axis's step, and the times at which the box's ends reach an
 	// endpoint
-	vector_2e4660 direction;
-	direction.vector = _mm_sub_ps(ray->to, ray->from);
-	float inverse[3];
-	float low_offset[3];
-	float high_offset[3];
+	vector_2e4660 inverse;
+	vector_2e4660 low_offset;
+	vector_2e4660 high_offset;
 	long step[3];
 	long high_toggle[3];
 	long low_toggle[3];
-	for (int i = 0; i < 3; i++)
 	{
-		float const scaled = direction.terms[i] * scale.m128_f32[i];
-		float const magnitude = (float)fabs(scaled);
-		if (scaled > 0.0f)
+		__m128 const delta = _mm_sub_ps(ray->to, ray->from);
+		for (int i = 0; i < 3; i++)
 		{
-			step[i] = sizeof(endpoint_2e0f80);
-			low_toggle[i] = 0;
-			high_toggle[i] = 1;
-		}
-		else
-		{
-			step[i] = -(long)sizeof(endpoint_2e0f80);
-			endpoint_2e0f80 *const position = low_position[i];
-			low_position[i] = high_position[i];
-			high_position[i] = position;
-			float const corner = lower.terms[i];
-			lower.terms[i] = upper.terms[i];
-			upper.terms[i] = corner;
-			unsigned long const words = lower_words[i];
-			lower_words[i] = upper_words[i];
-			upper_words[i] = words;
-			low_position[i]--;
-			high_position[i]--;
-			low_toggle[i] = 1;
-			high_toggle[i] = 0;
-		}
-		float const start = (lower.terms[i] + lower_offset.m128_f32[i]) * scale.m128_f32[i];
-		float const finish = (ray->to.m128_f32[i] + lower_offset.m128_f32[i]) * scale.m128_f32[i];
-		if (magnitude < 1.192092896e-07f * start || magnitude < finish * 1.192092896e-07f)
-		{
-			inverse[i] = 0.0f;
-			low_offset[i] = -2.0f;
-			high_offset[i] = -2.0f;
-		}
-		else
-		{
+			float const scaled = delta.m128_f32[i] * scale.m128_f32[i];
+			float const magnitude = (float)fabs(scaled);
+			if (scaled > 0.0f)
+			{
+				step[i] = sizeof(endpoint_2e0f80);
+				low_toggle[i] = 0;
+				high_toggle[i] = 1;
+			}
+			else
+			{
+				step[i] = -(long)sizeof(endpoint_2e0f80);
+				endpoint_2e0f80 *const position = low_position[i];
+				low_position[i] = high_position[i];
+				high_position[i] = position;
+				float const corner = lower.m128_f32[i];
+				lower.m128_f32[i] = upper.m128_f32[i];
+				upper.m128_f32[i] = corner;
+				unsigned long const words = lower_words[i];
+				lower_words[i] = upper_words[i];
+				upper_words[i] = words;
+				low_position[i]--;
+				high_position[i]--;
+				low_toggle[i] = 1;
+				high_toggle[i] = 0;
+			}
+			float const start = (lower.m128_f32[i] + lower_offset.m128_f32[i]) * scale.m128_f32[i];
+			float const finish = (ray->to.m128_f32[i] + lower_offset.m128_f32[i]) * scale.m128_f32[i];
+			if (magnitude < 1.192092896e-07f * start || magnitude < finish * 1.192092896e-07f)
+			{
+				inverse.terms[i] = 0.0f;
+				low_offset.terms[i] = -2.0f;
+				high_offset.terms[i] = -2.0f;
+				continue;
+			}
 			float const reciprocal = 1.0f / scaled;
-			inverse[i] = reciprocal;
-			low_offset[i] = ((lower.terms[i] + lower_offset.m128_f32[i]) * scale.m128_f32[i] - field_7c) * reciprocal;
-			high_offset[i] = ((upper.terms[i] + lower_offset.m128_f32[i]) * scale.m128_f32[i] - field_7c) * reciprocal;
+			inverse.terms[i] = reciprocal;
+			{
+				low_offset.terms[i] = ((lower.m128_f32[i] + lower_offset.m128_f32[i]) * scale.m128_f32[i] - field_7c) * reciprocal;
+			}
+			{
+				high_offset.terms[i] = ((upper.m128_f32[i] + lower_offset.m128_f32[i]) * scale.m128_f32[i] - field_7c) * reciprocal;
+			}
 		}
 	}
 	float low_time[3];
 	float high_time[3];
-	low_time[0] = (float)low_position[0]->value * inverse[0] - low_offset[0];
-	low_time[1] = (float)low_position[1]->value * inverse[1] - low_offset[1];
-	low_time[2] = (float)low_position[2]->value * inverse[2] - low_offset[2];
-	high_time[0] = (float)high_position[0]->value * inverse[0] - high_offset[0];
-	high_time[1] = (float)high_position[1]->value * inverse[1] - high_offset[1];
-	high_time[2] = (float)high_position[2]->value * inverse[2] - high_offset[2];
+	low_time[0] = (float)low_position[0]->value * inverse.terms[0] - low_offset.terms[0];
+	low_time[1] = (float)low_position[1]->value * inverse.terms[1] - low_offset.terms[1];
+	low_time[2] = (float)low_position[2]->value * inverse.terms[2] - low_offset.terms[2];
+	high_time[0] = (float)high_position[0]->value * inverse.terms[0] - high_offset.terms[0];
+	high_time[1] = (float)high_position[1]->value * inverse.terms[1] - high_offset.terms[1];
+	high_time[2] = (float)high_position[2]->value * inverse.terms[2] - high_offset.terms[2];
+	char *const bits = flags.data;
 	// the first box's byte stands for the axes' sentinels
 	bits[0] = 8;
 
@@ -602,7 +588,7 @@ void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *
 				high_position[high_axis] = next;
 				if (p->value != next->value)
 				{
-					*high_next = (float)next->value * inverse[high_axis] - high_offset[high_axis];
+					*high_next = (float)next->value * inverse.terms[high_axis] - high_offset.terms[high_axis];
 					break;
 				}
 			}
@@ -628,7 +614,7 @@ void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *
 				low_position[low_axis] = next;
 				if (p->value != next->value)
 				{
-					*low_next = (float)next->value * inverse[low_axis] - low_offset[low_axis];
+					*low_next = (float)next->value * inverse.terms[low_axis] - low_offset.terms[low_axis];
 					break;
 				}
 			}

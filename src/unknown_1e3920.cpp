@@ -161,6 +161,9 @@ PRIVATE __forceinline s_actor_point_group *actor_point_next_group(s_actor_point_
 	return result;
 }
 
+// score 50 (was 50): retail holds the field in EAX and the -1 sentinel in EDX
+// where ours holds the field in ECX and the sentinel in EAX, so the compares
+// and the conditional moves differ.
 // @retail 0x1e47d0
 s_actor_moving *function_1e47d0(s_actor_point_request *request)
 {
@@ -1040,6 +1043,9 @@ done:
 	return actor_index;
 }
 
+// score 38 (was 38): retail keeps the new index in ESI where ours keeps it in
+// EDI, and the branch that follows goes to another place, so the calls after
+// it land at different offsets.
 // @retail 0x1e04a0
 void function_1e04a0(long primary_tag, long character_index, long unit_index, long secondary_tag, short grenade_type)
 {
@@ -1146,6 +1152,10 @@ void function_1e2a90(long actor_index);
 bool function_1e35f0(long actor_index);
 void function_1e3b60(long actor_index);
 
+// score 26 (was 26): retail passes the actor index to function_262ba0 and to
+// function_1f38c0 in EAX; our build passes the first on the stack and the
+// second in ECX, because those two callees' argument registers are fixed in
+// their own translation units.
 // @retail 0x1e34e0
 void function_1e34e0(long actor_index)
 {

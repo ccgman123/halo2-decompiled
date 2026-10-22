@@ -1,4 +1,5 @@
 #include "unknown_11c920.h"
+#include <string.h>
 #include "globals.h"
 #include "unknown_0a58d0.h"
 
@@ -32,11 +33,7 @@ struct s_object_creation
 
 static void object_state_clear(s_entity_state *state)
 {
-	state->field0 = 0;
-	state->field4 = 0;
-	state->field8_long = 0;
-	state->fieldc = 0;
-	state->field10 = 0;
+	memset(state, 0, sizeof(*state));
 }
 
 // @retail 0x9fe30
@@ -67,6 +64,8 @@ void c_object_type_definition::v21(s_entity *link)
 	}
 }
 
+// score 49 (was 49): the prologue differs: retail masks the index before saving the
+// registers, ours pushes ebx, esi and edi first and masks afterwards.
 // @retail 0xa0700
 void c_object_type_definition::v26(long object_index, long unused, s_entity_state *state)
 {

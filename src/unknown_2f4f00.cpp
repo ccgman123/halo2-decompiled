@@ -322,106 +322,108 @@ __forceinline void capsule_triangle_2f4f00(void const *a, void const *b, void co
 	// each end that lies over the triangle gives a contact, and each that does
 	// not, the closest of the edges; when the segment passes outside one edge
 	// on both ends, only the closest of the edges
-	__m128 const direction = _mm_sub_ps(ends[1], ends[0]);
-	bool outside = false;
-	if (((signs[0] | signs[1]) & 7) != 7)
 	{
-		outside = true;
-	}
-	contact_2f4f00 *contact = contacts;
-	for (int end = 0; end < 2;)
-	{
-		if (!outside && (signs[end] & 7) == 7)
+		__m128 const direction = _mm_sub_ps(ends[1], ends[0]);
+		bool outside = false;
+		if (((signs[0] | signs[1]) & 7) != 7)
 		{
-			if (signs[end] & 8)
-			{
-				float const shift = -triangle->radius - heights[end].m128_f32[3];
-				contact->point = _mm_add_ps(ends[end], _mm_mul_ps(splat_2f4f00(shift), normal));
-				contact->point.m128_f32[3] = -heights[end].m128_f32[3] - radius;
-				contact->normal = _mm_xor_ps(normal, *(__m128 const *)g_4124a0);
-			}
-			else
-			{
-				float const shift = triangle->radius - heights[end].m128_f32[3];
-				contact->point = _mm_add_ps(ends[end], _mm_mul_ps(splat_2f4f00(shift), normal));
-				contact->point.m128_f32[3] = heights[end].m128_f32[3] - radius;
-				contact->normal = normal;
-			}
-			end++;
-			contact++;
-			continue;
+			outside = true;
 		}
-		int bit = 1;
-		for (int edge = 0; edge < 3; edge++, bit <<= 1)
+		contact_2f4f00 *contact = contacts;
+		for (int end = 0; end < 2;)
 		{
-			if (outside)
+			if (!outside && (signs[end] & 7) == 7)
 			{
-				if (signs[0] & (bit & signs[1]))
+				if (signs[end] & 8)
+				{
+					float const shift = -triangle->radius - heights[end].m128_f32[3];
+					contact->point = _mm_add_ps(ends[end], _mm_mul_ps(splat_2f4f00(shift), normal));
+					contact->point.m128_f32[3] = -heights[end].m128_f32[3] - radius;
+					contact->normal = _mm_xor_ps(normal, *(__m128 const *)g_4124a0);
+				}
+				else
+				{
+					float const shift = triangle->radius - heights[end].m128_f32[3];
+					contact->point = _mm_add_ps(ends[end], _mm_mul_ps(splat_2f4f00(shift), normal));
+					contact->point.m128_f32[3] = heights[end].m128_f32[3] - radius;
+					contact->normal = normal;
+				}
+				end++;
+				contact++;
+				continue;
+			}
+			int bit = 1;
+			for (int edge = 0; edge < 3; edge++, bit <<= 1)
+			{
+				if (outside)
+				{
+					if (signs[0] & (bit & signs[1]))
+					{
+						continue;
+					}
+				}
+				else if (signs[end] & bit)
 				{
 					continue;
 				}
-			}
-			else if (signs[end] & bit)
-			{
-				continue;
-			}
-			__m128 const *start = &corners[g_4136b0[edge + 2]];
-			__m128 const side = _mm_sub_ps(corners[g_4136b0[edge]], *start);
-			closest_points_308590 closest;
-			int const clamped = function_308590(&ends[0], &direction, start, &side, &closest);
-			float const limit = radius + contact->point.m128_f32[3];
-			if (!(closest.distance_squared < limit * limit))
-			{
-				continue;
-			}
-			if (clamped & (1 << end))
-			{
-				if (!outside)
+				__m128 const *start = &corners[g_4136b0[edge + 2]];
+				__m128 const side = _mm_sub_ps(corners[g_4136b0[edge]], *start);
+				closest_points_308590 closest;
+				int const clamped = function_308590(&ends[0], &direction, start, &side, &closest);
+				float const limit = radius + contact->point.m128_f32[3];
+				if (!(closest.distance_squared < limit * limit))
 				{
 					continue;
 				}
-				end = 1;
-			}
-			__m128 across;
-			if (clamped == 0)
-			{
-				across = cross_2f4f00(direction, side);
-			}
-			else if (!(closest.distance_squared <= 1.4210854715202004e-14f))
-			{
-				across = closest.offset;
-			}
-			else
-			{
-				float const *terms = (float const *)&planes;
-				set_vector_2f4f00(closest.offset, terms[edge], terms[edge + 4], terms[edge + 8]);
-				across = cross_2f4f00(direction, side);
-				float length_squared;
-				_mm_store_ss(&length_squared, sum_2f4f00(_mm_mul_ps(across, across)));
-				if (!(length_squared > 1.4210854715202004e-14f))
+				if (clamped & (1 << end))
+				{
+					if (!outside)
+					{
+						continue;
+					}
+					end = 1;
+				}
+				__m128 across;
+				if (clamped == 0)
+				{
+					across = cross_2f4f00(direction, side);
+				}
+				else if (!(closest.distance_squared <= 1.4210854715202004e-14f))
 				{
 					across = closest.offset;
 				}
+				else
+				{
+					float const *terms = (float const *)&planes;
+					set_vector_2f4f00(closest.offset, terms[edge], terms[edge + 4], terms[edge + 8]);
+					across = cross_2f4f00(direction, side);
+					float length_squared;
+					_mm_store_ss(&length_squared, sum_2f4f00(_mm_mul_ps(across, across)));
+					if (!(length_squared > 1.4210854715202004e-14f))
+					{
+						across = closest.offset;
+					}
+				}
+				across = normalized_2f4f00(across);
+				float dot;
+				_mm_store_ss(&dot, sum_2f4f00(_mm_mul_ps(across, closest.offset)));
+				float distance = dot;
+				if (dot < 0.0f)
+				{
+					across = _mm_xor_ps(across, *(__m128 const *)g_4124a0);
+					distance = -dot;
+				}
+				contact->point = _mm_add_ps(closest.first_point, _mm_mul_ps(splat_2f4f00(triangle->radius - distance), across));
+				contact->point.m128_f32[3] = distance - radius;
+				contact->normal = across;
 			}
-			across = normalized_2f4f00(across);
-			float dot;
-			_mm_store_ss(&dot, sum_2f4f00(_mm_mul_ps(across, closest.offset)));
-			float distance = dot;
-			if (dot < 0.0f)
+			if (outside)
 			{
-				across = _mm_xor_ps(across, *(__m128 const *)g_4124a0);
-				distance = -dot;
+				break;
 			}
-			contact->point = _mm_add_ps(closest.first_point, _mm_mul_ps(splat_2f4f00(triangle->radius - distance), across));
-			contact->point.m128_f32[3] = distance - radius;
-			contact->normal = across;
+			end++;
+			contact++;
 		}
-		if (outside)
-		{
-			break;
-		}
-		end++;
-		contact++;
 	}
 }
 
@@ -468,7 +470,7 @@ __forceinline void report_pair_2f4f00(contact_2f4f00 const *contacts, void const
 	}
 }
 
-// score 570 (was 541): retail's frame is 0x10 smaller (it keeps the outside
+// score 540 (was 570): retail's frame is 0x10 smaller (it keeps the outside
 // flag at 0x10, sharing the inside case's slope slot; ours gives it its own
 // byte), and retail keeps the second body in ebx and the capsule in edi, ours
 // the other way round;
@@ -480,6 +482,12 @@ __forceinline void report_pair_2f4f00(contact_2f4f00 const *contacts, void const
 // 0x2f6db0 but added 32 to 0x2f4f00; a block scope for the end loop, or a
 // goto into it, scored worse over the four. The edge contact's dot product
 // is read into its own local, so the sign flip stays on the FPU as in retail.
+// The part after the inside case sits in a block of its own, which took 30
+// off 0x2f4f00, 10 off 0x2f6db0 and 2 off 0x2f63d0 and cost 0x2f5960 1;
+// the outside flag still gets its own byte at 0x13. Named 3.0/0.5 constants
+// in the normalizing helper, m128_f32 terms for the edge planes and other
+// declaration orders for the flag and the edge bit changed nothing or scored
+// worse.
 // The closer contact of the capsule and the triangle passed to the collector,
 // with the triangle's weights kept in the object
 // @retail 0x2f4f00
@@ -495,7 +503,7 @@ void class_2f4f00::function_2f4f00(void const *a, void const *b, void const *inp
 	timer_add_2ebc80("Et");
 }
 
-// score 454 (was 469): the frame is laid out differently, the registers
+// score 455 (was 454): the frame is laid out differently, the registers
 // differ in places;
 // the edge planes' terms are copied with integer moves where retail uses
 // the FPU, and the code for the edges is placed before the report instead of
@@ -505,6 +513,12 @@ void class_2f4f00::function_2f4f00(void const *a, void const *b, void const *inp
 // 0x2f6db0 but added 32 to 0x2f4f00; a block scope for the end loop, or a
 // goto into it, scored worse over the four. The edge contact's dot product
 // is read into its own local, so the sign flip stays on the FPU as in retail.
+// The part after the inside case sits in a block of its own, which took 30
+// off 0x2f4f00, 10 off 0x2f6db0 and 2 off 0x2f63d0 and cost 0x2f5960 1;
+// the outside flag still gets its own byte at 0x13. Named 3.0/0.5 constants
+// in the normalizing helper, m128_f32 terms for the edge planes and other
+// declaration orders for the flag and the edge bit changed nothing or scored
+// worse.
 // The closer contact of the capsule and the triangle passed to the collector,
 // with the triangle's weights worked out here
 // @retail 0x2f5960
@@ -522,7 +536,7 @@ void __cdecl function_2f5960(void const *a, void const *b, void const *input, vo
 	timer_add_2ebc80("Et");
 }
 
-// score 389 (was 418): the frame is laid out differently, the registers
+// score 387 (was 389): the frame is laid out differently, the registers
 // differ in places (retail: inside case, report, ret, then the edges' code
 // jumping back; ending the query inline with a goto to the report and placing
 // the edges' code after it scored 522: the corner loops rotate);
@@ -534,6 +548,12 @@ void __cdecl function_2f5960(void const *a, void const *b, void const *input, vo
 // 0x2f6db0 but added 32 to 0x2f4f00; a block scope for the end loop, or a
 // goto into it, scored worse over the four. The edge contact's dot product
 // is read into its own local, so the sign flip stays on the FPU as in retail.
+// The part after the inside case sits in a block of its own, which took 30
+// off 0x2f4f00, 10 off 0x2f6db0 and 2 off 0x2f63d0 and cost 0x2f5960 1;
+// the outside flag still gets its own byte at 0x13. Named 3.0/0.5 constants
+// in the normalizing helper, m128_f32 terms for the edge planes and other
+// declaration orders for the flag and the edge bit changed nothing or scored
+// worse.
 // The pair passed to the collector when the capsule and the triangle overlap,
 // with the triangle's weights kept in the object
 // @retail 0x2f63d0
@@ -546,7 +566,7 @@ void class_2f63d0::function_2f63d0(void const *a, void const *b, void const *inp
 	timer_add_2ebc80("Et");
 }
 
-// score 434 (was 470): the frame is laid out differently, the registers
+// score 424 (was 434): the frame is laid out differently, the registers
 // differ in places;
 // the edge planes' terms are copied with integer moves where retail uses
 // the FPU, and the code for the edges is placed before the report instead of
@@ -556,6 +576,12 @@ void class_2f63d0::function_2f63d0(void const *a, void const *b, void const *inp
 // 0x2f6db0 but added 32 to 0x2f4f00; a block scope for the end loop, or a
 // goto into it, scored worse over the four. The edge contact's dot product
 // is read into its own local, so the sign flip stays on the FPU as in retail.
+// The part after the inside case sits in a block of its own, which took 30
+// off 0x2f4f00, 10 off 0x2f6db0 and 2 off 0x2f63d0 and cost 0x2f5960 1;
+// the outside flag still gets its own byte at 0x13. Named 3.0/0.5 constants
+// in the normalizing helper, m128_f32 terms for the edge planes and other
+// declaration orders for the flag and the edge bit changed nothing or scored
+// worse.
 // The pair passed to the collector when the capsule and the triangle overlap,
 // with the triangle's weights worked out here
 // @retail 0x2f6db0

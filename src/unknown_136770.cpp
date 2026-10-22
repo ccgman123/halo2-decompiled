@@ -248,13 +248,14 @@ void function_1373c0(char *path)
 void function_137400(char *path, char **a, char **b, char **c, char **d, bool flag)
 {
 	long length = (short)strlen(path);
-	char *p = path + length;
-	*c = p;
-	*d = p;
-	*a = p;
-	*b = p;
+	char *end = path + length;
+	*c = end;
+	*d = end;
+	*a = end;
+	*b = end;
 	if (length > 0)
 	{
+		char *p = end;
 		dword n = (word)length;
 		do
 		{

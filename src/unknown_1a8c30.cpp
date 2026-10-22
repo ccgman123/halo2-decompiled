@@ -19,6 +19,10 @@ struct s_1a8c30
 };
 
 #pragma inline_depth(0)
+// score 4 (was 67): the radius square now happens after the call to
+// function_11e000, the flag is set before it and the second switch assigns
+// the flag from the condition, as in retail; what is left is the order of the
+// register setup in the calls to function_11e6f0 and function_1a8a10.
 // @retail 0x1a8c30
 short __stdcall function_1a8c30(long arg_0, s_slot *arg_1)
 {
@@ -37,12 +41,12 @@ short __stdcall function_1a8c30(long arg_0, s_slot *arg_1)
     local_3.k = *(real *)((byte *)local_0 + 0x390) - local_17->z;
     real local_4 = local_0->unknown36c;
     real local_15 = function_11e000(&local_0->position, local_17, &local_3);
-    bool local_5 = local_4 * local_4 > local_15;
+    bool local_5 = local_15 < local_4 * local_4;
     function_1a8fa0(arg_0, 0.0f, NULL, &local_5, NULL);
     if (local_5)
     {
-        real local_6 = function_11e6f0(&local_0->unknown370, &local_0->position, &local_3, local_0->unknown36c);
         bool local_7 = false;
+        real local_6 = function_11e6f0(&local_0->unknown370, &local_0->position, &local_3, local_0->unknown36c);
         if (local_6 < 3.402823466e38f)
             local_6 *= 1.5f;
         switch (local_0->unknown358)
@@ -79,8 +83,7 @@ short __stdcall function_1a8c30(long arg_0, s_slot *arg_1)
             {
             case 2:
             case 4:
-                if ((local_12 || local_11) && 0.25f > local_6)
-                    local_13 = true;
+                local_13 = (local_12 || local_11) && 0.25f > local_6;
                 break;
             case 1:
                 if ((local_12 || local_11) && local_6 <= 0.0f)

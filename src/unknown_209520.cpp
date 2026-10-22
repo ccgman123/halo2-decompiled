@@ -909,6 +909,8 @@ struct s_object_list_208070
 };
 
 // @retail 0x208070
+// score 21 (was 47): the two record pools are loaded in the opposite order, so the pointer of the
+// second pool is read before the first one's.
 void __stdcall function_208070(short function_index, long thread_index, bool initialize)
 {
     s_hs_frame *frame = hs_thread_get(thread_index)->frame;
@@ -988,12 +990,13 @@ void function_2090a0(void)
             if (thread->flags & 1)
             {
                 function_209850(thread_index);
+                s_record_pool *values = g_4f9380;
                 if (*(short *)(global + 0x20) == _hs_type_object_list)
                 {
                     function_20a2e0((short)i);
                     long index = (short)i;
                     long value_slot = (index & 0x8000) ? (index & 0x7fff) : (index & 0x7fff) + 0x41d;
-                    long list_index = ((s_hs_global_value *)g_4f9380->data)[value_slot].value.d;
+                    long list_index = ((s_hs_global_value *)values->data)[value_slot].value.d;
                     if (list_index != NONE)
                     {
                         s_object_list_208070 *list = &((s_object_list_208070 *)g_4f55d8->data)[list_index & 0xffff];
@@ -1006,8 +1009,8 @@ void function_2090a0(void)
         record_pool_release(g_4f9384, thread_index);
         for (long i = 0; i < *(long *)(scenario + 0x1b8); i++)
         {
-            short type = ((s_hs_scenario_view *)scenario)->scripts[i].type;
-            if (type >= 0 && type <= 2)
+            s_hs_script const *script = &((s_hs_scenario_view *)scenario)->scripts[i];
+            if (script->type == 0 || script->type == 1 || script->type == 2)
                 function_2097c0(i, 0);
         }
     }

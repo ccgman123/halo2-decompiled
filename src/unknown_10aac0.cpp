@@ -82,6 +82,8 @@ static inline long real_to_long(real value)
 	return result;
 }
 
+// score 19 (was 19): ours keeps the name argument in EDI and the g_5107f4 pointer in ESI;
+// retail keeps the name in ESI and the pointer in EDI.
 // @retail 0x10ab80
 void function_10ab80(long object_index, long name, real value, real frames)
 {

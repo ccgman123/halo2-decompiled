@@ -72,13 +72,17 @@ void c_havok_page_pool_allocator::deallocate_aligned(void *address)
 /* takes a block from its size class's free list; an empty list gets the
    rest of the current page (up to 0x100 bytes of blocks) or, for a large
    class, a whole new page */
+// score 78 (was 114): retail keeps the page count and the class size in ebx
+// where ours keeps them in edi, and does the size compare before the frame
+// is set up; ours still reads the class size into a local of its own in each
+// branch
 // @retail 0x22c830
 void *c_havok_page_pool_allocator::allocate16(long size, long memory_class)
 {
-	if (size <= 0x2000)
+	if (0x2000 >= size)
 	{
 		long size_class;
-		if (size <= 0x200)
+		if (0x200 >= size)
 		{
 			size_class = (signed char)small_classes[size];
 		}
@@ -97,10 +101,11 @@ void *c_havok_page_pool_allocator::allocate16(long size, long memory_class)
 		long class_size;
 		char *result;
 		long in_use;
-		if (size <= 0x200)
+		if (0x200 >= size)
 		{
 			class_size = class_sizes[size_class];
-			long offset = class_size;
+			long offset;
+			offset = class_size;
 			if ((unsigned long)(unknown20 + class_size) > (unsigned long)unknown1c)
 			{
 				if (page_count >= 0x76)
@@ -108,17 +113,18 @@ void *c_havok_page_pool_allocator::allocate16(long size, long memory_class)
 					result = 0;
 					return result;
 				}
-				long page = (long)&pages[0x4010 + (page_count << 13)];
+				unsigned long page = (long)&pages[0x4010 + (page_count << 13)];
 				unknown18 = page;
 				unknown20 = page;
-				unknown1c = page + 0x1fc0;
-				page_count++;
+				++page_count;
+				long page_limit = page + 0x1fc0;
+				unknown1c = page_limit;
 				unknown2d0[0]++;
 			}
 			result = (char *)unknown20;
-			unknown20 += class_size;
 			in_use = unknown2e8[size_class].first;
-			for (; offset < 0x100; offset += class_size)
+			unknown20 = unknown20 + class_size;
+			for (; 0x100 > offset; offset += class_size)
 			{
 				long *block = (long *)unknown20;
 				if ((unsigned long)((char *)block + class_size) >= (unsigned long)unknown1c)
@@ -129,8 +135,8 @@ void *c_havok_page_pool_allocator::allocate16(long size, long memory_class)
 				unknownf0388[size_class]++;
 				unknown2e8[size_class].first--;
 				*block = unknown24[size_class];
-				unknown24[size_class] = (long)block;
 				unknown20 += class_size;
+				unknown24[size_class] = (long)block;
 			}
 		}
 		else
@@ -141,10 +147,11 @@ void *c_havok_page_pool_allocator::allocate16(long size, long memory_class)
 				result = 0;
 				return result;
 			}
-			long fresh_page = page_count;
-			page_count = fresh_page + 1;
+			long fresh_page;
 			unknown2d0[0]++;
+			fresh_page = page_count;
 			in_use = unknown2e8[size_class].first;
+			page_count = fresh_page + 1;
 			result = (char *)&pages[0x4010 + (fresh_page << 13)];
 			for (char *block = result + class_size; block - result < 0x2000; block += class_size)
 			{

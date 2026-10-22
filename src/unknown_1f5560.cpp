@@ -957,8 +957,8 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
     byte *settings = (byte *)function_1e5450(actor_index, object->tag_index);
     real speed_scale;
     real turning_scale = 1.0f;
-    real facing_scale = 1.0f;
-    real velocity_scale = 1.0f;
+    real facing_scale;
+    real velocity_scale;
     real following_scale = 1.0f;
     speed_scale = *(real *)(actor + 0x4b4) != 0.0f ? *(real *)(actor + 0x4b4) : 1.0f;
     if (!ignore_facing)
@@ -979,6 +979,11 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
             velocity.j *= inverse;
         }
         velocity_scale = (desired->i * velocity.i + desired->j * velocity.j + 2.0f) * 0.3333333432674408f;
+    }
+    else
+    {
+        facing_scale = 1.0f;
+        velocity_scale = 1.0f;
     }
     real radius = *(real *)(settings + 0x1c);
     if (next_direction && radius * 2.0f > distance)

@@ -125,12 +125,11 @@ real sound_permutation_duration(s_sound_definition const *definition, s_sound_pi
 real sound_definition_permutation_duration(long definition_index, long pitch_range_index, long permutation_index, real pitch)
 {
 	s_sound_definition *definition = sound_definition_get(definition_index);
-	s_sound_pitch_range *arg_58ecd0 = &SOUND_GLOBALS_DEFINITIONS->pitch_ranges[definition->pitch_range_base + pitch_range_index];
-	real duration = sound_permutation_duration(definition, arg_58ecd0,
-		SOUND_GLOBALS_PERMUTATIONS->permutations[arg_58ecd0->first_permutation + permutation_index].sample_count);
-	long natural_pitch = SOUND_GLOBALS_DEFINITIONS->pitch_bounds[arg_58ecd0->bounds_index].unknown00;
+	s_sound_pitch_range *selected_range = &SOUND_GLOBALS_DEFINITIONS->pitch_ranges[definition->pitch_range_base + pitch_range_index];
 
-	return duration * (real)exp((pitch - natural_pitch) * 0.000577622675f);
+	return sound_permutation_duration(definition, selected_range,
+		SOUND_GLOBALS_PERMUTATIONS->permutations[selected_range->first_permutation + permutation_index].sample_count) *
+		(real)exp((pitch - SOUND_GLOBALS_DEFINITIONS->pitch_bounds[selected_range->bounds_index].unknown00) * 0.000577622675f);
 }
 
 /* the pitch range of a rate limit's stage, or 0 */

@@ -33,6 +33,8 @@ PRIVATE __forceinline void function_1b1eb2(long arg_0)
 	*(short volatile *)&local_0->unknown504 = 0;
 }
 
+// score 14 (was 14): ours keeps the scaled actor index in ECX and the actor pointer in EAX,
+// retail keeps the index in EAX and the pointer in ECX.
 // @retail 0x1b1eb0
 bool __stdcall function_1b1eb0(long actor_index, s_slot *slot)
 {

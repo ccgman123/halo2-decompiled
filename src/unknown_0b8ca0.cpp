@@ -631,7 +631,7 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 // @retail 0xbba80
 bool function_bba80(long object_index)
 {
-    bool result = false;
+    long result = false;
     {
         long root = NONE;
         long index = object_index;
@@ -749,17 +749,18 @@ bool __stdcall function_bdef0(long object_index)
         point3f center;
         real_point3d_set(&center, *(real const *)(definition + 8),
             *(real const *)(definition + 0xc), *(real const *)(definition + 0x10));
+        point3f *output_center = (point3f *)(object + 0x30);
         if (matrix->scale != 1.0f)
         {
             center.x *= matrix->scale;
             center.y *= matrix->scale;
             center.z *= matrix->scale;
         }
-        *(real *)(object + 0x30) = matrix->up.i * center.z + matrix->left.i * center.y +
+        output_center->x = matrix->up.i * center.z + matrix->left.i * center.y +
             matrix->forward.i * center.x + matrix->position.x;
-        *(real *)(object + 0x34) = matrix->up.j * center.z + matrix->left.j * center.y +
+        output_center->y = matrix->up.j * center.z + matrix->left.j * center.y +
             matrix->forward.j * center.x + matrix->position.y;
-        *(real *)(object + 0x38) = matrix->up.k * center.z + matrix->left.k * center.y +
+        output_center->z = matrix->up.k * center.z + matrix->left.k * center.y +
             matrix->forward.k * center.x + matrix->position.z;
         *(real *)(object + 0x3c) = *(real *)(object + 0xa0) * *(real const *)(definition + 4);
     }

@@ -245,8 +245,8 @@ void __stdcall function_224db0(s_interface_definition *arg_0, long arg_1, long a
 	{
 		function_1c590((s_shader_cache *)g_51f0f0, *(long const *)(local_10 + 0x100), 1);
 		byte const *local_12 = *(byte const *const *)(local_2 + 0x9c);
-		function_1c620((s_shader_cache *)g_51f0f0, *(long const *)(local_12 + 8),
-			local_12[1], *(long const *)(local_12 + 0x10), g_43f408[local_12[0]]);
+		function_1c620((s_shader_cache *)g_51f0f0, *(long const *)(local_12 + 0x10),
+			local_12[1], *(long const *)(local_12 + 8), g_43f408[local_12[0]]);
 		function_1c710(g_51f0f0);
 		function_1cdd0(0, 0);
 		function_2c3b0(&g_55ed60);

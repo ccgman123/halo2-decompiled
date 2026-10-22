@@ -560,28 +560,19 @@ long function_162470(bool flag)
 {
 	long time_limit = ((s_game_options_time_view *)g_4e6948)->time_limit;
 	long elapsed = FLOOR(g_510c54->game_time - ((s_mp_globals_time_view *)g_4e9ae8)->start_time, 0);
-	long engine_index = g_4e9ae8->engine_index;
 	long time_left = FLOOR(g_510c54->field_2_3 * time_limit - elapsed, 0);
-	long result;
+	long previous_time_left = time_left;
 
-	result = g_55e4d0[engine_index]->p25(time_left, flag, true);
+	time_left = g_55e4d0[g_4e9ae8->engine_index]->p25(time_left, flag, true);
 	if (flag)
 	{
-		if (result != time_left)
+		if (time_left != previous_time_left)
 		{
 			if (!g_55e754)
 			{
 				s_event event;
 
-				event.a = NONE;
-				event.cause_player_index = NONE;
-				event.cause_team = NONE;
-				event.effect_player_index = NONE;
-				event.effect_team = NONE;
-				event.g = NONE;
-				event.type = 0;
-				event.subtype = 0x25;
-				event.f = 0;
+				game_engine_event_initialize_inline(&event, 0, 0x25);
 				if (g_4e6948->mode != 4)
 				{
 					function_a7c50(&event);
@@ -595,7 +586,7 @@ long function_162470(bool flag)
 			g_55e754 = false;
 		}
 	}
-	return result;
+	return time_left;
 }
 
 point3f *function_b9dd0(long object_index, point3f *result);

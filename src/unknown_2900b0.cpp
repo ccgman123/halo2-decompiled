@@ -11,6 +11,9 @@ bool function_fa1a0(real arg_0, real arg_1, point3f const *arg_2, point3f const 
 	real *arg_9, real *arg_10, real *arg_11, real *arg_12, real *arg_13);
 real function_30bf0(vector3f *arg_0);
 
+// score 13 (was 13): our call to the ray/sphere helper hands the high_arc
+// argument over in edx instead of on the stack; the callee's body decides
+// the registers and it lives in src/projectiles.cpp, outside this lane.
 // @retail 0x2900b0
 bool function_2900b0(long arg_0, point3f const *arg_1, real arg_2, real arg_3, vector3f *arg_4)
 {
@@ -184,6 +187,8 @@ PRIVATE __forceinline void function_28f5b7(vector3f *arg_0)
     arg_0->k = PIN(arg_0->k, -1.0f, 1.0f);
 }
 
+// score 60 (was 56): the function is the same length but the first branch's
+// block is laid out differently.
 // @retail 0x28f3b0
 void function_28f3b0(long arg_0, long arg_1)
 {
@@ -207,7 +212,8 @@ void function_28f3b0(long arg_0, long arg_1)
 				vector3f *local_5 = (vector3f *)((byte *)local_1 + 0x98);
 				if (*(short *)((byte *)local_1 + 0x24) == 0)
 				{
-					if (function_30bf0(&local_3) > 0.0f)
+					real magnitude = function_30bf0(&local_3);
+					if (magnitude > 0.0f)
 					{
 						local_1->field_80 = local_3;
 						function_28e600(arg_1, local_1);
@@ -278,6 +284,8 @@ PRIVATE __forceinline void center_update_28f8d0(s_28f8d0 *arg_0)
 	}
 }
 
+// score 38 (was 38): the loop head: retail tests the iterator before saving
+// ebp, ours saves ebp first and loads the pool global later.
 // @retail 0x28f8d0
 void function_28f8d0(long arg_0)
 {

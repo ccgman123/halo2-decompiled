@@ -838,6 +838,8 @@ PRIVATE long font_cache_read(long font_index, void *buffer, long size, dword off
 	return function_1a0f10(file, buffer, size, offset, 7, read_priority, bytes_read, done);
 }
 
+// score 14 (was 14): ours keeps the first argument and the bit mask in EBX, retail keeps
+// them in EBP.
 // @retail 0x1414d0
 bool font_cache_predict_character(s_13eeb1 font_index, s_13eeb1 character)
 {

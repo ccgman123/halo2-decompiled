@@ -385,10 +385,9 @@ static __forceinline void cache_map_progress(char const *name, real *output)
 	{
 		*output = 1.0f;
 	}
-	else if (location == 2)
+	else if (location == 2 && map_names_equal(g_55bd21, name))
 	{
-		if (map_names_equal(g_55bd21, name))
-			function_2148b0((long)output);
+		function_2148b0((long)output);
 	}
 	else
 	{

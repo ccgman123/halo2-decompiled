@@ -67,6 +67,9 @@ public:
 	void function_306400();
 };
 
+// score 101 (was 101): the transpose's shuffles are done in another order and
+// the rows are held in another register, so the terms come out of the
+// registers in a different order.
 // @retail 0x306400
 void box_pair_306400::function_306400()
 {
@@ -170,6 +173,9 @@ public:
 
 // whether the boxes overlap: no face or edge axis separates them by more
 // than the tolerance
+// score 415 (was 415): the axis tests are set up in another order and the
+// terms are held in other registers, so the whole comparison comes out
+// differently.
 // @retail 0x306580
 answer_306580 class_306580::function_306580()
 {

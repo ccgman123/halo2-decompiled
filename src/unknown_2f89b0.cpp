@@ -1,8 +1,8 @@
 // @flags /O2 /GL-
 // Havok (third-party physics library): a shape of several rays against a
 // convex shape, bracketed by two marks in the timing stream: each ray is
-// carried into the convex shape's frame and cast against it; each hit is
-// reported as a contact: the hit point and normal in world space, and the
+// carried into the convex shape's frame and cast against it; each result is
+// reported as a contact: the result point and normal in world space, and the
 // distance back along the ray.
 #include "timer_mark_2ebc80.h"
 #include <xmmintrin.h>
@@ -15,6 +15,24 @@ struct c_query_transform
 	__m128 position;
 
 	void inverse_product(const c_query_transform *a, const c_query_transform *b);
+
+	// a point placed by the transform
+	__m128 apply(__m128 const &p) const
+	{
+		__m128 z = _mm_add_ps(_mm_mul_ps(axes[2], _mm_shuffle_ps(p, p, 0xaa)), position);
+		__m128 y = _mm_mul_ps(axes[1], _mm_shuffle_ps(p, p, 0x55));
+		__m128 x = _mm_mul_ps(axes[0], _mm_shuffle_ps(p, p, 0x00));
+		return _mm_add_ps(_mm_add_ps(x, y), z);
+	}
+
+	// a direction turned by the transform
+	__m128 rotate(__m128 const &d) const
+	{
+		__m128 z = _mm_mul_ps(axes[2], _mm_shuffle_ps(d, d, 0xaa));
+		__m128 y = _mm_mul_ps(axes[1], _mm_shuffle_ps(d, d, 0x55));
+		__m128 x = _mm_mul_ps(axes[0], _mm_shuffle_ps(d, d, 0x00));
+		return _mm_add_ps(_mm_add_ps(x, y), z);
+	}
 };
 
 // a ray: its start, with its length in the fourth lane, and its end
@@ -47,9 +65,14 @@ struct ray_output_2f89b0
 	char unknown18[8];
 };
 
-struct hit_2f89b0
+// whether the ray result, given back through a hidden pointer
+class hit_2f89b0
 {
-	bool value;
+public:
+	hit_2f89b0() {}
+
+	char value;
+	char unknown1[3];
 };
 
 class convex_2f89b0
@@ -63,7 +86,7 @@ public:
 	virtual void slot_5() {}
 	virtual void slot_6() {}
 	virtual void slot_7() {}
-	virtual hit_2f89b0 cast_ray(ray_input_2f89b0 const *input, ray_output_2f89b0 *output) const { hit_2f89b0 hit = {false}; return hit; }
+	virtual hit_2f89b0 cast_ray(ray_input_2f89b0 const *input, ray_output_2f89b0 *ray_output) const { hit_2f89b0 result; result.value = false; return result; }
 };
 
 struct motion_2f89b0
@@ -81,11 +104,7 @@ struct body_2f89b0
 
 struct contact_2f89b0
 {
-	union
-	{
-		__m128 position;
-		float position_and_distance[4];
-	};
+	__m128 position;
 	__m128 normal;
 	body_2f89b0 const *first;
 	body_2f89b0 const *second;
@@ -98,62 +117,45 @@ public:
 	virtual void add_contact(contact_2f89b0 const *contact) {}
 };
 
-// a point placed by a transform
-inline __m128 transformed_2f89b0(c_query_transform const *transform, __m128 const &p)
-{
-	__m128 z = _mm_add_ps(_mm_mul_ps(transform->axes[2], _mm_shuffle_ps(p, p, 0xaa)), transform->position);
-	__m128 y = _mm_mul_ps(transform->axes[1], _mm_shuffle_ps(p, p, 0x55));
-	__m128 x = _mm_mul_ps(transform->axes[0], _mm_shuffle_ps(p, p, 0x00));
-	return _mm_add_ps(_mm_add_ps(x, y), z);
-}
-
-// a direction turned by a transform
-inline __m128 rotated_2f89b0(c_query_transform const *transform, __m128 const &v)
-{
-	__m128 z = _mm_mul_ps(transform->axes[2], _mm_shuffle_ps(v, v, 0xaa));
-	__m128 y = _mm_mul_ps(transform->axes[1], _mm_shuffle_ps(v, v, 0x55));
-	__m128 x = _mm_mul_ps(transform->axes[0], _mm_shuffle_ps(v, v, 0x00));
-	return _mm_add_ps(_mm_add_ps(x, y), z);
-}
-
 class rays_convex_2f89b0
 {
 public:
 	void function_2f89b0(body_2f89b0 const *a, body_2f89b0 const *b, void const *input, collector_2f89b0 *collector);
 };
 
+// each ray of the shape, carried into the convex shape's frame and cast
+// against it, every hit reported as a contact between the two bodies
 // @retail 0x2f89b0
 void rays_convex_2f89b0::function_2f89b0(body_2f89b0 const *a, body_2f89b0 const *b, void const *input, collector_2f89b0 *collector)
 {
 	timer_add_2ebc80("TtmultiRay-cvx");
 	rays_shape_2f89b0 const *rays = (rays_shape_2f89b0 const *)a->shape;
 	convex_2f89b0 const *convex = (convex_2f89b0 const *)b->shape;
-	ray_output_2f89b0 output;
-	c_query_transform transform;
-	transform.inverse_product(&b->motion->transform, &a->motion->transform);
-	contact_2f89b0 contact;
-	ray_input_2f89b0 ray;
-	contact.first = a;
-	contact.second = b;
-	ray.field_24 = 0;
+	c_query_transform b_in_a;
+	b_in_a.inverse_product(&b->motion->transform, &a->motion->transform);
+	int const count = rays->ray_count;
 	ray_2f89b0 const *each = rays->rays;
-	for (int i = rays->ray_count; i > 0; i--)
+	contact_2f89b0 touch;
+	touch.first = a;
+	touch.second = b;
+	ray_input_2f89b0 ray;
+	ray.field_24 = 0;
+	for (int i = count; i > 0; i--)
 	{
-		ray.from = transformed_2f89b0(&transform, each->start);
-		ray.to = transformed_2f89b0(&transform, each->end);
+		ray.from = b_in_a.apply(each->start);
+		ray.to = b_in_a.apply(each->end);
+		ray_output_2f89b0 output;
 		output.fraction = 1.0f;
 		hit_2f89b0 hit = convex->cast_ray(&ray, &output);
 		if (hit.value)
 		{
-			float fraction = output.fraction;
-			float distance = output.fraction - 1.0f;
-			__m128 f = _mm_set1_ps(fraction);
-			__m128 point = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, f), ray.from), _mm_mul_ps(f, ray.to));
-			c_query_transform const *world = &b->motion->transform;
-			contact.position = transformed_2f89b0(world, point);
-			contact.position_and_distance[3] = distance * ((float const *)&each->start)[3];
-			contact.normal = rotated_2f89b0(world, output.normal);
-			collector->add_contact(&contact);
+			float const fraction = output.fraction;
+			__m128 const along = _mm_set1_ps(fraction);
+			__m128 const point = _mm_add_ps(_mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, along), ray.from), _mm_mul_ps(along, ray.to));
+			touch.position = b->motion->transform.apply(point);
+			touch.position.m128_f32[3] = (fraction - 1.0f) * each->start.m128_f32[3];
+			touch.normal = b->motion->transform.rotate(output.normal);
+			collector->add_contact(&touch);
 		}
 		each++;
 	}

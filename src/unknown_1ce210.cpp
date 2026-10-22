@@ -5,6 +5,8 @@
 __declspec(align(16)) const dword g_455940[4] = {0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff};
 __declspec(align(16)) const dword g_4124a0[4] = {0x80000000, 0x80000000, 0x80000000, 0x80000000};
 
+// score 13 (was 13): our build gives this function a custom convention (the first two
+// arguments in EAX/EDX) while retail passes all five arguments on the stack.
 // @retail 0x1ce210
 void __cdecl function_1ce210(const __m128 *arg_0, const __m128 *arg_1, const __m128 *arg_2, real arg_3, __m128 *arg_4)
 {

@@ -11,7 +11,7 @@
 #include <xmmintrin.h>
 #include <new>
 #include "tagged_objects_2e4ff0.h"
-#include "axis_sweep_2e1090.h"
+#include "sweep_quantize_2e1090.h"
 
 #define ARRAY_2E1850(name, T) 	struct name 	{ 		T *data; 		long size; 		unsigned long capacity_and_flags; 		name() : data(0), size(0), capacity_and_flags(0x80000000) {} 		~name() 		{ 			if ((capacity_and_flags & 0x80000000) == 0) 			{ 				g_memory_2d88a0->release_block(data, (capacity_and_flags & 0x7fffffff) * sizeof(T), 0x12); 			} 		} 	};
 
@@ -111,13 +111,16 @@ bytes_2e1be0::~bytes_2e1be0()
 
 static __declspec(align(16)) const unsigned long sign_mask_2e1d10[4] = {0x80000000, 0x80000000, 0x80000000, 0x80000000};
 
-// score 235 (was 281): retail keeps &axes[0] in edi and &elements in ebx
-// across the body and rematerializes zeros, here the elements in edi and a
-// zero in ebx; retail also compares the quantized level as 32 bits (movzx,
-// or, cmp eax, 12), which every form tried here (also & 0xffff, int) narrows
-// to cmp cx, 12. After the halving loop retail stores the 65532 scale before
-// the lanes' divisions and reloads it, where ours stores it ahead of the
-// field_7c store; the first corner is read again for the offsets (here too).
+// score 215 (was 235): the halving loop now goes through the two-level box
+// quantizer and matches retail, the 32-bit `below 12` compare included. Still:
+// retail keeps the first axis array's address (the vector constructor
+// iterator's argument) in edi and the element array's in ebx, re-making the
+// latter with lea after the loop; ours keeps the element array in edi and a
+// zero in ebx, so the appends and pushes differ in registers (the axes or
+// elements reached through this class's own members compile alike or worse,
+// 257). In the scale block retail stores the 65532 splat to the member and
+// reloads it before multiplying; a reference to the member gives that reload
+// but scores 275, so the forwarded form is kept. One byte longer than retail.
 // the sweep over the box from the corner at `arg_0` to the corner at
 // `arg_1`, with a grid of 2 to the power `bits`, less one, cells: the
 // quantizing scale and offsets, the largest value that still quantizes below
@@ -128,63 +131,49 @@ class_2e4ff0::class_2e4ff0(long arg_0, long arg_1, int bits)
 {
 	class_2e1090 *sweep = (class_2e1090 *)this;
 	sweep->elements.ensure_capacity(0x100);
-	__m128 const zero = _mm_setzero_ps();
-	sweep->lower_offset = zero;
-	sweep->upper_offset = zero;
-	sweep->scale = _mm_set_ps1(1.0f);
-	__m128 const clamp_low = *(__m128 const *)g_4125d0;
-	__m128 const clamp_high = *(__m128 const *)g_4125e0;
-	__m128 const bias = *(__m128 const *)g_4125c0;
-	float low = 10.0f;
-	float high = 11.0f;
-	for (int step = 23; step != 0; step--)
 	{
-		float const middle = (high + low) * 0.5f;
-		union
+		sweep->lower_offset = _mm_setzero_ps();
+		sweep->upper_offset = _mm_setzero_ps();
+		sweep->scale = _mm_set_ps1(1.0f);
+		float low = 10.0f;
+		float high = 11.0f;
+		bounds_2e0020 probe;
+		quantized_box_2e1090 quantized;
+		for (int step = 0; step < 23; step++)
 		{
-			__m128 vector;
-			unsigned long bits[4];
-		} quantized;
-		quantized.vector = _mm_add_ps(_mm_max_ps(_mm_min_ps(
-			_mm_mul_ps(_mm_add_ps(_mm_set_ps1(1.0f + middle), sweep->lower_offset), sweep->scale),
-			clamp_low), clamp_high), bias);
-		unsigned long const upper = (unsigned short)(quantized.bits[0] >> 7) | 1;
-		if (upper < 12)
-		{
-			low = middle;
+			float const middle = (low + high) * 0.5f;
+			probe.lower = _mm_set_ps1(middle);
+			probe.upper = _mm_set_ps1(middle + 1.0f);
+			quantize_box_2e1090(sweep, probe, quantized);
+			if (quantized.high[0] < 12)
+			{
+				low = middle;
+			}
+			else
+			{
+				high = middle;
+			}
 		}
-		else
-		{
-			high = middle;
-		}
+		sweep->field_7c = (low + high) * 0.5f - 11.0f;
 	}
-	sweep->field_7c = (high + low) * 0.5f - 11.0f;
-	union
 	{
-		__m128 vector;
-		float lanes[4];
-	} extent;
-	sweep->scale = _mm_set_ps1(65532.0f);
-	extent.vector = _mm_sub_ps(*(__m128 const *)arg_1, *(__m128 const *)arg_0);
-	union
-	{
-		__m128 vector;
-		float lanes[4];
-	} inverse;
-	inverse.lanes[0] = 1.0f / extent.lanes[0];
-	inverse.lanes[1] = 1.0f / extent.lanes[1];
-	inverse.lanes[2] = 1.0f / extent.lanes[2];
-	inverse.lanes[3] = 0.0f;
-	sweep->scale = _mm_mul_ps(sweep->scale, inverse.vector);
-	sweep->lower_offset = _mm_xor_ps(*(__m128 const *)arg_0, *(__m128 const *)sign_mask_2e1d10);
-	sweep->upper_offset = _mm_add_ps(sweep->lower_offset, _mm_mul_ps(_mm_set_ps1(1.52597204e-05f), extent.vector));
-	sweep->scale.m128_f32[3] = 0.0f;
-	sweep->lower_offset.m128_f32[3] = 0.0f;
-	sweep->upper_offset.m128_f32[3] = 0.0f;
+		__m128 const extent = _mm_sub_ps(*(__m128 const *)arg_1, *(__m128 const *)arg_0);
+		__m128 inverse;
+		inverse.m128_f32[0] = 1.0f / extent.m128_f32[0];
+		inverse.m128_f32[1] = 1.0f / extent.m128_f32[1];
+		inverse.m128_f32[2] = 1.0f / extent.m128_f32[2];
+		inverse.m128_f32[3] = 0.0f;
+		sweep->scale = _mm_set_ps1(65532.0f);
+		sweep->scale = _mm_mul_ps(sweep->scale, inverse);
+		sweep->lower_offset = _mm_xor_ps(*(__m128 const *)arg_0, *(__m128 const *)sign_mask_2e1d10);
+		__m128 const margin = _mm_mul_ps(_mm_set_ps1(1.52597204e-05f), extent);
+		sweep->upper_offset = _mm_add_ps(sweep->lower_offset, margin);
+		sweep->scale.m128_f32[3] = 0.0f;
+		sweep->lower_offset.m128_f32[3] = 0.0f;
+		sweep->upper_offset.m128_f32[3] = 0.0f;
+	}
 	element_2e1090 &first = sweep->elements.next_slot();
-	first.slots[1] = 0;
-	first.slots[0] = 0;
-	first.slots[4] = 0;
+	first.slots[4] = first.slots[0] = first.slots[1] = 0;
 	sweep->axes[0].ensure_capacity(0x202);
 	sweep->axes[1].ensure_capacity(0x202);
 	sweep->axes[2].ensure_capacity(0x202);
@@ -216,10 +205,8 @@ class_2e4ff0::class_2e4ff0(long arg_0, long arg_1, int bits)
 		element.slots[5] = (unsigned short)sweep->axes[0].size;
 		sweep->axes[0].data[sweep->axes[0].size++] = endpoint;
 		element.owner = (cell * sizeof(cell_2e1090)) | 1;
-		element.slots[1] = 0;
-		element.slots[0] = 0;
-		element.slots[3] = 1;
-		element.slots[2] = 1;
+		element.slots[0] = element.slots[1] = 0;
+		element.slots[2] = element.slots[3] = 1;
 	}
 	first.slots[5] = (unsigned short)sweep->axes[0].size;
 	first.slots[2] = (unsigned short)sweep->axes[1].size;

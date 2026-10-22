@@ -1609,19 +1609,20 @@ void function_074aa0(void)
                         query_variant_available(i))
                     {
                         const byte *identity = (const byte *)&g_509454[group] + (g_551ae8[i].type == 5 ? 0x10 : 4);
-                        bool duplicate = false;
+                        s_cache_property_record *candidate = g_50c474 + records_used;
                         if (g_551ae8[i].type == 5)
-                            for (long j = 0; j < records_used; j++)
-                                if (!memcmp(g_50c474[j].identity, identity, 12) &&
-                                    g_50c474[j].type == g_551ae8[i].field_8)
-                                { duplicate = true; break; }
-                        if (!duplicate)
+                            for (candidate = g_50c474; candidate < g_50c474 + records_used; candidate++)
+                                if (!memcmp(candidate->identity, identity, 12) &&
+                                    candidate->type == g_551ae8[i].field_8)
+                                    break;
+                        if (candidate == g_50c474 + records_used)
                         {
-                            s_cache_property_record *record = &g_50c474[records_used++];
+                            s_cache_property_record *record = &g_50c474[records_used];
                             memcpy(record->identity, identity, 12);
                             record->type = g_551ae8[i].field_8;
                             record->count = 6;
                             record->properties = &g_50cbf8[properties_used];
+                            records_used++;
                             for (long j = 0; j < 6; j++)
                             {
                                 *(word *)&record->properties[j].unknown00 = (word)(j + 1);

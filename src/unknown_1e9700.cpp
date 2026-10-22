@@ -35,7 +35,7 @@ struct s_object_values
 void function_b58c0(long index, dword mask);
 struct s_statborg;
 void function_1968b0(long index, long team, long counter, long value);
-void function_1e9df0(long field, long counter, long team, s_statborg *statistics, long delta);
+void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short delta);
 long function_196ef0(byte code);
 void function_196e60(long player_index, long counter, long code, long delta);
 void function_225880(long player_index);
@@ -767,10 +767,10 @@ bool __stdcall function_1e9140(s_request_screen_bounds const *bounds)
 
 // The new statistic callers allow this body without the earlier LTCG regressions.
 // @retail 0x1e9df0
-void function_1e9df0(long field, long counter, long team, s_statborg *statistics, long volatile delta)
+void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short volatile delta)
 {
  short *entry = &((s_object_values *)statistics)->team_values[team][field];
- long value = *entry + (short)delta;
+ long value = *entry + delta;
  if (value < -30000)
   value = -30000;
  else if (value > 30000)

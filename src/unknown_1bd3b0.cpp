@@ -474,9 +474,10 @@ struct s_1bde80_joint
 
 /* invites the clump members within 10 of the joint's object, the nearest
    first */
-// score 59 (was 59): retail loads the two float constants before the index is
-// scaled, ours
-// loads them after it, so the loop preamble is a different length.
+// score 48 (was 59): retail tests the loop condition at the top of the loop
+// and jumps back to
+// that test, ours tests it at the bottom, so the preamble and the register
+// allocation differ.
 // @retail 0x1bde80
 short __stdcall function_1bde80(long actor_index, long joint_index, long a, long b)
 {
@@ -495,7 +496,6 @@ short __stdcall function_1bde80(long actor_index, long joint_index, long a, long
 			s_actor_view *other = actor_get(index);
 			long other_index = index;
 
-			index = other->next_index;
 			if (other != actor)
 			{
 				real i = position.x - other->position.x;
@@ -506,6 +506,7 @@ short __stdcall function_1bde80(long actor_index, long joint_index, long a, long
 				if (10.0f > distance && function_26eae0(joint_index, other_index, 3, 1.0f / (distance + 0.1f)))
 					count++;
 			}
+			index = other->next_index;
 		}
 	}
 	return (short)count;

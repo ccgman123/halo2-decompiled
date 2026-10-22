@@ -2342,23 +2342,18 @@ void function_15b980(bool skip_event)
 	}
 }
 
-void function_1e9df0(long field, long counter, long team, s_statborg *statistics, long delta);
+void function_1e9df0(long field, long counter, long team, s_statborg *statistics, short delta);
 void function_1e9ce0(long player_index, long counter, s_statborg *statistics, long field, long delta, bool by_team);
 
 // @retail 0x15b650
 void __stdcall function_15b650(long team, long delta)
 {
-	long const volatile *team_reference = &team;
-	long const *delta_reference = &delta;
-	s_statborg *statistics = NULL;
-	if (game_engine_get()) statistics = &function_xaee93d()->statborg;
-	byte *values = (byte *)statistics;
+	s_statborg *statistics = game_engine_statborg_inline();
 	long mode = *(long *)((byte *)g_4e6948 + 0x1e0);
-	long selected_team = team;
-	long old_score = *(short *)(values + 0x1c4 + selected_team * 18);
+	long old_score = statistics->teams[team].score;
 	long score = (long)0x80000000;
 	if (mode == 0)
-		score = old_score + *delta_reference;
+		score = old_score + delta;
 	else
 	{
 		s_engine_player_iterator iterator;
@@ -2367,9 +2362,9 @@ void __stdcall function_15b650(long team, long delta)
 		iterator.index = NONE;
 		while (player_iterator_next((long *)&iterator))
 		{
-			if (iterator.player->team == *team_reference)
+			if (iterator.player->team == team)
 			{
-				long current = *(short *)(values + (iterator.index & 0xffff) * 0x1c + 4);
+				long current = statistics->players[iterator.index & 0xffff].score;
 				if (score == (long)0x80000000) score = current;
 				else switch (*(long *)((byte *)g_4e6948 + 0x1e0))
 				{
@@ -2379,19 +2374,18 @@ void __stdcall function_15b650(long team, long delta)
 			}
 		}
 		if (score <= old_score) return;
-		selected_team = *team_reference;
 	}
 	if (score != old_score)
 	{
-		function_1e9df0(0, NONE, selected_team, statistics, score - old_score);
+		function_1e9df0(0, NONE, team, statistics, score - old_score);
 		switch (g_4e6948->mode_180)
 		{
-		case 1: function_1967d0(NONE, selected_team, 0xe, score - old_score); break;
-		case 3: function_1967d0(NONE, selected_team, 0x17, score - old_score); break;
-		case 9: function_1967d0(NONE, selected_team, 0x12, score - old_score); break;
+		case 1: function_1967d0(NONE, team, 0xe, score - old_score); break;
+		case 3: function_1967d0(NONE, team, 0x17, score - old_score); break;
+		case 9: function_1967d0(NONE, team, 0x12, score - old_score); break;
 		}
 		if (score > old_score && g_4e6948->score_to_win && score >= g_4e6948->score_to_win)
-			function_15b3a0(selected_team, false);
+			function_15b3a0(team, false);
 	}
 }
 
@@ -4925,16 +4919,13 @@ void function_159880(void)
         long player_index = NONE;
         if (local_user != NONE)
         {
-            player_index = *(long *)((byte *)g_4e8c20 + 0xc + local_user * 4);
+            player_index = g_4e8c20->entries[local_user];
             byte *ticks = (byte *)globals + 0xf5 + local_user;
             if (globals->timer_flags & (1 << local_user))
             {
                 if (g_4e64a8 > 0)
                 {
-                    real duration = (real)g_510c54->field_2_3 * 3.0f;
-                    long limit;
-                    __asm { fld duration }
-                    __asm { fistp limit }
+                    long limit = death_seconds_to_ticks(3.0f);
                     ++*ticks;
                     if (*ticks > limit) globals->timer_flags &= ~(1 << local_user);
                 }
@@ -4960,7 +4951,7 @@ void function_159880(void)
                 }
             }
         }
-        real fade = local_user == NONE ? 1.0f : *(real *)((byte *)globals + 0xe4 + local_user * 4);
+        real fade = local_user == NONE ? 1.0f : globals->timers[local_user];
         if (fade > 0.0f)
         {
             color4f color;
@@ -4976,10 +4967,12 @@ void function_159880(void)
         }
         if (player_index != NONE)
         {
-            real alpha = g_4e9af0.timers[local_user] * g_510c54->rate * 4.0f;
-            alpha = alpha < 0.0f ? 0.0f : alpha > 1.0f ? 1.0f : alpha;
-            if (alpha > 0.0f)
-                function_161420(player_index, (real)pow((double)alpha, 1.899999976158142));
+            real alpha = local_player_fraction(local_user);
+            real intensity = alpha;
+            if (intensity < 0.0f) intensity = 0.0f;
+            else if (intensity > 1.0f) intensity = 1.0f;
+            if (intensity > 0.0f)
+                function_161420(player_index, powf(intensity, 1.9f));
         }
     }
 }

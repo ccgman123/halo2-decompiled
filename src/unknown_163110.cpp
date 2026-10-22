@@ -616,9 +616,11 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 
 	memset(segment_culled, 0, sizeof(segment_culled));
 
-	real near_distance = 1.52588e-5f > view->margin + margin ? 1.52588e-5f : view->margin + margin;
+	real near_sum = view->margin + margin;
+	real near_distance = 1.52588e-5f > near_sum ? 1.52588e-5f : near_sum;
 
-	planes[0].normal = *(vector3f *)&view->point54;
+	vector3f const *forward = (vector3f const *)&view->point54;
+	planes[0].normal = *forward;
 	planes[0].d = view->vector_e4.i * planes[0].normal.i + view->vector_e4.k * planes[0].normal.k + view->vector_e4.j * planes[0].normal.j;
 	planes[0].normal.i = -planes[0].normal.i;
 	planes[0].normal.j = -planes[0].normal.j;
@@ -627,9 +629,9 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 	planes[0].d += near_distance;
 
 	vector3f negated;
-	negated.i = -view->point54.x;
-	negated.j = -view->point54.y;
-	negated.k = -view->point54.z;
+	negated.i = -forward->i;
+	negated.j = -forward->j;
+	negated.k = -forward->k;
 	planes[1].normal = negated;
 	planes[1].d = view->vector_b4.i * planes[1].normal.i + view->vector_b4.k * planes[1].normal.k + view->vector_b4.j * planes[1].normal.j;
 	planes[1].normal.i = -planes[1].normal.i;
@@ -673,12 +675,11 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 			{
 				point3f *p0 = &local_points[segment * 2];
 				point3f *p1 = &local_points[segment * 2 + 1];
-				real dx = p1->x - p0->x;
-				real dz = p1->z - p0->z;
-				real dy = p1->y - p0->y;
-				real denominator = dx * plane->normal.i;
-				denominator += dz * plane->normal.k;
-				denominator += plane->normal.j * dy;
+				vector3f delta;
+				vector3d_from_points3d(p0, p1, &delta);
+				real denominator = delta.i * plane->normal.i;
+				denominator += delta.k * plane->normal.k;
+				denominator += plane->normal.j * delta.j;
 				real t;
 				if (denominator != 0.0f)
 				{
@@ -690,9 +691,9 @@ bool function_1652e0(s_view *view, real margin, const point3f *points, long poin
 				else
 					t = 0.0f;
 				point3f intersection;
-				intersection.x = t * dx + p0->x;
-				intersection.y = dy * t + p0->y;
-				intersection.z = dz * t + p0->z;
+				intersection.x = t * delta.i + p0->x;
+				intersection.y = delta.j * t + p0->y;
+				intersection.z = delta.k * t + p0->z;
 				if (!outside0)
 					*p0 = intersection;
 				else

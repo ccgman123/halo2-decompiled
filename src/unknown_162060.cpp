@@ -171,7 +171,7 @@ void __stdcall function_162060(void *engine)
 
 	if (game_engine_round_in_progress() && ((s_162060_options_view *)g_4e6948)->time_limit)
 	{
-		volatile long  minutes = ((s_162060_options_view *)g_4e6948)->time_limit - function_xaee93d()->value_e0;
+		long minutes = ((s_162060_options_view *)g_4e6948)->time_limit - function_xaee93d()->value_e0;
 
 		if (minutes < 1)
 		{
@@ -225,13 +225,11 @@ void __stdcall function_162060(void *engine)
 
 				if (score_to_win)
 				{
-					s_statborg *statborg = game_engine_statborg_inline();
 					long score = 0;
-
+					s_statborg *statborg = game_engine_statborg_inline();
 					if (statborg)
-					{
 						score = statborg->players[iterator.datum_index & 0xffff].score;
-					}
+
 					if (score >= score_to_win)
 					{
 						function_15b3a0(iterator.datum_index, 0);

@@ -148,13 +148,19 @@ void owner_30c8e0::function_30f340(member_30c8e0 *member)
 	flag_12c = flag;
 }
 
-// score 334 (new): the code is retail's apart from register choice and one
-// merge: retail keeps the constraint's first member in the dead first-loop
-// counter's slot and the second in the dead dded slot, so it emits the
-// pair append twice; ours keeps both in one slot and the compiler merges the
-// two appends into one (79 bytes shorter). It also holds member in ebp and
-// this in esi, ours the other way round. Names and a hoisted declaration of
-// the second member did not change it.
+// score 257 (was 334): retail tests the second member only when the first is
+// the member being added, and otherwise (also when that second one is fixed)
+// falls to the first member's test, so the pair append is emitted twice; the
+// else-if form gives retail's length. Still differs from +0x19: register
+// choice throughout: retail holds member in ebp, this in esi and the inlined
+// flag in ebx, ours this in ebp, member in ebx and the flag on the stack, and
+// the first loop's registers are permuted to match. A permuter run (10 min)
+// found only a volatile and a call reorder (242), not kept. The flag is
+// stored back as a byte, so of the saved registers only ebx can hold it:
+// ours gives ebx to the member. Declaring the island before the call, a
+// named constraint in the first loop (289), a bool for the branch (271) and
+// the pair's terms stored second first did not help; a second 10-minute run
+// again needed a volatile island.
 // adds the member, gives its island the constraints added with it, and notes
 // each member its constraints and actions tie it to that is not fixed; an
 // action the fixed island held moves to the member's island
@@ -177,15 +183,12 @@ void owner_30c8e0::function_30f380(member_30c8e0 *member, constraints_30f380 con
 		{
 			constraint_30f380 *constraint = member->constraints[j];
 			member_30c8e0 *first = constraint->first;
-			if (first == member)
+			member_30c8e0 *second;
+			if (first == member && !(second = constraint->second)->fixed)
 			{
-				member_30c8e0 *second = constraint->second;
-				if (!second->fixed)
-				{
-					expand_pairs_30f380(&pairs);
-					pairs.data[pairs.size - 1].first = member;
-					pairs.data[pairs.size - 1].second = second;
-				}
+				expand_pairs_30f380(&pairs);
+				pairs.data[pairs.size - 1].first = member;
+				pairs.data[pairs.size - 1].second = second;
 			}
 			else if (!first->fixed)
 			{

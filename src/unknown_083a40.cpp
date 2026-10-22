@@ -255,15 +255,17 @@ bool simulation_player_changed(const s_machine_address *machines, dword player_m
 
 /* the slot a player goes in: the slot of a player with its key, else a free
    slot, else the slot of the player that left the game first */
+// score 27 (was 27): the table pointer is read from a different stack slot and the counter starts
+// in EAX; retail reads it from [esp+0x18] and starts the counter in EBX.
 // @retail 0x83c90
 void simulation_player_collection_find_slot(const s_type_c67652 *collection, long player_index, const t_player_key *key, long *slot, bool *occupied)
 {
 	long local_2;
 	long found = NONE;
-	dword bit = 1 << player_index;
-	*occupied = (collection->player_mask & bit) != 0;
+	*occupied = (collection->player_mask & (1 << player_index)) != 0;
 	*slot = NONE;
 
+	dword bit = 1 << player_index;
 	local_2 = 0;
 	dword player_mask = collection->player_mask;
 	for (; local_2 < 16; local_2++)
@@ -550,6 +552,8 @@ bool function_84560(s_simulation_world_owner *watcher)
 
 void simulation_player_collection_swap(s_type_c67652 *collection, long player_index, long other_index, s_simulation_player_update *update);
 
+// score 32 (was 32): the address of the record is computed in EDX and the zero kept in EBX;
+// retail computes it in ECX and stores it first, so the block order differs.
 // @retail 0x83610
 void __stdcall function_83610(s_simulation_world_owner *watcher, long *count, s_simulation_player_update *updates)
 {
@@ -860,6 +864,7 @@ bool function_6aee0(c_class_6a600 *world);
 void function_6b310(c_class_6a600 *world);
 void function_6b350(c_class_6a600 *world);
 
+// score 2 (was 2): the loop index is loaded into EDX and pushed; retail loads it into EAX.
 // @retail 0x83220
 bool function_83220(s_simulation_world_owner *watcher)
 {

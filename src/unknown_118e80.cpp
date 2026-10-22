@@ -696,6 +696,7 @@ void __stdcall function_118b80(long arg_0)
         if (havok_component_any_rigid_body_active(local_3) || local_7
             || !(bool)((*(word *)((byte *)local_1 + 0xc0) >> 6) & 1))
         {
+            bool use_flag = TEST_FIELD_BIT(local_1->flags.flag5);
             word local_8 = *(word *)((byte *)local_1 + 0xc0);
             long local_9 = NONE;
             if ((bool)((local_8 >> 2) & 1) || (bool)((local_8 >> 1) & 1))
@@ -706,7 +707,7 @@ void __stdcall function_118b80(long arg_0)
             byte *local_13 = (byte *)local_1 + 0x17c;
             function_1e68a0((s_character_physics_update_input_datum_a *)&local_10,
                 (s_source_a *)local_13, (long)local_12, *(long *)((byte *)local_1 + 0xb4),
-                local_9, TEST_FIELD_BIT(local_1->flags.flag5), false, false,
+                local_9, use_flag, false, false,
                 (bool)((local_8 >> 8) & 1), local_7, &local_6,
                 (point3f *)&local_1->forward, (point3f *)&local_1->control);
             local_10.field_14 = true;

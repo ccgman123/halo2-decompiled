@@ -38,6 +38,9 @@ PRIVATE __forceinline void function_1c9291(point3f const *arg_0, vector3f const 
  arg_4->z = arg_2 * arg_2 * arg_3 * 0.5f + (arg_2 * arg_1->k + arg_0->z);
 }
 
+// score 43 (was 43): the inlined helper does the same arithmetic, but retail
+// loads the vector's i and j into xmm2 and xmm3 first and folds the arc term
+// into xmm1, while ours uses xmm7 and loads the fields in another order.
 // @retail 0x1c9290
 bool function_1c9290(long arg_0, point3f const *arg_1, vector3f const *arg_2,
  real arg_3, real arg_4, long arg_5, bool arg_6)

@@ -29,11 +29,6 @@ struct s_world_bounds_view
 	real_bounds bounds[3];
 };
 
-static inline real_bounds const *world_bounds(void)
-{
-	return ((s_world_bounds_view *)g_4e0348)->bounds;
-}
-
 /* the leaf of the world's bsp a point is in */
 static inline long world_leaf(real const *point)
 {
@@ -80,13 +75,13 @@ static __forceinline bool quantized_step(long *candidate, long const *quantized,
 // @retail 0x86d20
 void simulation_write_position(s_bitstream *stream, real const *position, long bits, bool keep_inside)
 {
-	real_bounds const *ranges = world_bounds();
+	s_world_bounds_view *world = (s_world_bounds_view *)g_4e0348;
 	long quantized[3];
-	function_11f4f0(position, ranges, bits, quantized);
+	function_11f4f0(position, world->bounds, bits, quantized);
 	if (keep_inside)
 	{
 		real dequantized[3];
-		function_11f580((real const *)ranges, bits, dequantized, quantized);
+		function_11f580((real const *)world->bounds, bits, dequantized, quantized);
 		if (world_leaf(dequantized) == NONE && world_leaf(position) != NONE)
 		{
 			for (long step = 0; step < sizeof(g_47fe88) / sizeof(g_47fe88[0]); step++)
@@ -94,7 +89,7 @@ void simulation_write_position(s_bitstream *stream, real const *position, long b
 				long candidate[3];
 				if (quantized_step(candidate, quantized, g_47fe88[step], bits))
 				{
-					function_11f580((real const *)ranges, bits, dequantized, candidate);
+					function_11f580((real const *)world->bounds, bits, dequantized, candidate);
 					if (world_leaf(dequantized) != NONE)
 					{
 						quantized[0] = candidate[0];

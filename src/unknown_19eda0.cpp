@@ -254,6 +254,9 @@ bool unit_has_weapon_definition(long unit_index, long definition_index);
 bool __stdcall function_cd0c0(long unit_index, long weapon_index, short mode);
 void __stdcall function_b8540(long object_index);
 
+// score 9 (was 9): function_cd0c0's calling convention differs: retail pushes 1, the
+// argument and the third value, ours pushes 1 and the argument and moves the third value
+// into the argument's register.
 // @retail 0x19ef40
 void __stdcall function_19ef40(long unit_index, long *first_count, long *second_count)
 {

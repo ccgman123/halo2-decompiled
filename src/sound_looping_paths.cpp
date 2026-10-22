@@ -309,10 +309,11 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 		}
 	}
 	s_loop_path_sound *definitions = *(s_loop_path_sound **)((byte *)g_4e0348 + 0xd8);
-	for (long i = data_next_absolute_index_inlined(pool, 0); i != NONE; i = data_next_absolute_index_inlined(pool, i + 1))
+	long scan_index = NONE;
+	while ((scan_index = data_next_absolute_index_inlined(pool, scan_index + 1)) != NONE)
 	{
-		s_loop_path_datum *sound = (s_loop_path_datum *)(pool->data + pool->size * i);
-		long index = (sound->salt << 16) | i;
+		s_loop_path_datum *sound = (s_loop_path_datum *)(pool->data + pool->size * scan_index);
+		long index = (sound->salt << 16) | scan_index;
 		if (sound->type == 0 && sound->source != NONE && !(bool)(((dword)sound->flags >> 9) & 1))
 		{
 			real time = definitions[sound->source].fade_time;
@@ -413,7 +414,8 @@ PRIVATE __forceinline void sound_environment_play_cue(long tag)
 // @retail 0x18bb80
 void __stdcall function_18bb80(real elapsed)
 {
-	long tags[4] = { NONE, NONE, NONE, NONE };
+	long tags[4];
+	memset(tags, 0xff, sizeof(tags));
 	s_portal_path_bsp *bsp = (s_portal_path_bsp *)g_4e0348;
 	for (long listener = 0; listener < 4; ++listener)
 	{
@@ -453,7 +455,8 @@ void __stdcall function_18bb80(real elapsed)
 					if (index != NONE)
 					{
 						s_listener_environment_definition *definition = &((s_listener_environment_bsp *)g_4e0348)->environments[index];
-						if (!(fabs(definition->transition_time) < 0.0001f)) transition = definition->transition_time;
+						real duration = definition->transition_time;
+						if (!(fabs(duration) < 0.0001f)) transition = duration;
 					}
 					requests[i].transition_time = transition;
 					requests[i].fade = 1.0f;

@@ -129,7 +129,7 @@ void function_8d9f0(void)
 		g_510570 = (s_network_observer *)g_5291a0;
 		g_510574 = (c_class_58d20 *)g_52e0f8;
 		g_510578 = &g_52e0e8;
-		bool link_ready = network_link_initialize(g_510560);
+		long link_ready = network_link_initialize(g_510560);
 		memset(g_510564, 0, 0x5a0);
 		network_message_types_register_discovery(g_510564);
 		network_message_types_register_connection(g_510564);
@@ -140,7 +140,7 @@ void function_8d9f0(void)
 		network_message_types_register_synchronous(g_510564);
 		network_message_types_register_game_results(g_510564);
 		network_message_types_register_test(g_510564);
-		bool observer_ready = false;
+		long observer_ready = false;
 		if (link_ready)
 		{
 			s_08d9f0_gateway *gateway = (s_08d9f0_gateway *)g_510568;
@@ -163,7 +163,7 @@ void function_8d9f0(void)
 				observer_ready = true;
 		}
 		((s_08d9f0_handler *)g_51056c)->observer = g_510570;
-		bool sessions_ready = false;
+		long sessions_ready = false;
 		if (observer_ready)
 		{
 			g_510578->sessions[0] = NULL;

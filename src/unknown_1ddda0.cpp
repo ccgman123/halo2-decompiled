@@ -66,6 +66,8 @@ struct s_1debd0
  short field_6;
 };
 
+// score 12 (was 12): the cross product keeps the other operand order, and
+// every swap of the factors leaves this code unchanged.
 // @retail 0x1debd0
 bool function_1debd0(dword const *arg_1, s_bsp3d const *arg_0, short arg_2, long arg_3,
  short arg_4, bool arg_5, point2f const *arg_6)
@@ -210,6 +212,8 @@ PRIVATE __forceinline real function_1de6d4(vector3f const *arg_0, vector3f const
  return arg_0->k * arg_1->k + arg_0->j * arg_1->j + arg_0->i * arg_1->i;
 }
 
+// score 2 (was 2): the inlined dot product multiplies the i terms with the
+// operands in the other order; the compiler canonicalises every source order.
 // @retail 0x1de6d0
 bool __stdcall function_1de6d0(s_1de6d0 *arg_0, long arg_1, real arg_2, real arg_3)
 {
@@ -367,6 +371,9 @@ PRIVATE __forceinline real function_1de2c2(point3f const *arg_0, point3f const *
  return local_0;
 }
 
+// score 44 (was 44): the loads after the first loop are in the other order
+// and the byte load uses mov cl where retail uses movzx ecx, so the table
+// address that follows is off.
 // @retail 0x1de2c0
 void function_1de2c0(s_1de2c0 *arg_0, long arg_1)
 {

@@ -221,6 +221,8 @@ done:
 }
 
 // @retail 0x20a490
+// score 48 (was 48): the index is kept in ESI where retail keeps it in EAX, so the two halves of the
+// split value and the jump table's index take the other registers.
 void function_20a490(short global_index)
 {
 	long slot = (word)global_index & 0x7fff;

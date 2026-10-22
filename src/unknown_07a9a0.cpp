@@ -78,6 +78,8 @@ bool function_07a9b0(void)
 	return g_4cf791;
 }
 
+// score 65 (was 65): the stack set-up at the top differs: retail takes the value at esp+0x38
+// into esi and stores ebp at esp+0x1c, ours the other way round.
 // @retail 0x7ab60 standard
 bool function_07ab60(const s_type_99af70 *address, long local, long *index_out, XNKID *kid_out, XNKEY *key_out, XNADDR *xnaddr_out)
 {
@@ -254,6 +256,8 @@ static __inline byte *iterator_next(s_record_pool_iterator *iterator)
 	return result;
 }
 
+// score 58 (was 58): retail pushes ebx and loads the base pointer into ebp, ours pushes ebp
+// and loads it into ebx; the loop also starts at a different offset.
 // @retail 0x7b430
 void function_07b430(void)
 {
@@ -595,6 +599,8 @@ bool function_7df00(s_bitstream *stream, s_session_message_values *values)
 	return false;
 }
 
+// score 40 (was 40): retail keeps the data pointer in esi and pushes it in the prologue,
+// ours keeps it in eax and pushes esi later.
 // @retail 0x7e080
 bool function_7e080(const byte *data, long size, s_session_message_values *values)
 {

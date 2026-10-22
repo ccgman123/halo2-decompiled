@@ -254,9 +254,12 @@ void object_widget_delete(long object_index, long handle)
             }
             else
             {
-                s_widget *previous = widget;
-                for (long next_index = previous->next; next_index != NONE; next_index = previous->next)
+                while (widget_index != NONE)
                 {
+                    s_widget *previous = (s_widget *)(g_4e0320->data + (widget_index & 0xffff) * 12);
+                    long next_index = previous->next;
+                    if (next_index == NONE)
+                        break;
                     widget = (s_widget *)(g_4e0320->data + (next_index & 0xffff) * 12);
                     if (widget->handle == handle_value)
                     {
@@ -266,7 +269,7 @@ void object_widget_delete(long object_index, long handle)
                         record_pool_release(g_4e0320, next_index);
                         break;
                     }
-                    previous = widget;
+                    widget_index = next_index;
                 }
             }
         }

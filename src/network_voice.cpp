@@ -141,6 +141,8 @@ bool voice_xhv_get_runtime_parameters(XHV_RUNTIME_PARAMS *parameters, c_voice_xh
 }
 
 // @retail 0x55810
+// score 2 (was 2): the engine pointer is loaded into ebp before the branch that
+// skips the creation; retail loads it after the branch.
 bool voice_xhv_create(c_voice_xhv *xhv)
 {
     XHV_RUNTIME_PARAMS parameters;
@@ -2432,12 +2434,14 @@ void function_56790(long *capacity, dword *remaining, dword allowed, word *selec
 }
 
 // @retail 0x53b00
+// score 4 (was 4): retail calls function_56380 with the output pointer in eax and
+// the channels, player and capacity on the stack; our callee takes them in another
+// order, so the call and its two pushes differ.
 long __stdcall function_53b00(long player, byte *output, long capacity)
 {
- byte *const *local_0 = &output;
  long result = 0;
  if (voice_is_enabled())
-  result = function_56380(*local_0, &g_525a00, player, capacity);
+  result = function_56380(output, &g_525a00, player, capacity);
  return result;
 }
 

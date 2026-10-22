@@ -126,6 +126,9 @@ PRIVATE __forceinline bool function_1d6d04(long arg_0)
  return arg_0 == 4 || arg_0 == 5;
 }
 
+// score 49 (was 49): the arguments of the outgoing call are set up in another
+// order: retail pushes the address of the local, then 0, then the float, while
+// ours pushes 0 first and reloads the float out of the stack.
 // @retail 0x1d6d00
 void __stdcall function_1d6d00(s_havok_component *arg_0, void *arg_1, byte *arg_2,
  long arg_3, long arg_4, bool arg_5, bool arg_6)

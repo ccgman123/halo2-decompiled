@@ -143,17 +143,18 @@ struct s_ease_input
 };
 
 bool function_109fd0(long object_index, vector3f *velocity);
-long function_1eb8a0(bool update, vector3f *a, point3f *b, s_ease_state *s,
+long function_1eb8a0(s_ease_state *s, bool update, vector3f *a, point3f *b,
 	s_ease_output *out, real dt, vector3f *d, vector3f *q, point3f *pos);
 
 // @retail 0x1eb6f0
 void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *output)
 {
 	s_ease_state *const *state_reference = &state;
+	s_ease_output *const *output_reference = &output;
 	vector3f velocity = input->velocity;
 	vector3f reference = input->reference_velocity;
 	vector3f object_velocity;
-	long relative = function_109fd0(input->object_index, &object_velocity);
+	bool relative = function_109fd0(input->object_index, &object_velocity);
 	if (relative == true)
 	{
 		reference.i -= object_velocity.i;
@@ -171,22 +172,23 @@ void function_1eb6f0(s_ease_input *input, s_ease_state *state, s_ease_output *ou
 		velocity.j = (real)(velocity.j * scale);
 		velocity.k = (real)(velocity.k * scale);
 	}
-	function_1eb8a0(input->update, &velocity, &input->target, *state_reference,
+	function_1eb8a0(*state_reference, input->update, &velocity, &input->target,
 		output, input->time, &input->direction, &reference, &input->position);
 	if (relative)
 	{
-		(output)->position.i += object_velocity.i;
-		(output)->position.j += object_velocity.j;
-		(output)->position.k += object_velocity.k;
+		s_ease_output *result = *output_reference;
+		result->position.i += object_velocity.i;
+		result->position.j += object_velocity.j;
+		result->position.k += object_velocity.k;
 	}
 }
 
 // @retail 0x1eb8a0
 long function_1eb8a0(
+	s_ease_state *s,
 	bool update,
 	vector3f *a,
 	point3f *b,
-	s_ease_state *s,
 	s_ease_output *out,
 	real dt,
 	vector3f *d,
@@ -202,11 +204,11 @@ long function_1eb8a0(
 		{
 			if (dt > 0.001f)
 			{
+				real k = s->fast ? 12.f : 8.f;
 				real step = dt;
 				if (s->limit != 0.f && step > s->limit)
 					step = s->limit;
 
-				real k = s->fast ? 12.f : 8.f;
 				real t = step * 0.375f;
 				real e = 0.001f;
 				if (!(0.001f > t))
@@ -323,8 +325,8 @@ long function_1eb8a0(
 			s->direction = *d;
 	}
 
-	out->position = *q;
-	globals = g_510c54;
+	vector3f *position = &out->position;
+	*position = *q;
 
 	if (s->active)
 	{
@@ -365,24 +367,24 @@ long function_1eb8a0(
 				if (5.f > cnt)
 				{
 					real f = MIN(third3, MAX(0.f, e3 - MAX(0.f, w)));
-					out->position.i = s->direction.i * f + qr.i;
-					out->position.j = s->direction.j * f + qr.j;
-					out->position.k = s->direction.k * f + qr.k;
+					position->i = s->direction.i * f + qr.i;
+					position->j = s->direction.j * f + qr.j;
+					position->k = s->direction.k * f + qr.k;
 					real ticks = (real)globals->field_2_3;
-					out->position.i = out->position.i * ticks;
-					out->position.j = out->position.j * ticks;
-					out->position.k = out->position.k * ticks;
+					position->i = position->i * ticks;
+					position->j = position->j * ticks;
+					position->k = position->k * ticks;
 					s->ticks_left = (long)((dist - (((3.f - cnt) - 0.5f) * e3 * 0.5f + hi)) / e3 + (3.f - cnt) + 3.f + 0.5f);
 				}
 				else
 				{
-					out->position.i = qr.i;
-					out->position.j = qr.j;
-					out->position.k = qr.k;
+					position->i = qr.i;
+					position->j = qr.j;
+					position->k = qr.k;
 					real ticks = (real)globals->field_2_3;
-					out->position.i = ticks * out->position.i;
-					out->position.j = out->position.j * ticks;
-					out->position.k = out->position.k * ticks;
+					position->i = ticks * position->i;
+					position->j = position->j * ticks;
+					position->k = position->k * ticks;
 					s->ticks_left = (long)((dist - hi) / e3 + 3.f - 0.5f);
 				}
 				goto done;
@@ -409,13 +411,13 @@ long function_1eb8a0(
 						real len4 = MIN(m, len);
 						real ratio = s->settle_minimum / hi - 0.5f;
 						real back = 0.f - len4;
-						out->position.j = nq.j * back + qr.j;
-						out->position.i = nq.i * back + qr.i;
-						out->position.k = nq.k * back + qr.k;
+						position->j = nq.j * back + qr.j;
+						position->i = nq.i * back + qr.i;
+						position->k = nq.k * back + qr.k;
 						real ticks = (real)globals->field_2_3;
-						out->position.i = out->position.i * ticks;
-						out->position.j = out->position.j * ticks;
-						out->position.k = out->position.k * ticks;
+						position->i = position->i * ticks;
+						position->j = position->j * ticks;
+						position->k = position->k * ticks;
 						s->ticks_left = (long)ratio;
 						goto done;
 					}
@@ -425,9 +427,9 @@ long function_1eb8a0(
 					real m = (s->settle_distance + step) * 0.33333334f;
 					real m2 = MIN(m, len);
 					real back = 0.f - m2;
-					out->position.i = back * nq.i + qr.i;
-					out->position.j = nq.j * back + qr.j;
-					out->position.k = nq.k * back + qr.k;
+					position->i = back * nq.i + qr.i;
+					position->j = nq.j * back + qr.j;
+					position->k = nq.k * back + qr.k;
 					if (!(step > len - m + 0.001f))
 						goto done;
 				}

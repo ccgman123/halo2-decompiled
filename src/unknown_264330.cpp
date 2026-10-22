@@ -718,21 +718,24 @@ real function_296600(long actor_index, long prop_ref_index);
 // @retail 0x264b50
 void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *sample, s_2640c0 *motion)
 {
-	s_type_f95cd3 *view = NULL;
 	byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
 	byte *volatile saved_actor = actor;
 	if (!actor[9])
 		return;
-	byte *squad = NULL;
+	byte *squad;
 	if (*(long *)(actor + 0x30) != NONE)
 		squad = g_51e9d8->data + (*(long *)(actor + 0x30) & 0xffff) * 0x98;
+	else
+		squad = NULL;
 	s_prop_datum *reference = prop_ref_get(prop_ref_index);
+	s_type_f95cd3 *view;
 	if (reference->tracking_index != NONE)
 	{
 		s_type_e5ff81 *tracking = tracking_get(reference->tracking_index);
-		if (tracking)
-			view = &tracking->view;
+		view = tracking ? &tracking->view : NULL;
 	}
+	else
+		view = NULL;
 	byte *prop = (byte *)prop_get(reference->prop_index);
 	long time = g_510c54->game_time;
 	byte *object = *(byte **)(g_4e0300->data + (reference->object_index & 0xffff) * 12 + 8);

@@ -77,6 +77,7 @@ struct s_1d7400
 // @retail 0x1d7400
 c_extent_shape *s_1d7400::function_1d7400(c_extent_shape *arg_0, void *arg_1, real arg_2)
 {
+ c_extent_shape *result = arg_0;
  real local_1, local_0;
  function_182aa0(arg_0, &local_1, &local_0);
  real local_2 = (local_0 * arg_2 * 0.5f + g_47f05c) * g_510c54->field_2_3;
@@ -99,12 +100,9 @@ c_extent_shape *s_1d7400::function_1d7400(c_extent_shape *arg_0, void *arg_1, re
     if (local_25)
     {
      c_havok_reference_counted *local_10 = (c_havok_reference_counted *)function_1d7390((long)((s_1d7401 *)local_8)->field_c, arg_1, local_2);
-     void *local_17 = ((c_1d7390 *)g_480118)->function_1d7390(0x50, 0x22);
-     c_child_transform *local_18;
-     if (!local_17)
-      local_18 = NULL;
-     else
-      local_18 = new (local_17) c_child_transform(local_10);
+     c_child_transform *local_18 = (c_child_transform *)((c_1d7390 *)g_480118)->function_1d7390(0x50, 0x22);
+     if (local_18)
+      new (local_18) c_child_transform(local_10);
      local_18->transform = ((s_1d7401 *)local_8)->field_10;
      havok_reference_remove(local_10);
      local_4[local_5++] = (c_extent_shape *)local_18;
@@ -136,10 +134,10 @@ c_extent_shape *s_1d7400::function_1d7400(c_extent_shape *arg_0, void *arg_1, re
   for (long local_14 = 0; local_14 < local_5; ++local_14)
    if (local_4[local_14]->shape_kind() != 0x11)
     havok_reference_remove((c_havok_reference_counted *)local_4[local_14]);
-  return local_13;
+  result = local_13;
  }
+ else if (arg_0->shape_kind() != 0x11)
  {
- if (arg_0->shape_kind() == 0x11) return arg_0;
  if (arg_0->shape_kind() == 0x15)
  {
   c_havok_reference_counted *local_15 = (c_havok_reference_counted *)function_1d7390((long)((s_1d7401 *)arg_0)->field_c, arg_1, local_2);
@@ -147,10 +145,12 @@ c_extent_shape *s_1d7400::function_1d7400(c_extent_shape *arg_0, void *arg_1, re
   c_child_transform *local_22 = local_21 ? new (local_21) c_child_transform(local_15) : NULL;
   local_22->transform = ((s_1d7401 *)arg_0)->field_10;
   havok_reference_remove(local_15);
-  return (c_extent_shape *)local_22;
+  result = (c_extent_shape *)local_22;
  }
- return (c_extent_shape *)function_1d7390((long)arg_0, arg_1, local_2);
+ else
+  result = (c_extent_shape *)function_1d7390((long)arg_0, arg_1, local_2);
  }
+ return result;
  }
 
 extern byte g_47f06f;

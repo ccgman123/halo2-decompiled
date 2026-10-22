@@ -60,8 +60,8 @@ short function_2cbf0(long geometry, long category, short instance, dword flags,
     long result = index;
     if (index >= 850 || geometry == NONE)
     {
-        --g_4c0b78.current;
         result = NONE;
+        --g_4c0b78.current;
     }
     else
     {
@@ -144,12 +144,7 @@ short function_2cbf0(long geometry, long category, short instance, dword flags,
         long object_tag = *(byte **)entry->unknown10 ? **(long **)entry->unknown10 : NONE;
         long kind = function_2d000(object_tag, entry->tag, (entry->flags >> 18) & 0x7ff);
         entry->unknown00 = (entry->unknown00 & 0x1fffffff) | ((dword)kind << 29);
-        if (!function_449e0((short)index, entry->tag == NONE, (bool)((entry->unknown00 >> 12) & 1)))
-        {
-            --g_4c0b78.current;
-            result = NONE;
-        }
-        else
+        if (function_449e0((short)index, entry->tag == NONE, (bool)((entry->unknown00 >> 12) & 1)))
         {
             s_2cb30_state *state = g_4c0b78.state;
             if (!state->active)
@@ -164,6 +159,11 @@ short function_2cbf0(long geometry, long category, short instance, dword flags,
                 if (!*(void **)(entry->unknown10 + 4))
                     entry->unknown00 = (entry->unknown00 & ~0x40) | 1;
             }
+        }
+        else
+        {
+            result = NONE;
+            --g_4c0b78.current;
         }
     }
     return (short)result;

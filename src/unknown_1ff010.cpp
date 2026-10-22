@@ -102,6 +102,9 @@ PRIVATE inline s_projectile_choice *projectile_choice_get(short type)
 }
 
 // @retail 0x1ff200
+// score 51 (was 51): ours clears the low byte of the flags register where retail clears DL, and loads
+// the record pool's pointer into EDI where retail uses EDX; the arguments of the
+// call are pushed in a different order.
 bool function_1ff200(short type, point3f const *origin, real speed, point3f const *target,
 	real const *limit, bool alternate, vector3f *direction, real *speed_out, real *time,
 	vector3f *velocity, real *gravity)
@@ -420,6 +423,8 @@ bool function_1c9290(long arg_0, point3f const *arg_1, vector3f const *arg_2,
 real normalize2d(point2f *arg_0);
 
 // @retail 0x1ff010
+// score 2 (was 2): the two factors of the multiply are in the opposite order: ours keeps the value
+// read from the structure in the destination register, retail the one from the stack.
 bool __stdcall function_1ff010(long arg_0, point3f const *arg_1)
 {
     bool local_0 = false;

@@ -31,6 +31,7 @@ void function_1fb350(void)
 /* whether a recorded animation that has not finished plays on the object */
 PRIVATE __forceinline byte *function_1fb762(s_record_pool_iterator *arg_0);
 
+// score 12 (was 12): ours keeps the global pointer in ESI, retail keeps it in EDI.
 // @retail 0x1fb6f0
 bool recorded_animation_playing(long object_index)
 {

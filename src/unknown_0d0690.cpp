@@ -982,11 +982,17 @@ long function_d1850(long object_index, bool value, s_effect_color_query *query)
         if (*(long *)(bsp + 0x1c) != NONE && *(long *)(bsp + 4) == *(long *)((byte *)g_4e0348 + 8))
         {
             s_object *object = OBJECT_FROM_INDEX(object_index);
-            byte *volatile definition = g_4e3b44[object->tag_index & 0xffff].bytes;
             dword object_flags = *(dword *)((byte *)object + 4);
+            /* definition and flags are volatile to keep them in stack slots; with this
+               form the near miss is at 52 (was 62) */
+            byte *volatile definition = g_4e3b44[object->tag_index & 0xffff].bytes;
+            long volatile flags;
+            bool object_bit = (object_flags >> 13) & 1;
+            if (object_bit) flags = 1;
+            else flags = 0;
             byte tag_flags = definition[2];
-            long volatile flags = (object_flags >> 13) & 1;
-            flags |= (tag_flags >> 1) & 1;
+            bool tag_bit = (tag_flags >> 1) & 1;
+            if (tag_bit) flags |= 1;
             point3f *point = (point3f *)((byte *)object + 0x30);
             long status = function_d2a50(flags, object_index, value, query, 0, point);
             if (surface_status_failed(status))
@@ -1147,8 +1153,7 @@ bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color
 		vector3f const *input_normal = (vector3f const *)query;
 		vector3f normal = { input_normal->i, input_normal->j, input_normal->k };
 		real length = (real)sqrt(input_normal->i * input_normal->i + input_normal->j * input_normal->j + input_normal->k * input_normal->k);
-		s_lighting_record *const *record_reference = &record;
-		(*record_reference)->length = length;
+		record->length = length;
 		lighting_normalize_ordered(&normal, (normal.k * normal.k + normal.j * normal.j) + normal.i * normal.i);
 		color3f adjusted;
 		adjusted.red = lightmap->red + parameters->bias;
@@ -1167,9 +1172,9 @@ bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color
 		record->color2.red = ((limited_base.red * limited_lightmap.red) * square) * 2.0f + record->color1.red * (1.0f - square);
 		record->color2.green = ((limited_base.green * limited_lightmap.green) * square) * 2.0f + record->color1.green * (1.0f - square);
 		record->color2.blue = ((limited_base.blue * limited_lightmap.blue) * square) * 2.0f + record->color1.blue * (1.0f - square);
-		vector3f turned = record->direction1;
-		lighting_negate(&turned);
-		lighting_rotate(&turned, parameters->angle2 * 0.01745329238474369f, &record->direction2);
+		record->direction2 = record->direction1;
+		lighting_negate(&record->direction2);
+		lighting_rotate(&record->direction2, parameters->angle2 * 0.01745329238474369f, &record->direction2);
 		lighting_pin_color(&adjusted, &parameters->lower0, &parameters->upper0, &record->color0);
 		record->direction0 = normal;
 		lighting_negate(&record->direction0);

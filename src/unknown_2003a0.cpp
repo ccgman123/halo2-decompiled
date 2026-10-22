@@ -279,6 +279,8 @@ PRIVATE __forceinline s_squad_group_datum *next_group_record_202370(s_group_reco
 }
 
 // @retail 0x202370
+// score 62 (was 62): the record pool's pointer is kept in EBX where retail keeps it in EDI, so the
+// count and the bit mask take the other two registers.
 void function_202370(void)
 {
 	s_group_record_iterator iterator = {0};
@@ -296,6 +298,8 @@ void function_202370(void)
 }
 
 // @retail 0x2024c0
+// score 62 (was 62): the record pool's pointer is kept in EBX where retail keeps it in EDI, so the
+// count and the bit mask take the other two registers.
 void function_2024c0(void)
 {
 	s_group_record_iterator iterator;
@@ -868,6 +872,8 @@ PRIVATE __forceinline short squad_valid_command_script(s_squad_placement_table *
 }
 
 // @retail 0x201b70
+// score 69 (was 69): the record's field is read into SI where retail reads it into BP, so the two
+// values are exchanged and the compare uses the other register.
 void function_201b70(long squad_index, short entry_index, long actor_index)
 {
 	(void)&actor_index;
@@ -1196,6 +1202,8 @@ void __stdcall function_205320(long group_index)
 }
 
 // @retail 0x201ad0
+// score 18 (was 18): the record pool's pointer is loaded into EAX where retail keeps it in ECX, so the
+// index and the pointer take the other two registers.
 void function_201ad0(long squad_index, long object_index)
 {
 	s_squad_vehicle_view *object = ((s_squad_vehicle_header *)g_4e0300->data)[object_index & 0xffff].object;
@@ -1427,6 +1435,8 @@ real function_204950(long actor_index, long squad_index, short mode)
 PRIVATE __forceinline s_squad_datum *function_200d83(s_squad_record_iterator *arg_0);
 
 // @retail 0x204b20
+// score 2 (was 2): the record pool's pointer is reloaded after the branch on the index,
+// retail reloads it before, so the jump lands on the shared reload.
 long function_204b20(long actor_index, short mode)
 {
     byte *actor = g_4f55f0->data + (actor_index & 0xffff) * 0x888;
@@ -1740,6 +1750,8 @@ bool function_1e11b0(long actor_index, bool active);
 
 #pragma inline_depth(0)
 // @retail 0x203bf0
+// score 64 (was 64): the record's address is computed from the index in EBX where retail keeps the
+// index in EAX, so the flag byte is read into AL instead of into CL.
 bool function_203bf0(long squad_index)
 {
     (void)&squad_index;
@@ -2061,6 +2073,8 @@ PRIVATE __forceinline s_squad_datum *squad_iterator_next_201df0(s_squad_record_i
 }
 
 // @retail 0x201df0
+// score 12 (was 12): the record pool's pointer is kept in EDI where retail keeps it in
+// EBX, so the count and the bit mask take the other two registers instead.
 void function_201df0(void)
 {
     s_squad_record_iterator local_0;
@@ -2112,6 +2126,8 @@ struct s_actor_options;
 void function_1e4570(long arg_0, s_actor_options const *arg_1);
 void function_26b290(long arg_0);
 
+// score 2 (was 3): the squad flag bit is turned into a 0/1 value by
+// shifting first and masking after, retail masks first and shifts.
 // @retail 0x202e90
 void __stdcall function_202e90(long arg_0, short arg_1, long arg_2)
 {
@@ -2120,36 +2136,34 @@ void __stdcall function_202e90(long arg_0, short arg_1, long arg_2)
         long field_0;
         long field_4;
     };
-    long const *local_0 = &arg_0;
-    long const *local_1 = &arg_2;
     long local_2 = g_510c54->game_time;
-    byte *local_3 = (byte *)squad_get(*local_0);
+    byte *local_3 = (byte *)squad_get(arg_0);
     *(long *)(local_3 + 0x2c) = local_2;
     *(short *)(local_3 + 0x62) = NONE;
     *(short *)(local_3 + 0x64) = NONE;
     local_3[0x60] = false;
     if (*(short *)(local_3 + 0x2a) != (short)arg_1 ||
-        ((*(word *)(local_3 + 2) & 0x40) >> 6) != (byte)*local_1)
+        ((*(word *)(local_3 + 2) & 0x40) >> 6) != (byte)arg_2)
     {
         byte *local_4 = NULL;
         if ((short)arg_1 >= 0 && (short)arg_1 < *(long *)((byte *)g_4e0350 + 0x240))
             local_4 = *(byte **)((byte *)g_4e0350 + 0x244) + (short)arg_1 * 0x7c;
         *(short *)(local_3 + 0x2a) = (short)arg_1;
-        if ((byte)*local_1)
+        if ((byte)arg_2)
             *(word *)(local_3 + 2) |= 0x40;
         else
             *(word *)(local_3 + 2) &= ~0x40;
         *(long *)(local_3 + 0x80) = NONE;
         s_squad_actor_iterator local_5;
-        squad_actors_begin(&local_5, *local_0);
+        squad_actors_begin(&local_5, arg_0);
         s_actor_datum *actor;
         while ((actor = squad_actors_next(&local_5)) != NULL)
             function_1e4570(local_5.actor_index, (s_actor_options const *)local_4);
         if (local_4)
         {
             if (local_4[0x24] & 0x10)
-                function_204450((short)arg_1, *local_0);
-            function_291740((short)arg_1, *local_0 & 0xffff);
+                function_204450((short)arg_1, arg_0);
+            function_291740((short)arg_1, arg_0 & 0xffff);
             short local_8 = *(short *)(local_4 + 0x20);
             if (local_8 == NONE)
             {
@@ -2165,7 +2179,7 @@ void __stdcall function_202e90(long arg_0, short arg_1, long arg_2)
             if (*(short *)(local_4 + 0x28) > 0)
             {
                 long local_11 = NONE;
-                function_204d30(&local_5, *local_0);
+                function_204d30(&local_5, arg_0);
                 s_actor_datum *local_12;
                 while ((local_12 = squad_actors_next(&local_5)) != NULL)
                 {
@@ -2288,6 +2302,8 @@ void __stdcall function_201100(long arg_0, dword *arg_1)
 }
 
 // @retail 0x203120
+// score 26 (was 26): the squad group's record is looked up in ECX where retail uses EAX, so the flag
+// byte is read into AL instead of into the record pointer.
 void __stdcall function_203120(long arg_0, short arg_1, long arg_2)
 {
     long const *local_0 = &arg_0;
@@ -2583,6 +2599,8 @@ PRIVATE __forceinline s_squad_datum *function_201c83(s_squad_record_iterator *ar
 }
 
 // @retail 0x201c80
+// score 43 (was 43): the record's index is combined with the pool's base before the test, retail keeps
+// the two apart until the compare and the division.
 void function_201c80(void)
 {
     long local_0 = g_510c54->game_time;

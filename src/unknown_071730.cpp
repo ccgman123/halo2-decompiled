@@ -94,7 +94,7 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 		byte *local_9 = local_2->get_data_4a00();
 		long local_10 = (long)(g_510548 ? g_51054c : GetTickCount()) - arg_0->unknowna68;
 		byte *local_11 = *(byte **)((byte *)local_0 + 0x3c);
-		bool local_12 = false;
+		long local_12 = false;
 		bool local_13 = false;
 		long local_15[16];
 		s_71730 local_16;
@@ -160,7 +160,7 @@ bool __stdcall function_71730(c_session_state_matchmaking *arg_0)
 			if (function_1934b0(local_8))
 			{
 				long local_24;
-				bool local_25 = false;
+				long local_25 = false;
 				if (balance_teams_by_count(local_16.field_c, local_16.field_194,
 					function_193440(local_8), function_193370(local_8), function_1934d0(local_8),
 					function_1933d0(local_8), function_1933a0(local_8), true, &local_24) &&

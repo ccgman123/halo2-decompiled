@@ -473,6 +473,9 @@ real function_1c9ee0(real arg_0);
 void __stdcall function_26c2d0(long arg_0);
 bool function_255b10(long arg_0, s_type_c3b527 const *arg_1, long arg_2, bool arg_3);
 
+// score 41 (was 41): retail keeps the -1 sentinel in EBP and pushes the
+// arguments in the other order, where ours uses EBX for the sentinel, so the
+// prologue and the calls that follow differ.
 // @retail 0x1ae680
 short __stdcall function_1ae680(long arg_0, s_slot *arg_1)
 {

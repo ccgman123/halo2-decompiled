@@ -67,6 +67,9 @@ short __stdcall function_1b7920(long actor_index)
 	return result;
 }
 
+// score 74 (was 74): retail inlines the linear congruential generator (imul by
+// 0x19660d, add 0x3c6ef35f) where ours calls a helper that reads the value out
+// of the state, so our code is four bytes longer.
 // @retail 0x1b79d0
 bool __stdcall function_1b79d0(long actor_index, s_slot *slot)
 {
@@ -94,6 +97,9 @@ bool __stdcall function_1b79d0(long actor_index, s_slot *slot)
 	return result;
 }
 
+// score 75 (was 75): retail pushes EBP first and keeps the character in EBP,
+// and calls function_25d740 out of line; our build inlines that helper and
+// keeps the character in EBX.
 // @retail 0x1b7b90
 short __stdcall function_1b7b90(long actor_index, s_slot *slot, bool active)
 {

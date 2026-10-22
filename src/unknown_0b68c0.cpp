@@ -231,6 +231,7 @@ void __stdcall function_bc820(long object_index);
 void function_109660(long object_index, long entry_index);
 void function_fd910();
 
+// score 2 (was 2): the two values are copied into EAX and ECX in the opposite order.
 // @retail 0xb7060
 void function_b7060()
 {
@@ -268,6 +269,8 @@ void __stdcall function_b83b0(long object_index, bool flag);
 void __stdcall function_b8460(long object_index, bool flag);
 void function_bf380();
 
+// score 78 (was 78): ours is ten bytes shorter: the mask is applied to a copy in ECX, retail clears
+// the high bits in place and masks it there.
 // @retail 0xb6f10
 void function_b6f10()
 {

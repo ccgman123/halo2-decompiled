@@ -29,6 +29,8 @@ struct s_type_99af70
 bool function_7af40(s_type_99af70 const *address);
 
 /* an IPv4 address in host byte order whose last octet is zero */
+// score 55 (was 55): retail pushes esi after the first branch, ours pushes it first, and the
+// two comparisons of the field value are ordered differently.
 // @retail 0x7aec0
 bool function_07aec0(s_type_99af70 const *address, dword *ipv4_address)
 {

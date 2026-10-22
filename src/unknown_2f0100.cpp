@@ -154,8 +154,6 @@ public:
 	void function_2f0100(void const *a, void const *b, void const *input, void *collector);
 };
 
-// score 6 (was 11): the two scaled indices of the perpendicular axis are held in the
-// opposite registers: the first index is in eax here and ecx in retail.
 // the contact of a sphere with a capsule, kept while they are within the
 // tolerance; when the centre lies on the segment, the normal is one at right
 // angles to it
@@ -202,13 +200,12 @@ void class_2f0100::function_2f0100(void const *a_, void const *b_, void const *i
 			distance = 0.0f;
 			__m128 axis;
 			axis = _mm_sub_ps(ends[1].value, ends[0].value);
-			float const *component = (float const *)&axis;
 			int smallest = 0;
 			int first = 1;
 			int second = 2;
-			float least = fabsf(component[0]);
-			float const y = fabsf(component[1]);
-			float const z = fabsf(component[2]);
+			float least = fabsf(axis.m128_f32[0]);
+			float const y = fabsf(axis.m128_f32[1]);
+			float const z = fabsf(axis.m128_f32[2]);
 			if (y < least)
 			{
 				first = 0;
@@ -222,8 +219,8 @@ void class_2f0100::function_2f0100(void const *a_, void const *b_, void const *i
 			}
 			float *normal = (float *)&contact->normal;
 			normal[smallest] = 0.0f;
-			float const negated = -component[first];
-			normal[first] = component[second];
+			float const negated = -axis.m128_f32[first];
+			normal[first] = axis.m128_f32[second];
 			normal[second] = negated;
 		}
 		contact->normal.scale_to_unit_length();
@@ -302,13 +299,12 @@ __forceinline void sphere_capsule_contact_2f0450(void const *a_, void const *b_,
 			distance = 0.0f;
 			__m128 axis;
 			axis = _mm_sub_ps(ends[1].value, ends[0].value);
-			float const *component = (float const *)&axis;
 			int smallest = 0;
 			int first = 1;
 			int second = 2;
-			float least = fabsf(component[0]);
-			float const y = fabsf(component[1]);
-			float const z = fabsf(component[2]);
+			float least = fabsf(axis.m128_f32[0]);
+			float const y = fabsf(axis.m128_f32[1]);
+			float const z = fabsf(axis.m128_f32[2]);
 			if (y < least)
 			{
 				first = 0;
@@ -320,9 +316,9 @@ __forceinline void sphere_capsule_contact_2f0450(void const *a_, void const *b_,
 				second = smallest;
 				smallest = 2;
 			}
-			float const negated = -component[first];
+			float const negated = -axis.m128_f32[first];
 			contact.normal.m128_f32[smallest] = 0.0f;
-			contact.normal.m128_f32[first] = component[second];
+			contact.normal.m128_f32[first] = axis.m128_f32[second];
 			contact.normal.m128_f32[second] = negated;
 			direction = contact.normal;
 		}
@@ -342,15 +338,12 @@ public:
 	void function_2f0450(void const *a, void const *b, void const *input, void *collector);
 };
 
-// score 2 (was 7): picking the perpendicular axis, retail loads the moved component
-// before it stores the zero into the normal.
 // @retail 0x2f0450
 void class_2f0450::function_2f0450(void const *a, void const *b, void const *input, void *collector)
 {
 	sphere_capsule_contact_2f0450(a, b, input, collector);
 }
 
-// score 2 (was 7): as 0x2f0450.
 // the same as a function
 // @retail 0x2f0700
 void __cdecl function_2f0700(void const *a, void const *b, void const *input, void *collector)

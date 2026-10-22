@@ -162,12 +162,15 @@ public:
 	void function_2dc220(pending_2ddbd0 *pending, void const *root, fixed_point_2dc220 const *fixed_point);
 };
 
-// score 330 (was 376): the same length as retail. A split at the next
+// score 327 (was 330): the same length as retail. The walk's position is
+// the parameter itself, so it is loaded after the first command's range check
+// as in retail. A split at the next
 // unit stores the high bound first, so the node's corner is read again for
 // the low one (as retail does; storing them in retail's order reads it once
-// into ebx), and the plane test collects at the end with the outside case
-// after it. Still: the walk's position is loaded before the first command's
-// range check; the first side's bound loop loads q[1] once ahead of its
+// into ebx, 368, also with both bounds named first or the low one computed
+// inline), and the plane test collects at the end with the outside case
+// after it (a local array for the two bounds scored 806). Still: the first
+// side's bound loop loads q[1] once ahead of its
 // branch (retail loads it in each arm; testing the corner bounds first, which
 // helps 0x2dce60, costs 245 here); in the plane test retail spills the centre
 // splats z/y/x to 0x20/0x30/0x40 (ours x/y/z) and reloads z and y at the loop
@@ -177,9 +180,8 @@ public:
 // The same walk as 0x2dce60 below, for the nodes a set of planes holds: the
 // box is the third argument
 // @retail 0x2dc220
-void class_2dc220::function_2dc220(pending_2ddbd0 *pending, void const *root, fixed_point_2dc220 const *fixed_point)
+void class_2dc220::function_2dc220(pending_2ddbd0 *position, void const *root, fixed_point_2dc220 const *fixed_point)
 {
-	pending_2ddbd0 *position = pending;
 	pending_2ddbd0 copy;
 	__m128 *box = (__m128 *)fixed_point;
 	unsigned char const *commands = (unsigned char const *)root;
@@ -485,7 +487,9 @@ public:
 	void function_2dce60(pending_2ddbd0 *pending, void const *root, __m128 const *offset);
 };
 
-// score 124 (was 178): the same length as retail. The first side's bound
+// score 122 (was 124): the same length as retail. The walk's position is
+// the parameter itself, so it is loaded after the first command's range check
+// as in retail. The first side's bound
 // loop tests for the corner bounds first: with the three-byte arm first (as
 // retail lays it out) the compiler loads q[1] once ahead of the branch, five
 // bytes short, which misaligned everything after it; this way the length and
@@ -493,8 +497,12 @@ public:
 // arm's registers differ (ecx/edx swapped). Tried for the arm-first order: the
 // operands in any order, an inline reader, `!(bound < 0x29)`, `bound > 0x28`,
 // a `continue` arm, a separate local for the shift or the index, and an inline
-// for the whole loop (+24 bytes). Still: the walk's position is loaded before
-// the first command's range check; a split at the next unit keeps its low
+// for the whole loop (+24 bytes); also the shift arm reading through
+// commands[first_offset + 1], a pointer for the lower corner, the first read
+// as a named local (all 195-197; the hoisted load sits between the cmp and
+// the jl, so retail's arm must get another register for it); a 10-minute
+// permuter run found nothing below 124. Still: a split at the next unit keeps
+// its low
 // bound at another slot and computes the high one with inc (retail lea, after
 // loading the low into ecx; locals, `value`, a separate `low + 1` and operand
 // orders all compile alike); the per-side states trade stack slots; the
@@ -507,9 +515,8 @@ public:
 // second side, when both are, by a call of its own); each node reached adds
 // its offset to the list
 // @retail 0x2dce60
-void class_2dce60::function_2dce60(pending_2ddbd0 *pending, void const *root, __m128 const *offset)
+void class_2dce60::function_2dce60(pending_2ddbd0 *position, void const *root, __m128 const *offset)
 {
-	pending_2ddbd0 *position = pending;
 	pending_2ddbd0 copy;
 	__m128 *box = (__m128 *)offset;
 	unsigned char const *commands = (unsigned char const *)root;

@@ -91,6 +91,9 @@ struct placed_point_2f1080
 	}
 };
 
+// score 27 (was 39): retail keeps the point-triangle status in the stack slot
+// 0x28 and the normal in xmm1; ours drops the unused status, reloads the
+// normal into xmm0, and its x87 reload of the distance comes late
 // @retail 0x2f1080
 void class_2f1080::function_2f1080(void const *a_, void const *b_, void const *input_, void *collector)
 {

@@ -123,7 +123,7 @@ void function_23625d(long tag_index)
 void function_236299(long sound)
 {
 	s_sound_play play;
-	byte set[2];
+	byte set[8];
 	s_interface_sound_globals *globals = (s_interface_sound_globals *)ui_definition_get();
 	if (globals)
 	{
@@ -648,6 +648,8 @@ struct s_interface_draw_request
 void __stdcall function_52040(void const *request, void const *vertices);
 
 /* Draws a textured rectangle through the shared rendering request. */
+// score 8 (was 8): retail loads x0 first and stores the first corner's x
+// before its y, ours stores the y first; every other order scores worse.
 // @retail 0x23675a
 void function_23675a(s_bitmap_view *bitmap, s_texture_rect const *texture, dword color, short mode, s_float_rect const *bounds)
 {

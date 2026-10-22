@@ -11,6 +11,7 @@
 #include "unknown_1e1f20.h"
 #include "unknown_0259a0.h"
 #include "normalize3d.h"
+#include "unknown_11c010.h"
 
 typedef bool (__stdcall *firing_position_evaluate_proc)(long, s_type_967e20 *, s_type_b36ac5 *);
 typedef void (__stdcall *firing_position_pre_evaluate_proc)(long, s_type_967e20 *, short, s_type_b36ac5 *);
@@ -225,8 +226,9 @@ void __stdcall function_25dd50(
 			real reach;
 
 			vector3d_from_points3d(&actor->unknown3a0, &position->position, &offset);
+			reach = actor->unknown39c + 2.5f;
 			vector3d_from_points3d(&actor->unknown370, &actor->unknown388, &segment);
-			if ((actor->unknown39c + 2.5f) * (actor->unknown39c + 2.5f) > length_sq3f(&offset))
+			if (length_sq3f(&offset) < reach * reach)
 			{
 				real distance;
 
@@ -275,8 +277,10 @@ void __stdcall function_25dd50(
 					vector3f_scale(&position->unknown1c, 3.f, &movement);
 					if (length_sq3f(&movement) > 0.0001f)
 					{
-						radius = actor->unknown36c;
-						if (radius * radius > function_11e130(&actor->unknown370, &segment, &actor->position, &movement))
+						real movement_radius = actor->unknown36c;
+
+						if (function_11e130(&actor->unknown370, &segment, &actor->position, &movement) <
+							movement_radius * movement_radius)
 						{
 							position->unknown4d = true;
 							if (!context->unknown14)
@@ -355,12 +359,12 @@ void __stdcall function_25dd50(
 
 				vector3d_from_points3d(&origin, &position->position, &delta);
 				distance_squared = length_sq3f(&delta);
-				if (fabs(distance_squared) >= 0.0001f && 900.f > distance_squared)
+				if (!(fabs(distance_squared) < 0.0001f) && 900.f > distance_squared)
 				{
 					real cosine = dot3f(&delta, &object->forward) / (real)sqrt(distance_squared);
 
 					if ((context->unknown5c || length_sq3f(&object->velocity) > 6.25f) &&
-						64.f > distance_squared && cosine > 0.70710677f)
+						64.f > distance_squared && cosine < 0.70710677f)
 					{
 						position->unknown4d = true;
 						if (!context->unknown14)
@@ -371,7 +375,7 @@ void __stdcall function_25dd50(
 					}
 
 					real scale = context->unknown60 > 0.f ? context->unknown60 * 0.5f : 5.f;
-					real bonus;
+					real bonus = scale;
 
 					if (0.f > cosine)
 					{
@@ -380,10 +384,6 @@ void __stdcall function_25dd50(
 					else if (cosine > 0.8660254f)
 					{
 						bonus = ((cosine - 0.8660254f) * 7.4641008f + 1.f) * scale;
-					}
-					else
-					{
-						bonus = scale;
 					}
 					position->score += bonus;
 				}
@@ -1721,11 +1721,22 @@ bool (__stdcall *g_comparator)(long, long, void *) = function_2600e0;
 
 void function_1e3b00(long object_index, long mode, point3f const *reference,
 	void const *unknown0, void const *unknown1, point3f *position);
-bool function_11c010(short row, short column);
 short __stdcall function_272af0(s_match_globals *arg_0, point3f const *arg_1);
 short __stdcall function_1c8df0(long arg_0, point3f const *arg_4, short arg_3, short arg_2,
 	void const *arg_1, long arg_5, bool arg_6, bool arg_7, bool arg_8, long *arg_9);
 real normalize2d(point2f *v);
+
+/* the whole result 0x1697c0 fills: 0x5c bytes, where the shared view stops
+   at 0x4c */
+struct s_collision_result_25f7b0
+{
+	long type;
+	real t;
+	point3f point;
+	byte unknown14[0x24 - 0x14];
+	short unknown24;
+	byte unknown26[0x5c - 0x26];
+};
 
 // @retail 0x25f7b0
 void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *arg_2)
@@ -1746,93 +1757,104 @@ void __stdcall function_25f7b0(long arg_0, s_type_967e20 *arg_1, s_type_b36ac5 *
 			bool local_4 = local_0->unknown26c != NONE;
 			short local_5 = *(short *)((byte *)local_0 + 0x254);
 			point3f const *local_6 = (point3f *)((byte *)local_0 + 0x22c);
-			if (local_5 == NONE || local_3 == NONE || function_11c010(local_5, local_3))
+			short type;
+			if (clusters_visible_11c010(local_5, local_3))
 			{
-				s_collision_result_1697c0 local_7;
+				s_collision_result_25f7b0 local_7;
 				local_7.unknown24 = NONE;
 				long local_8 = 0x15808c2f;
 				if (local_4)
 					local_8 = 0x15808c0f;
 				vector3f local_9;
 				vector3d_from_points3d(local_6, &local_2, &local_9);
-				if (!function_1697c0(local_8, local_6, &local_9, NONE, NONE, &local_7))
+				if (!function_1697c0(local_8, local_6, &local_9, NONE, NONE, (s_collision_result_1697c0 *)&local_7))
 				{
-					arg_2->type = 0;
-					return;
+					type = 0;
 				}
-				double local_10 = (double)local_2.x - local_6->x;
-				double local_11 = (double)local_2.y - local_6->y;
-				double local_12 = (double)local_2.z - local_6->z;
-				real local_13 = (real)sqrt(local_12 * local_12 + local_11 * local_11 + local_10 * local_10);
-				arg_2->type = local_13 >= 1.f && local_13 * *(real *)((byte *)&local_7 + 4) < 1.f ? 2 : 4;
-				return;
+				else
+				{
+					vector3f local_10;
+					vector3d_from_points3d(local_6, &local_2, &local_10);
+					real local_13 = (real)sqrt(length_sq3f(&local_10));
+					if (local_13 < 1.f)
+						type = 4;
+					else if (local_13 * local_7.t < 1.f)
+						type = 2;
+					else
+						type = 4;
+				}
 			}
-		}
-		arg_2->type = 4;
-		return;
-	}
-	long local_14;
-	void const *local_15;
-	vector3f const *local_16;
-	vector3f local_17;
-	long local_18;
-	if (local_1 == 1 || local_1 == 2)
-	{
-		local_18 = 2;
-		local_16 = NULL;
-		local_15 = NULL;
-	}
-	else if (*((byte *)arg_1 + 0x5fc))
-	{
-		vector3d_from_points3d(&arg_2->position, (point3f *)((byte *)arg_1 + 0x62c), &local_17);
-		local_18 = 3;
-		local_15 = (byte *)arg_1 + 0x600;
-		if (normalize2d((point2f *)&local_17) > 0.f)
-		{
-			local_17.k = 0.f;
-			local_16 = &local_17;
+			else
+			{
+				type = 4;
+			}
+			arg_2->type = type;
 		}
 		else
-			local_16 = &local_0->unknown290;
+		{
+			arg_2->type = 4;
+		}
 	}
 	else
 	{
-		local_18 = 1;
-		local_16 = NULL;
-		local_15 = NULL;
-	}
-	long local_19 = function_1e1f20(arg_0);
-	if (local_19 != NONE)
-	{
-		byte *local_20 = (byte *)function_1e5280(arg_0, object_get(local_19)->tag_index);
+		long local_14 = 0;
+		void const *local_15;
+		vector3f const *local_16;
+		vector3f local_17;
+		long local_18;
+		if (local_1 == 1 || local_1 == 2)
+		{
+			local_18 = 2;
+			local_16 = NULL;
+			local_15 = NULL;
+		}
+		else if (*((byte *)arg_1 + 0x5fc))
+		{
+			local_18 = 3;
+			local_15 = (byte *)arg_1 + 0x600;
+			vector3d_from_points3d(&arg_2->position, (point3f *)((byte *)arg_1 + 0x62c), &local_17);
+			if (normalize2d((point2f *)&local_17) > 0.f)
+			{
+				local_17.k = 0.f;
+				local_16 = &local_17;
+			}
+			else
+				local_16 = &local_0->unknown290;
+		}
+		else
+		{
+			local_18 = 1;
+			local_16 = NULL;
+			local_15 = NULL;
+		}
+		byte *local_20 = (byte *)function_1e5240(arg_0);
 		if (local_20 && (*local_20 & 2))
 			local_18 = 2;
-	}
-	point3f local_21;
-	function_1e3b00(local_0->unknown018, local_18, &arg_2->position, local_16, local_15, &local_21);
-	if (local_18 == 2 && arg_2->unknown5c == 3)
-		local_21.z -= 0.1f;
-	local_14 = 0;
-	switch (*(short *)arg_1)
-	{
-	case 1:
-	case 3:
-		local_14 = 1;
-		break;
-	case 2:
-		if (!(arg_2->definition->flags & 0x10))
+		point3f local_21;
+		function_1e3b00(local_0->unknown018, local_18, &arg_2->position, local_16, local_15, &local_21);
+		if (local_18 == 2 && arg_2->unknown5c == 3)
+			local_21.z -= 0.1f;
+		switch (*(short *)arg_1)
+		{
+		case 1:
+		case 3:
 			local_14 = 1;
-		break;
+			break;
+		case 2:
+			if (!(arg_2->definition->flags & 0x10))
+				local_14 = 1;
+			break;
+		}
+		bool local_22 = true;
+		if (*(short *)arg_1 == 2 || *(short *)arg_1 == 1)
+			local_22 = false;
+		short local_23;
+		if (arg_2->definition->flags & 8)
+			local_23 = function_272af0(g_4e0348, &local_21);
+		else
+			local_23 = arg_2->definition->unknown12;
+		arg_2->type = function_1c8df0(*(long *)((byte *)arg_1 + 0x648), (point3f const *)((byte *)arg_1 + 0x638),
+			*(short *)((byte *)arg_1 + 0x660), local_23, &local_21, local_14, true,
+			local_0->unknown26c != NONE, local_22, NULL);
 	}
-	bool local_22 = true;
-	if (*(short *)arg_1 == 2 || *(short *)arg_1 == 1)
-		local_22 = false;
-	short local_23;
-	if (arg_2->definition->flags & 8)
-		local_23 = function_272af0(g_4e0348, &local_21);
-	else
-		local_23 = arg_2->definition->unknown12;
-	arg_2->type = function_1c8df0(*(long *)((byte *)arg_1 + 0x648), (point3f const *)((byte *)arg_1 + 0x638),
-		*(short *)((byte *)arg_1 + 0x660), local_23, &local_21, local_14, true,
-		local_0->unknown26c != NONE, local_22, NULL);
 }

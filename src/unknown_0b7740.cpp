@@ -677,6 +677,7 @@ done:
 }
 
 #include "unknown_1cafc0.h"
+#include "channel_start_out_of_line.h"
 #include <math.h>
 struct s_16760c_render_model;
 bool __stdcall function_bab40(long object_index, long name, real *value);
@@ -699,7 +700,8 @@ void __stdcall function_bd970(long object_index, s_16760c_render_model *render_m
         short kind = *(short *)(entry->unknown08 + 2);
         if (animation_id.index != NONE)
             function_1dd9d0(graph, animation_id);
-        if (name && state->graph_tag_index != NONE && state->channel_start(&channel, animation_id, NONE, NONE, NONE, NONE, 0x7f))
+        if (name && state->graph_tag_index != NONE &&
+            channel_start_out_of_line(state, &channel, animation_id, NONE, NONE, NONE, NONE, 0x7f))
         {
             s_animation *animation = 0;
             if (channel.animation_id.index != NONE)

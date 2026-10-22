@@ -436,6 +436,8 @@ void __fastcall function_24cdaf(void)
 }
 
 // @retail 0x24cdd8
+// score 6 (was 6): the tick counter's address is kept in ECX where retail keeps it in EAX, so the
+// counter is read into EAX and written back from there.
 void function_24cdd8(long player_index)
 {
 	s_hud_globals_definition *view = function_24c80b();
@@ -486,18 +488,13 @@ bool __stdcall function_24cedf(real *vertices, long parameter)
 			real *vertex = vertices + i * 5;
 
 			real local_0 = *(real const volatile *)vertex - center_x;
-			real local_1 = *(real const volatile *)(vertex + 1);
-			real local_2 = *(real const volatile *)vertex;
+			real local_1 = *(real const volatile *)(vertex + 1) - center_y;
 			local_0 *= scale;
 			local_0 *= 0.5f;
-			local_1 -= center_y;
-			local_2 += local_0;
-			vertex[0] = local_2;
-			real local_3 = *(real const volatile *)(vertex + 1);
+			vertex[0] = *(real const volatile *)vertex + local_0;
 			local_1 *= scale;
 			local_1 *= 0.5f;
-			local_3 += local_1;
-			vertex[1] = local_3;
+			vertex[1] = *(real const volatile *)(vertex + 1) + local_1;
 		}
 	}
 

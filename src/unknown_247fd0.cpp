@@ -111,8 +111,11 @@ void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 		c_248228 *local_4 = (c_248228 *)function_137bd0(local_2->tag_index);
 		for (long local_5 = 0; local_5 < local_4->function_24822e(); ++local_5)
 		{
-			long local_6 = function_173fd0(local_4->function_24822f((word)local_5), arg_2->effect_index,
-				local_2->tag_index, (short)local_5, NONE);
+			long effect_index = arg_2->effect_index;
+			long tag_index = local_2->tag_index;
+			s_effect_particle_system_definition *child_settings = local_4->function_24822f((word)local_5);
+			long local_6 = function_173fd0(child_settings, effect_index,
+				tag_index, (short)local_5, NONE);
 			local_4 = (c_248228 *)function_137bd0(local_2->tag_index);
 			if (local_6 != NONE)
 			{

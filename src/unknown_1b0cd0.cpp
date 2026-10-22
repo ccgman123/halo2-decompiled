@@ -132,6 +132,8 @@ short __stdcall function_1b0d10(long actor_index, s_slot *slot, bool active)
 	return result;
 }
 
+// score 23 (was 23): retail keeps the false constant in EDX and the unknown24 byte in BL
+// and schedules the two stores before the compare; ours keeps them in EAX/DL and after it.
 // @retail 0x1b0d50
 void __stdcall function_1b0d50(long actor_index, s_slot *slot)
 {

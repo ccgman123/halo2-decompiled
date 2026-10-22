@@ -112,6 +112,9 @@ static inline void bit_vector_set(dword *bits, long index)
 /* the two directions, turned either way from the direction, that just touch
    a circle of the radius at the distance, and how far along them it is
    touched */
+// score 42 (was 42): the SSE constants are in the other registers (retail
+// xmm2/xmm1, ours xmm1/xmm0) and the zero is materialised in xmm0 rather
+// than xmm1.
 // @retail 0x2c0c40
 void tangent_directions(point2f const *direction, point2f *left, point2f *right, real distance, real radius, real *tangent_length)
 {
@@ -797,6 +800,9 @@ void function_2c2910(point2f const *center, point2f const *points, point2f const
     result->y = points[0].y + normal.y * radius;
 }
 
+// score 34 (was 34): the two squares of the direction are in the other order
+// (retail x² in xmm0, ours y²), and retail spills the direction's x and y
+// to two separate slots while ours keeps them adjacent in one point2f.
 // @retail 0x2c2740
 void function_2c2740(point2f const *point, point2f const *center, real radius, bool side, point2f *result)
 {
@@ -821,7 +827,8 @@ void function_2c2740(point2f const *point, point2f const *center, real radius, b
     }
     else
     {
-        point2f offset = direction;
+        point2f offset;
+        vector2d_from_points2d(center, point, &offset);
         real magnitude = (real)sqrt(length_sq2f(&offset));
         if (fabs(magnitude) < 0.0001f)
             magnitude = 0.0f;

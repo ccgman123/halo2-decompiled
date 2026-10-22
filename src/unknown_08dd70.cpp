@@ -100,6 +100,8 @@ struct s_handler_slot
 	void *unknown14;
 };
 
+// score 68 (was 67): retail keeps the node pointer in eax and adds 0xc to it before the
+// compare, ours copies it into ecx and reads [eax+0xc] instead.
 // @retail 0x8dd70
 void function_8dd70(void)
 {

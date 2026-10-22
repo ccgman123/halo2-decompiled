@@ -682,7 +682,10 @@ PRIVATE long __stdcall signed_file_read_work(s_async_task *task, s_signed_file_r
 				if (XCalculateSignatureEnd(parameters->signature_handle, &computed) == ERROR_SUCCESS)
 				{
 					s_saved_game_file_task *output = parameters->task;
-					output->succeeded = memcmp(&computed, &stored, sizeof(stored)) == 0;
+					if (memcmp(&computed, &stored, sizeof(stored)) == 0)
+						output->succeeded = true;
+					else
+						output->succeeded = false;
 				}
 				parameters->signature_handle = INVALID_HANDLE_VALUE;
 			}

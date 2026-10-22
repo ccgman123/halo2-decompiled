@@ -39,6 +39,9 @@ s_job_node *function_1208b0(void)
 
 /* inserts a task into the work list: before the first task it should run
    ahead of, at the head when its priority is higher than the head's */
+// score 14 (was 14): retail's rotated loop reads previous->next before the callee-saved
+// pushes and spills node->callback to a stack slot after the guard; ours loads the callback
+// first and splits the pushes.
 // @retail 0x120900
 void function_120900(s_job_node *node)
 {

@@ -172,6 +172,8 @@ PRIVATE __forceinline bool function_1b69e6(long arg_0, long arg_1)
     return result;
 }
 
+// score 80 (was 80): the frame is eight bytes bigger than retail's, so every local offset and the
+// whole body layout differ.
 // @retail 0x1b69e0
 bool __stdcall function_1b69e0(long actor_index, long prop_index)
 {
@@ -587,6 +589,8 @@ short __stdcall function_1b7000(long actor_index, s_slot *slot)
 	return result;
 }
 
+// score 33 (was 33): the address of the argument is copied into ECX and pushed; retail loads it
+// into EBX directly.
 // @retail 0x1b73b0
 short __stdcall function_1b73b0(long actor_index, s_slot *slot)
 {

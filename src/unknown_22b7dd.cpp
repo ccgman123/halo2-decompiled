@@ -55,6 +55,8 @@ struct s_bitmap_tag_22b7dd
 /* predicts the texture of the bitmap a widget shows in its current mode;
    false when the texture is not ready */
 // @retail 0x22b7dd
+// score 38 (was 38): the register that holds zero is EBX where retail uses EDX, so the index and the
+// count are kept in the other registers.
 bool function_22b7dd(byte const *arg_1, long arg_2)
 {
     s_bitmap_widget_22b7dd const *widget = (s_bitmap_widget_22b7dd const *)arg_1;

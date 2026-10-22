@@ -311,20 +311,18 @@ bool function_1ab950(long actor_index, long prop_index, s_tag_element_52 *elemen
 	if (view)
 	{
 		real distance = prop->unknown28 - value;
-		real scale = strict ? 0.8f : 1.0f;
-		real half = scale * 0.5f;
+		real range_scale = strict ? 0.8f : 1.0f;
+		real facing_scale = strict ? 0.8f : 1.0f;
 		real range = 15.0f;
 
 		if (element->unknown74 > 0.0f)
 			range = element->unknown74;
 		if (element->unknown78 > 0.0f)
 			range = element->unknown78;
+		real cosine = dot3f(&actor->unknown290, &view->unknown2c);
 		result = true;
-		if (range * scale > distance &&
-			half > dot3f(&actor->unknown290, &view->unknown2c))
-		{
+		if (range * range_scale > distance && facing_scale * 0.5f > cosine)
 			result = false;
-		}
 	}
 	return result;
 }

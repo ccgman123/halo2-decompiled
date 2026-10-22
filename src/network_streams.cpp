@@ -149,6 +149,8 @@ static __forceinline void function_94bf7(s_sequence_window *arg_0)
 	arg_0->valid = true;
 }
 
+// score 2 (was 2): retail reloads the address-taken loop counter before it
+// stores fragment->data = 0, ours stores the zero first.
 // @retail 0x94bf0
 void function_094bf0(s_network_stream_header *header)
 {
@@ -621,6 +623,8 @@ void c_network_reliable_stream::mark_received(long sequence)
 	}
 }
 
+// score 94 (was 94): the slot address is kept in EAX here and in EDX in
+// retail, and ours zeroes EAX before the range test, so the loop head differs.
 // @retail 0x96910
 long c_network_reliable_stream::function_96910(long sequence, long bit_count, dword const *bits, bool complete)
 {
@@ -825,6 +829,8 @@ bool c_network_reliable_stream::get_next_send(long *type, long *sequence, long *
 	return result;
 }
 
+// score 60 (was 60): retail pushes ebp and esi before the loop and counts
+// down in esi, ours counts in ecx and pushes only esi.
 // @retail 0x965e0
 long c_network_reliable_stream::function_965e0(long *sequence, long *size, long *time)
 {

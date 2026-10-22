@@ -376,6 +376,8 @@ struct s_surface_object_header
 	s_object_view *object;
 };
 
+// score 8 (was 8): the record address is computed in ECX; retail computes it in EDX and reads
+// the flags from it.
 // @retail 0x1ef3e0
 bool function_1ef3e0(dword key)
 {
@@ -638,6 +640,8 @@ long function_1ef810(long index)
  return index;
 }
 
+// score 53 (was 53): the prologue sets up a 0x58-byte frame; retail loads the global first and has
+// no frame of its own.
 // @retail 0x1ef6d0
 dword c_shape_global_owner::next_key(dword key)
 {

@@ -280,6 +280,8 @@ PRIVATE inline real shape_dot_reverse(vector3f const *a, vector3f const *b)
 	return a->k * b->k + a->j * b->j + a->i * b->i;
 }
 
+// score 40 (was 40): the float is loaded into XMM1 and moved to XMM0; retail loads it into XMM0 and
+// moves XMM5 into XMM1.
 // @retail 0x2461a0
 bool function_2461a0(
 	s_sphere const *sphere,
@@ -443,6 +445,8 @@ bool function_246360(
 	return true;
 }
 
+// score 53 (was 53): the multiplier is kept in XMM1 and multiplied into XMM0; retail loads the
+// multiplier into XMM0 and multiplies by XMM1.
 // @retail 0x2466b0
 bool function_2466b0(
 	point3f const *start,
@@ -717,6 +721,8 @@ PRIVATE __forceinline vector3f *function_2477b1(
 	return arg_2;
 }
 
+// score 27 (was 27): ours is twelve bytes longer and the float is added into the accumulator with
+// addss; retail adds the value from the record into the accumulator.
 // @retail 0x2477b0
 void function_2477b0(
 	s_object_2470e0 *object,

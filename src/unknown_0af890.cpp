@@ -357,7 +357,7 @@ struct s_message_0b0900_entry
 {
 	bool flag0;
 	bool flag1;
-	word value1;
+	short value1;
 	dword value2;
 	byte address[6];
 	byte unknown0e[12];
@@ -595,7 +595,7 @@ bool __stdcall function_0b0900(s_bitstream *stream, long unused, s_message_0b090
 					message->entries[entry_index].flag1 = stream_read_bit(stream);
 					if (message->entries[entry_index].flag1)
 					{
-						message->entries[entry_index].value1 = (word)NONE;
+						message->entries[entry_index].value1 = NONE;
 						message->entries[entry_index].value2 = NONE;
 					}
 					else
@@ -605,7 +605,7 @@ bool __stdcall function_0b0900(s_bitstream *stream, long unused, s_message_0b090
 						message->entries[entry_index].value2 = function_1959c0(stream, 2);
 					}
 					function_195820(stream, message->entries[entry_index].unknown0e, 0x60);
-					bool entry_valid = function_07ca70(stream, message->entries[entry_index].unknown1c);
+					byte entry_valid = function_07ca70(stream, message->entries[entry_index].unknown1c);
 					valid = valid && entry_valid;
 					if (valid)
 					{

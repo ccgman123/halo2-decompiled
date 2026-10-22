@@ -2,6 +2,66 @@
 
 The newest entry comes first.
 
+## 2026-10-22: 9467 functions match
+
+```
+matched 9467 of 11321 game functions (1464639 of 2784283 bytes, 52.60%)
+matched 895 of 1041 Havok functions (112359 of 234536 bytes, 47.91%)
+```
+
+10 new matches, none lost:
+- Machine 3's batch 105 (#688): `0xa0700`, `0x10f430`, `0x1a264e`, `0x1a391f`, `0x1ab950`, `0x1eb440`, `0x236299`, `0x26ace0`, `0x26b120`, `0x279d80`, `0x2f28f0` and `0x2f89b0` match.
+
+## 2026-10-22: 9457 functions match
+
+```
+matched 9457 of 11321 game functions (1462023 of 2784283 bytes, 52.51%)
+matched 893 of 1041 Havok functions (109886 of 234536 bytes, 46.85%)
+```
+
+10 new matches, none lost:
+- Machine 3's batch 104 (#682): `0x1ae70`, `0x83c90`, `0x86d20`, `0x94520`, `0x12ccf0`, `0x12e960`, `0x18a7b0`, `0x1bc850`, `0x24cedf` and `0x28f3b0` match.
+
+## 2026-10-22: 9447 functions match
+
+```
+matched 9447 of 11321 game functions (1458187 of 2784283 bytes, 52.37%)
+matched 888 of 1041 Havok functions (106889 of 234536 bytes, 45.57%)
+```
+
+0 new matches, none lost:
+- @marioag0412's #678, #679:  match.
+
+## 2026-10-22: 9447 functions match
+
+```
+matched 9447 of 11321 game functions (1458187 of 2784283 bytes, 52.37%)
+matched 888 of 1041 Havok functions (106889 of 234536 bytes, 45.57%)
+```
+
+11 new matches, none lost:
+- Machine 3's batch 103 (#680): `0x6fd10`, `0x7b140`, `0xb6320`, `0x123f60`, `0x124c00`, `0x13cf00`, `0x162470`, `0x1cc2f0`, `0x1eb6f0`, `0x23b170` and `0x28fa60` match.
+
+## 2026-10-22: 9436 functions match
+
+```
+matched 9436 of 11321 game functions (1453418 of 2784283 bytes, 52.20%)
+matched 888 of 1041 Havok functions (106889 of 234536 bytes, 45.57%)
+```
+
+1 new matches, none lost:
+- @Roasted-Codes's #627: `0x3123a0` match.
+
+## 2026-10-22: 9436 functions match
+
+```
+matched 9436 of 11321 game functions (1453418 of 2784283 bytes, 52.20%)
+matched 887 of 1041 Havok functions (106751 of 234536 bytes, 45.52%)
+```
+
+1 new matches, none lost:
+- @marioag0412's #660: `0x218ca0` match.
+
 ## 2026-10-22: 9435 functions match
 
 ```

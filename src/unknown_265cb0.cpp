@@ -800,8 +800,7 @@ real function_267370(long volatile object_index)
 		if (!((bool)((s_object_activity_flags *)object)->blocked) && ((1 << object->type) & 3))
 		{
 			long actor_index = object->actor_index;
-			if (actor_index != NONE)
-				actor = actor_get(actor_index);
+			actor = actor_index != NONE ? actor_get(actor_index) : NULL;
 			long first;
 			if (actor)
 			{
@@ -1006,6 +1005,9 @@ struct s_equipped_object_view
 
 /* The held-object lookup rereads the pool's data field. */
 
+// score 6 (was 6): the tag lookup: retail keeps the index in ecx and the
+// table base in eax, ours keeps the index in eax and the base in ecx;
+// thirteen source rewrites all scored 6.
 // @retail 0x2675f0
 bool function_2675f0(long object_index)
 {

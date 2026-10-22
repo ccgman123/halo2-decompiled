@@ -177,7 +177,13 @@ __forceinline walk_3028c0 *writable_301a60(walk_3028c0 *&position, walk_3028c0 &
 {
 	if (position != &copy)
 	{
-		copy = *position;
+		copy.offset = position->offset;
+		copy.reach = position->reach;
+		copy.diagonal_reach = position->diagonal_reach;
+		copy.depth = position->depth;
+		copy.scale = position->scale;
+		copy.key_base = position->key_base;
+		copy.values[0] = position->values[0];
 		position = &copy;
 	}
 	return &copy;
@@ -197,10 +203,14 @@ __forceinline __m128 lerp_301a60(__m128 from, __m128 to, float fraction)
 	return _mm_add_ps(_mm_mul_ps(_mm_sub_ps(*(__m128 const *)g_412420, t), from), _mm_mul_ps(t, to));
 }
 
-// score 1156 (was 1253): as with 0x3009e0, the same code in the same order but
-// other registers: retail keeps the segment in edi and the split's axis on the
-// stack, ours the axis in edi and the segment on the stack; ours is also 152
-// bytes shorter for it.
+// score 971 (was 1230; 980 on the fast check): 3680 against 3672 bytes, the same blocks in the same
+// order (the copy of the walk's state is now field by field, as retail's).
+// The first difference is at +0xd: retail reads the command into eax and loads
+// the walk and segment pointers after the range check. Retail's low stack
+// slots sit 4 bytes higher than ours throughout (ours puts the second scale
+// splat's float low and retail one at +0x3c), and retail loads each splat's
+// float straight from its slot where ours forms the address in a register
+// first (_mm_set_ss, _mm_set_ps1 and _mm_load1_ps all scored worse).
 // The sweep's walk down the tree, as the ray's (0x3009e0) with each split's
 // and bound's range widened by the swept shape's reach; the segment's far end
 // is pulled back whenever a leaf brings the closest hit nearer.
@@ -380,7 +390,7 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 					if (fraction < last_fraction)
 					{
 						last_fraction = fraction;
-						((segment_3028c0 *)segment)->end = _mm_sub_ps(lerp_301a60(input->start, input->end, last_fraction), grid->origin);
+						((segment_3028c0 *)segment)->end = _mm_sub_ps(lerp_301a60(input->start, input->end, fraction), grid->origin);
 						((segment_3028c0 *)segment)->end = _mm_mul_ps(splat_301a60(position->scale), segment->end);
 						((segment_3028c0 *)segment)->end = _mm_sub_ps(segment->end, position->offset);
 						if (axis < 3 && segment->end.m128_f32[axis] < second_start)
@@ -404,7 +414,7 @@ void class_301a60::function_301a60(walk_3028c0 *walk, char const *cells, segment
 					if (fraction < last_fraction)
 					{
 						last_fraction = fraction;
-						((segment_3028c0 *)segment)->end = _mm_sub_ps(lerp_301a60(input->start, input->end, last_fraction), grid->origin);
+						((segment_3028c0 *)segment)->end = _mm_sub_ps(lerp_301a60(input->start, input->end, fraction), grid->origin);
 						((segment_3028c0 *)segment)->end = _mm_mul_ps(splat_301a60(position->scale), segment->end);
 						((segment_3028c0 *)segment)->end = _mm_sub_ps(segment->end, position->offset);
 						if (axis < 3 && segment->end.m128_f32[axis] > first_end)

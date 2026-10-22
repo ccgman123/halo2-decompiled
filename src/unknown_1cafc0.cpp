@@ -271,7 +271,7 @@ void s_animation_state::names_resolve(s_animation_names *names, long mode, long 
 		names->weapon_type = 0x30000d9;
 	}
 	resolved_weapon_class = names->weapon_class;
-	entry = (s_graph_name_entry *)function_1dd560((s_sorted_array *)&graph_get()->weapons, names->weapon_type, sizeof(s_graph_name_entry));
+	entry = (s_graph_name_entry *)function_1dd560((s_sorted_array *)&((s_graph_tag *)g_4e3b44[graph_tag_index & 0xffff].bytes)->weapons, names->weapon_type, sizeof(s_graph_name_entry));
 	if (entry && entry->weapon_class != NONE && entry->weapon_class != 0x30000d9 && resolved_weapon_class != 0x400054b)
 	{
 		resolved_weapon_class = entry->weapon_class;

@@ -148,6 +148,8 @@ PRIVATE __forceinline void camera_unrotate_23bd70(transform4x3f const *matrix, v
 	direction->k = matrix->up.k * z + matrix->up.j * y + matrix->up.i * x;
 }
 
+// score 2 (was 2): retail takes the address of the up vector before the
+// last store of the twelve byte copy, ours takes it after.
 // @retail 0x23bd70
 void function_23bd70(long unit_index, vector3f const *forward, s_camera_command_23bd70 *command)
 {
@@ -400,6 +402,9 @@ struct s_camera_player_23c110
 bool function_14ddc0(long local_player_index);
 long function_14de70(long local_player_index);
 
+// score 72 (was 72): retail keeps the input in EBX with three pushes and
+// reloads the unit index, ours keeps it in EBP with four pushes and keeps
+// the value live.
 // @retail 0x23c110
 void __stdcall function_23c110(void *state, void *input, s_observer_command *command)
 {

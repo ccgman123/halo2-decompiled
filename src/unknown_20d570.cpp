@@ -76,6 +76,8 @@ bool __stdcall function_20cdc0(long arg_0, long arg_1, long arg_2, s_audio_selec
 void function_20d870(long actor_index, short channel, short value);
 void __stdcall function_1fbac0(long unknown, long unit_index, bool unknown2, long unknown3, s_1fbac0_event *event);
 
+// score 21 (was 21): the scaled-index computation swaps registers: ours uses EAX/EDX,
+// retail uses EDX/EAX.
 // @retail 0x20d570
 void __stdcall function_20d570(short arg_1, long arg_0, long arg_2, void *arg_3)
 {

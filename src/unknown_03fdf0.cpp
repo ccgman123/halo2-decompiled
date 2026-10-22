@@ -95,6 +95,8 @@ bool function_c17f0(long light_index, s_light_shape_ab *shape, bool respect_engi
 void function_4a1e0(s_view_source *source, s_view_camera *camera, long resource_index,
     s_view_flags *flags, real unused_scale, bool enabled, real scale);
 
+// score 54 (was 54): retail multiplies the index into edx and clears the globals before the
+// loop, ours computes the index in eax and stores the table pointer later.
 // @retail 0x402b0
 void function_402b0(long cache_index, long mode)
 {

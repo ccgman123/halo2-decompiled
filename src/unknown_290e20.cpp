@@ -303,6 +303,9 @@ short ai_trigger_find_by_name(char const *name)
 	return result;
 }
 
+// score 24 (was 24): retail sinks the zero store of the count past the
+// early return and loads the global into ECX, ours stores it in the entry
+// block and uses EAX.
 // @retail 0x290e20
 bool function_290e20(short trigger_index, long squad_index, long squad_group_index)
 {
@@ -392,6 +395,9 @@ struct s_ai_scene_assignment
 	short variant_indices[10];
 };
 
+// score 56 (was 56): the maximum count is kept in a 32 bit register here
+// and in a 16 bit one in retail, and the calls set their arguments up with
+// other registers.
 // @retail 0x2919e0
 void __stdcall function_2919e0(s_ai_scene *arg_0, s_ai_scene_assignment *arg_1, short *arg_2, short arg_3,
 	short arg_4, short arg_5, long arg_6, long arg_7, long arg_8)
@@ -495,6 +501,8 @@ void __stdcall function_2919e0(s_ai_scene *scene, s_ai_scene_assignment *assignm
 
 /* starts a scene (by name) with the actors the ai indices name when its
    trigger conditions hold */
+// score 83 (was 83): the score loop and the final stores pick other
+// registers, and the branches into the shared helpers land elsewhere.
 // @retail 0x291b40
 bool function_291b40(long name, short command_script_index, long ai_index, long ai_index2, long ai_index3)
 {

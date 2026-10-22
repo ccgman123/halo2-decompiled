@@ -250,6 +250,9 @@ bool __stdcall function_1aa990(long actor_index, s_slot *slot)
 	return result;
 }
 
+// score 17 (was 17): retail loads the prop pool pointer into EAX, one byte
+// shorter than our ECX, and passes entry->unknown24 in ECX where we pass it in
+// EDX; the one-byte difference moves every later jump target.
 // @retail 0x1aa9f0
 short __stdcall function_1aa9f0(long actor_index)
 {
@@ -750,6 +753,9 @@ bool __stdcall function_1aab50(long arg_0, s_slot *arg_1)
 	return local_2;
 }
 
+// score 45 (was 44): retail branches to 0x1aa0b6 where ours branches to another
+// place, loads [esi+0x18] into EAX rather than ECX and reads the pool pointer
+// at 0x4e0300 into EDX before it masks the index.
 // @retail 0x1a9ec0
 short __stdcall function_1a9ec0(long arg_0)
 {

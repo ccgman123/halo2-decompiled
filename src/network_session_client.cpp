@@ -190,6 +190,15 @@ bool c_session_client::function_06de10(s_session_remote *remote)
 
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
+// score 14 (was 14): retail keeps the memset's zero in ecx and copies every
+// argument through edx; ours copies some through ecx, so it clears ecx again
+// before the mode store, and it clears the flags at +0x48, +0x49, +0x4a where
+// retail clears +0x49, +0x48, +0x4a. A zero local held through a const
+// reference, references to the cleared fields, a volatile owner, chained
+// clears, and fewer or no barriers score 15 to 30. Clearing the last two flags
+// in one assignment scores 13, but only by lining up one instruction while
+// moving the store order further from retail's; the 600 s permutation runs
+// found nothing else.
 // @retail 0x6de50
 void session_owner_initialize(s_session_owner *owner_, long unknown40, long unknown44, void *unknown2c, c_class_58d20 *session_a, c_class_58d20 *session_c, c_class_58d20 *session_b, void *unknown3c)
 {

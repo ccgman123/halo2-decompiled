@@ -573,6 +573,9 @@ bool __stdcall function_3ebd0(vector3f const *offset, transform4x3f const *matri
 void function_14bc0(short index, short element, bool use_depth);
 extern long g_4858b8;
 
+// score 17 (was 17): the three calls are set up differently: retail passes the globals
+// in ECX and the word in EAX where ours uses EDX, and the last call's argument order
+// differs (the callees' conventions are fixed in their own files).
 // @retail 0x3ede0
 void function_3ede0(void)
 {

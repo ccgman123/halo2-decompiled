@@ -463,13 +463,16 @@ void c_class_938e0::function_94520(const s_session_id *message, const s_type_99a
 	c_class_58d20 *session = network_session_manager_find_session(session_manager, message);
 	long reason = 0;
 	bool has_identity = false;
+	bool skip_reply = false;
 	if (session)
 	{
 		if (function_05e7f0(session, address, message, &reason, &has_identity, (s_session_member_identity *)&identity))
-			return;
+			skip_reply = true;
 	}
 	else
 		reason = 1;
+	if (skip_reply)
+		return;
 	s_network_message_peer_reply reply;
 	memset(&reply, 0, sizeof(reply));
 	reply.session_id = *message;

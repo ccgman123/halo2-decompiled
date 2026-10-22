@@ -7,19 +7,14 @@
 #include "globals.h"
 #include "unknown_0259d0.h"
 #include "local_cameras.h"
+#include "unknown_246cd0.h"
 #include <math.h>
 #include <string.h>
 
 #define PIN(n, floor, ceiling) ((n) < (floor) ? (floor) : ((n) > (ceiling) ? (ceiling) : (n)))
 
-/* a tag's data block, as the function evaluator reads it */
-struct s_tag_data_view
-{
-	long size;
-	byte *address;
-};
-
 real function_13b390(void const *function, real input, real range);
+real function_13bb90(s_tag_data const *function, real input, real range);
 
 /* rounds as the x87 does (unknown_0259d0's fld/fistp idiom) */
 static __forceinline long real_to_long(real value)
@@ -147,7 +142,7 @@ struct s_effect_function
 {
 	short input;
 	short range_input;
-	s_tag_data_view function;
+	s_tag_data function;
 	real period;
 };
 
@@ -246,23 +241,7 @@ void function_2222c0(s_effect_component const *component, s_effect_component_ove
 						y *= function_222250(&inputs->direction, speaker);
 					}
 				}
-				if (function->function.address && function->function.size > 0)
-				{
-					value = function_13b390(&function->function, x, y);
-					byte const *field_30 = function->function.address;
-
-					if (!(field_30[1] & 0xf0))
-					{
-						real lower = *(real const *)(field_30 + 4);
-						real upper = *(real const *)(field_30 + 8);
-
-						value = lower + (upper - lower) * PIN(value, 0.0f, 1.0f);
-					}
-				}
-				else
-				{
-					value = 0.0f;
-				}
+				value = function_13bb90(&function->function, x, y);
 			}
 			else
 			{

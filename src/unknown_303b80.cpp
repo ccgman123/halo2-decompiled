@@ -44,6 +44,9 @@ public:
 	void function_303b80();
 };
 
+// score 86 (was 86): retail keeps the two counts in eax and ebx and the two
+// best indices in the stack slots 0x24 and 0x28; ours keeps the counts in ebx
+// and edi and swaps the two slots, so the whole tail differs
 // @retail 0x303b80
 void class_303360::function_303b80()
 {

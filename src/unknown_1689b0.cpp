@@ -1094,11 +1094,11 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 					point_along_vector_1696d0((*point_reference), (*vector_reference), t, &collision->point);
 					function_11bed0((s_location *)&collision->end_location, &collision->point);
 				}
-				while (0.0f < collision->t && (collision->end_location.leaf_index == NONE ||
+				while (!(collision->t <= 0.0f) && (collision->end_location.leaf_index == NONE ||
 					surface_bsp && function_14a280(surface_bsp, 0, &collision->point) == NONE));
 			}
 		}
-		return true;
+		result = true;
 	}
 
 	return result;
