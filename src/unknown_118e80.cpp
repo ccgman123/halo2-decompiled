@@ -247,13 +247,13 @@ void function_1197b0(long object_index)
 	vector3f temporary_velocity = *g_4687a4;
 	vector3f up;
 	world_up_1197b0(object_index, &up);
-	vector3f new_forward, target_up, left1, left2, forward2;
-	function_11d180(&forward, &object->requested_up, &new_forward, &left1, &target_up);
-	function_11d180(&forward, &up, &forward2, &left2, &up);
+	vector3f new_forward, target_up, left, forward2;
+	function_11d180(&forward, &object->requested_up, &new_forward, &left, &target_up);
+	function_11d180(&forward, &up, &forward2, &left, &up);
 	if (function_11ce20(&up, &target_up) > max_angle * g_510c54->rate)
 	{
 		function_11f0d0(&temporary_velocity, &up, &target_up, g_510c54->rate, max_angle, acceleration * 2.0f);
-		function_11d180(&forward, &up, &forward2, &left2, &up);
+		function_11d180(&forward, &up, &forward2, &left, &up);
 	}
 	else
 		up = target_up;
@@ -738,16 +738,15 @@ void __stdcall function_118b80(long arg_0)
                 *((byte *)local_1 + 0x12c) |= 0x80;
             else
                 *((byte *)local_1 + 0x12c) &= ~0x80;
+            real threshold_scale = (*(dword *)local_12 & 8) ? 3.0f : 1.0f;
             if (TEST_FIELD_BIT(local_1->flags.flag5))
             {
-                real local_16 = (*(dword *)local_12 & 8) ? 3.0f : 1.0f;
-                if (*((byte *)local_1 + 0x131) * g_510c54->rate > local_16 * 0.15f)
+                if (*((byte *)local_1 + 0x131) * g_510c54->rate > threshold_scale * 0.15f)
                     local_1->flags.flag5 = false;
             }
             else
             {
-                real local_17 = (*(dword *)local_12 & 8) ? 3.0f : 1.0f;
-                if (local_7 || *((byte *)local_1 + 0x130) * g_510c54->rate > local_17 * 0.15f)
+                if (local_7 || *((byte *)local_1 + 0x130) * g_510c54->rate > threshold_scale * 0.15f)
                     local_1->flags.flag5 = true;
             }
         }
@@ -979,14 +978,15 @@ bool __stdcall function_118700(long arg_0)
             function_1197b0(arg_0);
         vector3f local_7;
         function_ba1d0(arg_0, &local_7, NULL);
-        byte *local_8 = local_1 + 0xd4;
         byte *local_9 = (byte *)local_0 + 0x17c;
+        s_forward_flags object_flags = local_0->flags;
         word local_10 = *(word *)((byte *)local_0 + 0xc0);
+        byte *local_8 = local_1 + 0xd4;
         function_1e5bb0((s_biped_physics_output *)&local_3, local_9, local_2, 1.0f,
             *(long *)((byte *)local_0 + 0xb4), arg_0, local_8, 0xf,
             (bool)((local_10 >> 6) & 1), false, true, false,
-            (bool)((local_10 >> 8) & 1), TEST_FIELD_BIT(local_0->flags.flag5),
-            (bool)((local_0->flags.value >> 8) & 1), false, g_51e9c4->unknown0, 1.0f,
+            (bool)((local_10 >> 8) & 1), TEST_FIELD_BIT(object_flags.flag5),
+            (bool)((object_flags.value >> 8) & 1), false, g_51e9c4->unknown0, 1.0f,
             &local_0->control, &local_5, &local_0->forward, &local_0->up,
             &local_0->forward, &local_0->forward, &local_7, 0);
         if ((bool)((*(dword *)local_8 >> 4) & 1))

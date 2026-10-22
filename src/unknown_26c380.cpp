@@ -149,7 +149,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 	s_path_trace_result *trace)
 {
 	s_sector_trace_result *result = (s_sector_trace_result *)trace;
-	bool success = false;
+	long success = false;
 	long current_sector_index = sector_index;
 	short count = 0;
 	real last_distance = -0.1f;
@@ -207,7 +207,8 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 					result->edge_index = (word)NONE;
 					result->distance = distance;
 					function_x697631(origin, direction, distance, &result->point);
-					return true;
+					success = result->blocked;
+					goto done;
 				}
 				do
 				{
@@ -267,7 +268,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 								result->edge_index = (word)NONE;
 								result->distance = distance;
 								function_x697631(origin, direction, distance, &result->point);
-								return false;
+								goto done;
 							}
 							else
 							{
@@ -275,7 +276,8 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 								result->blocked = true;
 								result->edge_index = (word)NONE;
 								function_x697631(origin, direction, distance, &result->point);
-								return true;
+								success = result->blocked;
+								goto done;
 							}
 						}
 						else
@@ -284,18 +286,20 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 							result->edge_index = (word)NONE;
 							result->distance = distance;
 							function_x697631(origin, direction, distance, &result->point);
-							return false;
+							goto done;
 						}
 					}
 					if (result->blocked)
 					{
-						return true;
+						success = result->blocked;
+						goto done;
 					}
 					if (location && (((s_sector_edge const *)edge)->flags & 0x80) &&
 						function_270600(location, iterator.edge_index))
 					{
 						result->blocked = true;
-						return true;
+						success = result->blocked;
+						goto done;
 					}
 					if (count > 200)
 					{
@@ -310,7 +314,8 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 					result->edge_index = (word)NONE;
 					result->distance = distance;
 					function_x697631(origin, direction, distance, &result->point);
-					return true;
+					success = result->blocked;
+					goto done;
 				}
 			}
 		}
@@ -320,6 +325,7 @@ bool function_26c590(s_pathfinding_data const *pathfinding, point3f const *origi
 	result->sector_index = current_sector_index;
 	result->distance = distance;
 	function_x697631(origin, direction, distance, &result->point);
+done:
 	return success;
 }
 

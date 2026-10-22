@@ -170,10 +170,8 @@ long __stdcall function_516d0(bool reduced, dword seed,
 	long level_count = exponent + 2;
 	real inverse_count = 1.0f / (real)(count - 1);
 	__declspec(align(8)) s_noise_pair noise[257];
-	s_noise_pair sums[257];
-	real weights[257];
-	memset(sums, 0, sizeof(sums));
-	memset(weights, 0, sizeof(weights));
+	s_noise_pair sums[257] = {0};
+	real weights[257] = {0};
 	for (volatile long level = 0; level < level_count; level++)
 	{
 		if (!(definition->active_levels & (1 << level)))

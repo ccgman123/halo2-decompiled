@@ -53,10 +53,11 @@ void function_200462(long arg_0)
     byte *local_1 = *(byte **)((byte *)g_510c94 + 0x404);
     real local_2 = 0.0f;
     dword local_3 = 0;
-    for (long local_4 = 0; local_4 < 9; local_4++)
+    long entry_index;
+    for (entry_index = 0; entry_index < 9; entry_index++)
     {
-        byte *local_5 = local_1 + local_4 * 0x1c;
-        s_interface_pulse *local_6 = &local_0[local_4];
+        byte *local_5 = local_1 + entry_index * 0x1c;
+        s_interface_pulse *local_6 = &local_0[entry_index];
         if (*(long *)(local_5 + 4) == NONE || *(long *)(local_5 + 0xc) == NONE ||
             (!local_6->delay && !local_6->ticks))
             continue;
@@ -82,7 +83,7 @@ void function_200462(long arg_0)
             sprite_index = 0;
         if (sprite_index != NONE)
         {
-            local_3 |= 1 << local_4;
+            local_3 |= 1 << entry_index;
             real local_12 = function_200891(local_6, true);
             byte *local_13 = *(byte **)(local_7 + 0x48) + sprite_index * 0x74;
             local_2 += local_12 * ((real)*(short *)(local_13 + 4) * local_9);
@@ -92,13 +93,13 @@ void function_200462(long arg_0)
     function_1396c7(4, &local_14);
     local_14.x -= local_2 * 0.5f;
     local_14.y += 50.0f;
-    for (long local_15 = 0; local_15 < 9; local_15++)
+    for (entry_index = 0; entry_index < 9; entry_index++)
     {
-        byte *local_16 = *(byte **)((byte *)g_510c94 + 0x404) + local_15 * 0x1c;
-        if (!(local_3 & (1 << local_15)))
+        byte *local_16 = *(byte **)((byte *)g_510c94 + 0x404) + entry_index * 0x1c;
+        if (!(local_3 & (1 << entry_index)))
             continue;
         byte *local_17 = g_4e3b44[*(long *)(local_16 + 4) & 0xffff].bytes;
-        short local_18 = *(short *)(local_16 + 0x10);
+        long local_18 = *(short *)(local_16 + 0x10);
         s_float_rect local_19 = {0.0f, 1.0f, 0.0f, 1.0f};
         if (local_18 < 0)
             continue;
@@ -116,7 +117,7 @@ void function_200462(long arg_0)
         if (local_18 == NONE)
             continue;
         byte *local_21 = *(byte **)(local_17 + 0x48) + local_18 * 0x74;
-        s_interface_pulse *local_22 = &local_0[local_15];
+        s_interface_pulse *local_22 = &local_0[entry_index];
         real local_23 = function_200891(local_22, true);
         real local_24 = (local_19.x1 - local_19.x0) * (real)*(short *)(local_21 + 4) * 0.5f;
         real local_25 = (local_19.y1 - local_19.y0) * (real)*(short *)(local_21 + 6) * 0.5f;

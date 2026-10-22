@@ -73,10 +73,10 @@ void function_a6430(long mask, long object_index, long state_address)
 	}
 	if (mask & 0x200)
 	{
+		long count = 0;
 		byte *object = update_object_0a6430(object_index);
 		byte *definition = *(byte **)((byte *)g_4e3b44 + (*(long *)object & 0xffff) * 16 + 8);
 		long model = *(long *)(definition + 0x38);
-		long count = 0;
 		if (model != NONE)
 		{
 			byte *local_0f244f = *(byte **)((byte *)g_4e3b44 + (model & 0xffff) * 16 + 8);

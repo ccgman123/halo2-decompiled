@@ -146,8 +146,9 @@ long __stdcall function_180d80(s_180d84 const *arg_0, transform4x3f const *arg_1
                     s_180d85 local_11;
                     if ((*(short *)(local_2 + 4) == 0 || *(short *)(local_2 + 4) == 1) && function_d47d0(arg_3, &local_11.field_0))
                         local_10 = local_11.field_0.green * 0.5870000123977661f + local_11.field_0.blue * 0.11400000005960464f + local_11.field_0.red * 0.29899999499320984f;
+                    short local_12 = 0;
                     local_11.field_c.k = local_10;
-                    for (short local_12 = 0; local_12 < arg_5->field_5000; local_12++)
+                    for (; local_12 < arg_5->field_5000; local_12++)
                     {
                         s_180d80 const *local_13 = &arg_5->field_0[local_12];
                         function_180d81(&arg_0->field_ec, &local_13->field_c, &local_11.field_c.i);

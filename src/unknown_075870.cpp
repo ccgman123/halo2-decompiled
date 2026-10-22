@@ -125,6 +125,13 @@ long network_observer_find_channel(s_network_observer *observer, long owner, lon
 	return result;
 }
 
+// score 1 (was 1): retail rereads the owner from the stack as a dword in the
+// loop (mov ecx, dword ptr [esp + 0x18]); ours reads only its low byte
+// (mov cl, byte ptr [esp + 0x18]). Reading it into a local or through an
+// inline function gets a dword read, but into esi and then copied to ecx
+// (score 37 or worse); a plain parameter stays in a register (10). Casts and a
+// volatile read at the use stay at 1; the 600 s permutation run found no
+// improvement.
 // @retail 0x75d30
 long network_observer_find_channel_by_machine(s_network_observer *observer, const s_session_machine_address *address, long volatile owner)
 {

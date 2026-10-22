@@ -179,28 +179,28 @@ void __stdcall function_18ae80(s_portal_path_bsp *bsp_data, long listener, point
 			for (long j = 0; j < choice_count && !duplicate; j++)
 				duplicate = choices[j].tag == sound->tag;
 			if (duplicate) continue;
-			s_loop_path_choice *choice = &choices[choice_count++];
-			choice->source = index;
-			choice->tag = sound->tag;
-			choice->cluster = clusters[i];
-			choice->decibels = gains[i];
+			choices[choice_count].source = index;
+			choices[choice_count].tag = sound->tag;
+			choices[choice_count].cluster = clusters[i];
+			choices[choice_count].decibels = gains[i];
 			if (sound->flags & 1)
 			{
-				choice->inside = sound->inside;
-				choice->portal = sound->portal;
-				choice->outside = sound->outside;
+				choices[choice_count].inside = sound->inside;
+				choices[choice_count].portal = sound->portal;
+				choices[choice_count].outside = sound->outside;
 			}
-			else choice->inside = choice->portal = choice->outside = 1.0f;
+			else choices[choice_count].inside = choices[choice_count].portal = choices[choice_count].outside = 1.0f;
 			if (sound->flags & 8)
 			{
-				choice->inside *= g_4670fc;
-				choice->portal *= g_4670fc;
-				choice->outside *= g_4670fc;
-				choice->muted = g_509420 == 0;
+				choices[choice_count].inside *= g_4670fc;
+				choices[choice_count].portal *= g_4670fc;
+				choices[choice_count].outside *= g_4670fc;
+				choices[choice_count].muted = g_509420 == 0;
 			}
-			else choice->muted = false;
-			choice->distance = portals[i] != NONE ? function_14b240((s_14b240_owner *)bsp,
+			else choices[choice_count].muted = false;
+			choices[choice_count].distance = portals[i] != NONE ? function_14b240((s_14b240_owner *)bsp,
 				(s_bsp3d_disk *)(bsp->portals + portals[i] * 0x24), point) : 0.0f;
+			choice_count++;
 		}
 		bool inside = cluster == clusters[0];
 		if (count > 1 && choice_count && inside)
@@ -432,9 +432,12 @@ void __stdcall function_18bb80(real elapsed)
 					function_18dc90(bsp, cluster, &position, FLT_MAX, indices, NULL, portals, clusters, &count);
 					if (count <= 1)
 					{
-						for (long j = count; j < 2; ++j) clusters[j] = NONE;
-						for (long j = count; j < 2; ++j) portals[j] = NONE;
-						for (long j = count; j < 2; ++j) indices[j] = NONE;
+						for (long j = count; j < 2; ++j)
+						{
+							clusters[j] = NONE;
+							portals[j] = NONE;
+							indices[j] = NONE;
+						}
 						count = 2;
 					}
 					if (portals[0] == NONE) portals[0] = portals[1];

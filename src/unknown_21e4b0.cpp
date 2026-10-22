@@ -125,11 +125,11 @@ bool function_21e4b0(s_sound_driver_counts const *counts)
 				listener.forward = *g_4687a8;
 				listener.up = *g_4687b0;
 				function_220790(&listener);
-				result = true;
 				function_12c040();
 				g_47f0d0.field04 = 0;
 				g_47f0d0.field14 = NULL;
 				g_47f0d0.field10 = 0x10000;
+				result = true;
 				for (long type = 0; type < 3; type++)
 				{
 					long first = SOUND_DRIVER_GLOBALS->channel_count;
@@ -137,8 +137,7 @@ bool function_21e4b0(s_sound_driver_counts const *counts)
 					SOUND_DRIVER_GLOBALS->channel_count += counts->channels[type];
 					for (long i = 0; result && i < counts->channels[type]; i++)
 					{
-						bool channel_result = function_21f4e0(first + i, type);
-						result = result && channel_result;
+						result = result && function_21f4e0(first + i, type);
 					}
 					SOUND_DRIVER_GLOBALS->unknown1a12[type] = SOUND_DRIVER_GLOBALS->channel_count - 1;
 				}
@@ -164,13 +163,15 @@ bool function_21e4b0(s_sound_driver_counts const *counts)
 					long mixbin = SOUND_DRIVER_GLOBALS->effect_mixbins[send];
 					LPDIRECTSOUNDBUFFER *spatial_buffer = &SOUND_DRIVER_GLOBALS->effect_buffers_b[send];
 					LPDIRECTSOUNDBUFFER *buffer = &SOUND_DRIVER_GLOBALS->effect_buffers_a[send];
-					DSBUFFERDESC description;
-					memset(&description, 0, sizeof(DSBUFFERDESC));
-					description.dwSize = sizeof(description);
-					description.dwFlags = DSBCAPS_FXIN2;
-					description.dwInputMixBin = mixbin;
-					if (SUCCEEDED(SOUND_DRIVER_GLOBALS->direct_sound->CreateSoundBuffer(&description, buffer, NULL)))
-						(*buffer)->Play(0, 0, 0);
+					{
+						DSBUFFERDESC description;
+						memset(&description, 0, sizeof(DSBUFFERDESC));
+						description.dwSize = sizeof(description);
+						description.dwFlags = DSBCAPS_FXIN2;
+						description.dwInputMixBin = mixbin;
+						if (SUCCEEDED(SOUND_DRIVER_GLOBALS->direct_sound->CreateSoundBuffer(&description, buffer, NULL)))
+							(*buffer)->Play(0, 0, 0);
+					}
 					DSBUFFERDESC spatial_description;
 					memset(&spatial_description, 0, sizeof(DSBUFFERDESC));
 					spatial_description.dwSize = sizeof(spatial_description);

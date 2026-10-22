@@ -92,6 +92,11 @@ static inline s_model_object *model_object_get(long object_index)
 	return ((s_model_object_header *)g_4e0300->data)[object_index & 0xffff].object;
 }
 
+// score 1 (was 1): retail reads the region's permutation with
+// mov cl, byte ptr [ecx + edx], ours with [edx + ecx]; only the encoding
+// differs. Subscript, integer-sum, struct, declaration-order and clamp
+// variants stayed at 1; advancing the pointer scored 18, forming it later 58.
+// The 600 s permutation run found no improvement.
 // @retail 0x181cf0
 void function_181cf0(long model_index, long object_index, long *region_index, long region_name, long permutation_name, long *permutation_index)
 {

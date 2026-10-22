@@ -175,10 +175,11 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 			if (local_19[0] > 6.2831854820251465f)
 				local_19[0] -= 6.2831854820251465f;
 			local_19[1] = local_18 - local_14;
-			long local_20 = 0;
+			real const *angle_cursor = local_19;
+			long angles_remaining = 2;
 			do
 			{
-				real local_21 = local_19[local_20];
+				real local_21 = *angle_cursor;
 				real local_22 = local_21 < 0.0f ? local_21 + 6.2831854820251465f : local_21 - 6.2831854820251465f;
 				real local_23 = (real)sin(local_7 == 0 ? -local_22 : local_22);
 				real local_24 = (real)cos(local_22);
@@ -188,8 +189,8 @@ void function_298d90(long arg_0, long arg_1, s_298c30 const *arg_2, point2f cons
 				local_6++;
 				function_2992ba(local_6, local_10, local_22, &local_15, &local_2, arg_1, arg_2, local_13, local_5, arg_5, &local_27);
 				local_6++;
-				local_20++;
-			} while (local_20 < 2);
+				angle_cursor++;
+			} while (--angles_remaining);
 		}
 	}
 	g_504938 = local_6;

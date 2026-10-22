@@ -266,6 +266,12 @@ void c_window_channel::v9()
 	dispose();
 }
 
+// score 3 (was 3): after the call to 0x149f49, retail recomputes the
+// request's address (lea eax, [ebp - 0x20]); ours uses mov eax, ecx. The
+// callee leaves ecx unchanged, and retail's 0x2358c3 in this file reuses it
+// after the same call. One tested link-order change left the score unchanged.
+// Other locals, address forms and control flow scored 3 or worse; the 600 s
+// permutation run found no improvement.
 // @retail 0x23531c
 void c_window_channel::v10()
 {

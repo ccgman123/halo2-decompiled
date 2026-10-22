@@ -150,9 +150,10 @@ void function_278f00()
 						function_b8540(local_11);
 					}
 				}
+				long const *cleanup_cursor = local_1;
 				for (long local_10 = 0; local_10 < local_8; local_10++)
 				{
-					long local_11 = local_1[local_10];
+					long local_11 = *cleanup_cursor++;
 					s_havok_object *local_12 = havok_object_get(local_11);
 					if (local_12->havok_component_index != NONE)
 						function_1d1260(havok_component_get(local_12->havok_component_index));

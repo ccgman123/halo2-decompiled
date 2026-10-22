@@ -381,7 +381,7 @@ bool __stdcall function_110ab0(long unit_index);
 bool function_1f4f40(long actor_index, vector3f const *facing, short unknown, s_type_c3b527 const *point, bool face_prop)
 {
 	s_actor_moving *actor = actor_moving_get(actor_index);
-	bool result = false;
+	byte result = 0;
 
 	if (!function_110ab0(actor->unit_index))
 	{
@@ -727,10 +727,10 @@ bool function_1f8160(long actor_index, signed char const *types, point3f const *
         s_movement_speed_definition *definition = (s_movement_speed_definition *)function_1e4a50(actor->unknown054);
         if (definition)
         {
-            short maximum = (definition->type < 6 ? definition->type : 6) - 1;
+            short selected_type = (definition->type < 6 ? definition->type : 6) - 1;
             if (force)
             {
-                if ((short)(((1 << (maximum + 1)) - 1) | *types))
+                if ((short)(((1 << (selected_type + 1)) - 1) | *types))
                 {
                     first_type = (*types & 1) != 0;
                     valid = true;
@@ -742,11 +742,13 @@ bool function_1f8160(long actor_index, signed char const *types, point3f const *
                 {
                     if (*types & (1 << i))
                     {
-                        short type = i <= maximum ? i : maximum;
-                        speed = 0.0f;
+                        if (i <= selected_type)
+                            selected_type = i;
+                        real selected_speed = 0.0f;
                         byte *globals = (byte *)g_4e034c;
-                        if (type >= 0 && type < 6 && globals && *(long *)(globals + 0xc8) > 0)
-                            speed = *(real *)(*(byte **)(globals + 0xcc) + 0x80 + type * 4);
+                        if (selected_type >= 0 && selected_type < 6 && globals && *(long *)(globals + 0xc8) > 0)
+                            selected_speed = *(real *)(*(byte **)(globals + 0xcc) + 0x80 + selected_type * 4);
+                        speed = selected_speed;
                         first_type = i == 0;
                         valid = true;
                         break;
@@ -955,9 +957,9 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
     byte *settings = (byte *)function_1e5450(actor_index, object->tag_index);
     real speed_scale;
     real turning_scale = 1.0f;
-    real approach_scale = 1.0f;
     real facing_scale = 1.0f;
     real velocity_scale = 1.0f;
+    real following_scale = 1.0f;
     speed_scale = *(real *)(actor + 0x4b4) != 0.0f ? *(real *)(actor + 0x4b4) : 1.0f;
     if (!ignore_facing)
     {
@@ -993,6 +995,7 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
         real scale = (1.0f - minimum) * fraction * fraction + minimum;
         turning_scale = (1.0f - scale) * distance / (radius * 2.0f) + scale;
     }
+    real approach_scale = 1.0f;
     if (!actor[0x4ae])
     {
         double x = (double)*(real *)(actor + 0x510) - position->x;
@@ -1015,7 +1018,6 @@ real function_1f9e70(long actor_index, long object_index, point2f const *positio
             approach_scale = (1.0f - minimum) / radius * remaining + minimum;
         }
     }
-    real following_scale = 1.0f;
     if (actor[0x50c] && *(short *)(actor + 0x504) == 1 && *(short *)(actor + 0x5b0) == 7 &&
         *(long *)(actor + 0x5ac) != NONE)
     {

@@ -1798,7 +1798,7 @@ void function_1d35d0(long constraint_index, s_havok_component *component, real s
     s_component_transform_definition *definition = (s_component_transform_definition *)g_4e3b44[object->definition_index & 0xffff].bytes;
     s_component_collision_model_link *model = (s_component_collision_model_link *)g_4e3b44[definition->model_index & 0xffff].bytes;
     s_component_joint_model *physics = (s_component_joint_model *)g_4e3b44[model->physics_model_index & 0xffff].bytes;
-    real strength = 0.0f;
+    real override_strength = 0.0f;
     for (long i = 0; i < physics->override_count; ++i)
     {
         s_component_joint_override_group *group = &physics->overrides[i];
@@ -1807,7 +1807,7 @@ void function_1d35d0(long constraint_index, s_havok_component *component, real s
             s_component_joint_override *entry = &group->entries[j];
             if (entry->type == constraint->unknown00 && entry->index == constraint->unknown02)
             {
-                strength = entry->strength;
+                override_strength = entry->strength;
                 break;
             }
         }
@@ -1823,13 +1823,14 @@ void function_1d35d0(long constraint_index, s_havok_component *component, real s
             joint[0x84 / 4] = (real)sin((angles->plane_minimum > angles->plane_maximum ? angles->plane_maximum : angles->plane_minimum) * scale * 0.01745329238474369f);
             joint[0x88 / 4] = (real)sin((angles->plane_minimum > angles->plane_maximum ? angles->plane_minimum : angles->plane_maximum) * scale * 0.01745329238474369f);
             joint[0x80 / 4] = (real)cos((angles->cone_minimum > angles->cone_maximum ? angles->cone_minimum : angles->cone_maximum) * scale * 0.01745329238474369f);
-            ((c_component_joint_strength *)joint)->set_strength((strength != 0.0f ? strength : angles->strength) * scale);
+            ((c_component_joint_strength *)joint)->set_strength((override_strength != 0.0f ? override_strength : angles->strength) * scale);
         }
         break;
     case 1:
         {
             s_component_joint_hinge *hinge = &physics->hinges[constraint->unknown02];
             real *joint = (real *)constraint->contact;
+            real strength = override_strength;
             if (strength == 0.0f)
                 strength = hinge->strength;
             joint[0xd0 / 4] = strength * scale;

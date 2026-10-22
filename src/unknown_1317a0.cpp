@@ -18,7 +18,7 @@ struct s_weighted_accumulator
 };
 
 // @retail 0x1317a0
-void function_1317a0(s_weighted_accumulator *acc, const real *a, const real *b, real c0, real c1, real c2, real c3, real t)
+void function_1317a0(const real *a, const real *b, real c0, real c1, real c2, real c3, real t, s_weighted_accumulator *acc)
 {
 	if (t < 0.0f)
 	{

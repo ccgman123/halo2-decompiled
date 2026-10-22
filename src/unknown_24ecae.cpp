@@ -9,12 +9,12 @@ long __stdcall function_24ecae(s_marker_list const *list, s_24ecae_placement con
 {
 	long count = 0;
 	dword mask = 0;
+	s_24ecae_globals *globals = (s_24ecae_globals *)g_510c94;
 	long index = 0;
 	long item_count = list->count;
 	s_list_item const *item = list->items;
 	for (; index < item_count; ++index, ++item)
 	{
-		s_24ecae_globals *globals = (s_24ecae_globals *)g_510c94;
 		long kind_index = item->kind;
 		if (globals && kind_index >= 0 && kind_index < globals->image_count)
 		{
@@ -44,7 +44,6 @@ long __stdcall function_24ecae(s_marker_list const *list, s_24ecae_placement con
 		{
 			if (mask & (1UL << (index & 31)))
 			{
-				s_24ecae_globals *globals = (s_24ecae_globals *)g_510c94;
 				s_24ecae_kind const *kind = &globals->images[item->kind];
 				s_24ecae_bitmap_group const *group = (s_24ecae_bitmap_group *)g_4e3b44[kind->bitmap_index & 0xffff].bytes;
 				short sequence_index;
@@ -127,6 +126,7 @@ long __stdcall function_24ecae(s_marker_list const *list, s_24ecae_placement con
 				function_22a664((s_widget_quad_2b11 const *)points, (s_float_rect const *)&bounds,
 					kind->bitmap_index, bitmap_index, kind->shader_index);
 				++drawn;
+				globals = (s_24ecae_globals *)g_510c94;
 			}
 		}
 	}

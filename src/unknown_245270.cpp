@@ -324,19 +324,7 @@ void function_245540(long arg_0, s_source_245400 const *arg_1,
 			local_6.i = arg_2->forward.i * local_15 + arg_2->left.i * local_16 + arg_2->up.i * local_17;
 			local_6.j = arg_2->up.j * local_17 + local_15 * arg_2->forward.j + arg_2->left.j * local_16;
 			local_6.k = arg_2->forward.k * local_15 + arg_2->left.k * local_16 + arg_2->up.k * local_17;
-			local_15 = local_4->x;
-			local_16 = local_4->y;
-			local_17 = local_4->z;
-			if (arg_2->scale != 1.f)
-			{
-				local_15 = arg_2->scale * local_15;
-				local_16 = arg_2->scale * local_16;
-				local_17 = arg_2->scale * local_17;
-			}
-			local_14.x = arg_2->forward.i * local_15 + arg_2->up.i * local_17 + arg_2->left.i * local_16 + arg_2->position.x;
-			local_14.y = local_15 * arg_2->forward.j + arg_2->up.j * local_17 + arg_2->left.j * local_16 + arg_2->position.y;
-			local_14.z = arg_2->forward.k * local_15 + arg_2->up.k * local_17 + arg_2->left.k * local_16 + arg_2->position.z;
-			local_4 = &local_14;
+			local_4 = function_245400_transform(arg_2, local_4, &local_14);
 		}
 		function_244de0(local_4, &local_6, arg_3, arg_4, arg_5, arg_6, local_1,
 			materials[local_1].field_04, materials[local_1].field_05,

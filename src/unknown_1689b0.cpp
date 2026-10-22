@@ -302,7 +302,7 @@ struct s_168ce0_bsp_view
 };
 
 // @retail 0x168ce0
-void *collision_reference_get_data(s_collision_reference const *reference)
+inline void *collision_reference_get_data(s_collision_reference const *reference)
 {
 	void *result = NULL;
 
@@ -1098,6 +1098,7 @@ bool __stdcall function_1697c0(long flags, point3f const *point, vector3f const 
 					surface_bsp && function_14a280(surface_bsp, 0, &collision->point) == NONE));
 			}
 		}
+		return true;
 	}
 
 	return result;
@@ -1393,6 +1394,7 @@ struct s_shape_counts
 
 PRIVATE __forceinline long shape_cluster_next(long *next)
 {
+    long result = NONE;
     if (*next != NONE)
     {
         s_record_pool *pool = (s_record_pool *)g_4de2e4;
@@ -1400,9 +1402,9 @@ PRIVATE __forceinline long shape_cluster_next(long *next)
         *next = *(long *)(entry + 8);
         if (*next != NONE)
             _mm_prefetch((char const *)(pool->data + pool->size * (*next & 0xffff)), _MM_HINT_T0);
-        return *(long *)(entry + 4);
+        result = *(long *)(entry + 4);
     }
-    return NONE;
+    return result;
 }
 
 // @retail 0x16a440

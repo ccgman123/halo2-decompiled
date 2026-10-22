@@ -641,7 +641,17 @@ void c_sound_effects::add_effect_sends_direct(s_sound_send_parameters *parameter
 		{
 			sound_stream_append_mixbin(mixbins, m_buffers->mixbin00, parameters->gain0c + (send_level + parameters->level));
 			sound_stream_append_mixbin(mixbins, m_buffers->mixbin04, parameters->gain10 + (parameters->level + send_level));
-			c_sound_effects::add_send(m_buffers->mixbin08, mode, offset, mixbins);
+			long mixbin08 = m_buffers->mixbin08;
+			switch (mode)
+			{
+			case 0:
+				sound_mixbins_add(mixbins, mixbin08, offset);
+				break;
+			case 1:
+				sound_mixbins_add(mixbins, mixbin08, offset + m_settings.gain);
+				sound_mixbins_add(mixbins, mixbin08, offset + m_settings.gain);
+				break;
+			}
 		}
 		else
 		{
@@ -822,11 +832,12 @@ void c_sound_effects::add_source_mixbins(s_sound_mixbin_source *source, bool rea
 void c_sound_effects::add_sends(s_sound_send_parameters *parameters, long unused, long mode, s_mixbin_settings *mixbins)
 {
 	bool alternate = TEST_FLAG(parameters->flags, 3) != 0;
-	real volatile level = parameters->level_offset + parameters->level;
+	real level_offset = parameters->level_offset;
+	real base_level = parameters->level;
 
-	sound_stream_append_mixbin(mixbins, alternate ? 0 : 6, *(real const volatile *)&parameters->left_gain);
-	sound_stream_append_mixbin(mixbins, alternate ? 1 : 7, *(real const volatile *)&parameters->right_gain);
-	sound_stream_append_mixbin(mixbins, alternate ? 4 : 8, *(real const volatile *)&parameters->rear_left_gain);
-	sound_stream_append_mixbin(mixbins, alternate ? 5 : 9, *(real const volatile *)&parameters->rear_right_gain);
-	c_sound_effects::add_send(10, mode, level, mixbins);
+	sound_stream_append_mixbin(mixbins, alternate ? 0 : 6, parameters->left_gain);
+	sound_stream_append_mixbin(mixbins, alternate ? 1 : 7, parameters->right_gain);
+	sound_stream_append_mixbin(mixbins, alternate ? 4 : 8, parameters->rear_left_gain);
+	sound_stream_append_mixbin(mixbins, alternate ? 5 : 9, parameters->rear_right_gain);
+	c_sound_effects::add_send(10, mode, level_offset + base_level, mixbins);
 }

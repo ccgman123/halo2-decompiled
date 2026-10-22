@@ -1281,8 +1281,9 @@ bool function_1e1de0(long arg_0);
 bool function_25ccd0(s_type_5cfb45 *arg_0, long arg_1, short arg_2, s_2640c0 *arg_3)
 {
 	long local_1 = g_510c54->game_time;
-	if (arg_0->unknown00 == local_1)
-		return false;
+	bool updated = arg_0->unknown00 != local_1;
+	if (!updated)
+		return updated;
 	s_slot_object_view *local_2 = object_get(arg_1);
 	s_slot_object_view *local_3 = NULL;
 	long local_4 = NONE;
@@ -1379,7 +1380,7 @@ bool function_25ccd0(s_type_5cfb45 *arg_0, long arg_1, short arg_2, s_2640c0 *ar
 	arg_0->unknown62 = local_11;
 	arg_0->unknown61 = local_10;
 	arg_0->unknown00 = local_1;
-	return true;
+	return updated;
 }
 
 

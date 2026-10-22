@@ -316,6 +316,10 @@ inline void swap_2fa2f0(entry_2fa0d0 &first, entry_2fa0d0 &second)
 	second = held;
 }
 
+// score 494 (was 494): retail keeps this in esi and the second body in edi
+// (here the other way round), so the timer compares its limit from memory;
+// in the parts' loop retail reads the input again for the agent's call,
+// keeps the agent in ebx and the found flag in another stack slot.
 // @retail 0x2fa2f0
 void class_2fa2f0::function_2fa2f0(void const *a_, void const *b_, void const *input_, void *collector)
 {

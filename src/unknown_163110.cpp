@@ -378,7 +378,7 @@ PRIVATE inline real plane_error_163db0(s_plane const *plane, point3f const *poin
 bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long identifier, s_frustum_1648d0 *result)
 {
 	bool valid = false;
-	char const *error = 0;
+	char const *error;
 	if (rectangle->x1 > rectangle->x0 && rectangle->y1 > rectangle->y0)
 	{
 		result->rectangle = *rectangle;
@@ -458,6 +458,8 @@ bool function_163db0(s_camera_163db0 const *camera, box2f const *rectangle, long
 			plane_error_163db0(&result->planes[2], &result->points[1]) < 0.01f &&
 			plane_error_163db0(&result->planes[5], &result->points[1]) < 0.01f))
 			error = "_pyramid_bottom_left world-vertex off planes";
+		else
+			error = 0;
 		if (!(plane_error_163db0(&result->planes[1], &result->points[3]) < 0.01f &&
 			plane_error_163db0(&result->planes[2], &result->points[3]) < 0.01f &&
 			plane_error_163db0(&result->planes[5], &result->points[3]) < 0.01f))

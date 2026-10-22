@@ -397,7 +397,7 @@ __forceinline void capsule_triangle_2f4440(void const *a, void const *b, void co
 				{
 					across = cross_2f4440(direction, side);
 				}
-				else if (closest.distance_squared > 1.4210854715202004e-14f)
+				else if (!(closest.distance_squared <= 1.4210854715202004e-14f))
 				{
 					across = closest.offset;
 				}
@@ -412,18 +412,19 @@ __forceinline void capsule_triangle_2f4440(void const *a, void const *b, void co
 					float length_squared;
 					_mm_store_ss(&length_squared, sum_2f4440(_mm_mul_ps(across, across)));
 					offset_terms[3] = 0.0f;
-					if (!(length_squared > 1.4210854715202004e-14f))
+					if (length_squared <= 1.4210854715202004e-14f)
 					{
 						across = closest.offset;
 					}
 				}
 				across = normalized_2f4440(across);
-				float distance;
-				_mm_store_ss(&distance, sum_2f4440(_mm_mul_ps(across, closest.offset)));
-				if (distance < 0.0f)
+				float dot;
+				_mm_store_ss(&dot, sum_2f4440(_mm_mul_ps(across, closest.offset)));
+				float distance = dot;
+				if (dot < 0.0f)
 				{
 					across = _mm_xor_ps(across, *(__m128 const *)g_4124a0);
-					distance = -distance;
+					distance = -dot;
 				}
 				contact->point = _mm_add_ps(closest.first_point, _mm_mul_ps(splat_2f4440(triangle->radius - distance), across));
 				contact->point.m128_f32[3] = distance - radius;
@@ -458,10 +459,16 @@ edges:
 	}
 }
 
-// score 731 (was 793): the frame is 0x20 larger and laid out differently,
-// our build keeps the second body rather than the capsule in ebx and the
-// triangle in edi, and the end loop's counters live in different registers;
-// the code is otherwise in retail's order.
+// score 727 (was 731): the frame is 0x20 larger and laid out differently
+// (retail: the edges' segment at 0x40, the contacts at 0x130; ours 0x50 and
+// 0x150), our build keeps the second body in ebx where retail keeps the
+// capsule there and the triangle in edi (and reloads the body), retail keeps
+// the input in esi, and the end loop's counters live in different registers;
+// the code is otherwise in retail's order. The edge contact's dot product is
+// read into its own local (retail's sign flip on the FPU), and the near-zero
+// tests are written with <= for retail's jp; retail copies the edge plane's
+// terms with fld/fstp indexed by the edge, ours with integer moves through a
+// stepped pointer (a float-returning accessor changed nothing).
 // The contacts of the capsule and the triangle that lie within the tolerance
 // added to the results, each with its id from the owner
 // @retail 0x2f4440

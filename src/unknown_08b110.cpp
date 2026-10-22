@@ -431,15 +431,14 @@ long c_vtable_450c94::v5(dword a1, s_bitstream *stream, long max_blocks, s_block
   {
    s_block_450c94 *block = &blocks[used++];
    block->index = index;
-   s_item_450cb8 *items = (s_item_450cb8 *)block->data;
-   items[0].size = input ? 0x34 : 0;
-   items[1].size = transform ? 0x40 : 0;
-   items[0].data = input;
+   ((s_item_450cb8 *)block->data)[0].size = input ? 0x34 : 0;
+   ((s_item_450cb8 *)block->data)[1].size = transform ? 0x40 : 0;
+   ((s_item_450cb8 *)block->data)[0].data = input;
    block->unknown00 = NONE;
    block->count = 2;
-   items[0].type = 9;
-   items[1].type = 10;
-   items[1].data = transform;
+   ((s_item_450cb8 *)block->data)[0].type = 9;
+   ((s_item_450cb8 *)block->data)[1].type = 10;
+   ((s_item_450cb8 *)block->data)[1].data = transform;
   }
   else
   {

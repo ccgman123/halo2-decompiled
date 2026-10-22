@@ -154,7 +154,8 @@ public:
 	void function_2f0100(void const *a, void const *b, void const *input, void *collector);
 };
 
-// score 11 (was 11): the axis choice differs as in 0x2f0450, and the two index registers are swapped.
+// score 6 (was 11): the two scaled indices of the perpendicular axis are held in the
+// opposite registers: the first index is in eax here and ecx in retail.
 // the contact of a sphere with a capsule, kept while they are within the
 // tolerance; when the centre lies on the segment, the normal is one at right
 // angles to it
@@ -205,9 +206,9 @@ void class_2f0100::function_2f0100(void const *a_, void const *b_, void const *i
 			int smallest = 0;
 			int first = 1;
 			int second = 2;
-			float least = (float)fabs(component[0]);
-			float const y = (float)fabs(component[1]);
-			float const z = (float)fabs(component[2]);
+			float least = fabsf(component[0]);
+			float const y = fabsf(component[1]);
+			float const z = fabsf(component[2]);
 			if (y < least)
 			{
 				first = 0;
@@ -305,9 +306,9 @@ __forceinline void sphere_capsule_contact_2f0450(void const *a_, void const *b_,
 			int smallest = 0;
 			int first = 1;
 			int second = 2;
-			float least = (float)fabs(component[0]);
-			float const y = (float)fabs(component[1]);
-			float const z = (float)fabs(component[2]);
+			float least = fabsf(component[0]);
+			float const y = fabsf(component[1]);
+			float const z = fabsf(component[2]);
 			if (y < least)
 			{
 				first = 0;
@@ -341,14 +342,15 @@ public:
 	void function_2f0450(void const *a, void const *b, void const *input, void *collector);
 };
 
-// score 7 (was 7): picking the perpendicular axis, retail sets the indices 1 and 2 between the fabs loads and loads the moved term before storing the zero.
+// score 2 (was 7): picking the perpendicular axis, retail loads the moved component
+// before it stores the zero into the normal.
 // @retail 0x2f0450
 void class_2f0450::function_2f0450(void const *a, void const *b, void const *input, void *collector)
 {
 	sphere_capsule_contact_2f0450(a, b, input, collector);
 }
 
-// score 7 (was 7): as 0x2f0450.
+// score 2 (was 7): as 0x2f0450.
 // the same as a function
 // @retail 0x2f0700
 void __cdecl function_2f0700(void const *a, void const *b, void const *input, void *collector)

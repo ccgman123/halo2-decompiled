@@ -293,20 +293,18 @@ long network_session_interface_get_user_state(c_class_58d20 *session, long user_
 		if (SESSION_STATE_IS_LIVE(session->state))
 		{
 			long player_index = session->members[session->current_member].player_indices[user_index];
-			if (player_index != NONE)
-			{
-				s_network_session_player *player = &session->players[player_index];
-				if (player->unknown14 != NONE)
-				{
-					if (player->unknown14 == g_4cd868.users[user_index].unknown10 &&
-						memcmp(player->properties18, g_4cd868.users[user_index].properties, sizeof(player->properties18)) == 0 &&
-						player->unknown138 == g_4cd868.users[user_index].unknowna4)
-						return 6;
-					return 5;
-				}
+			if (player_index == NONE)
+				return g_4cd868.users[user_index].unknowncc[session->value10] ? 3 : 2;
+			s_network_session_player *player = &session->players[player_index];
+			if (player->unknown14 == NONE)
 				return 4;
-			}
-			return g_4cd868.users[user_index].unknowncc[session->value10] ? 3 : 2;
+			if (player->unknown14 != g_4cd868.users[user_index].unknown10)
+				return 5;
+			if (memcmp(player->properties18, g_4cd868.users[user_index].properties, sizeof(player->properties18)) != 0)
+				return 5;
+			if (player->unknown138 != g_4cd868.users[user_index].unknowna4)
+				return 5;
+			return 6;
 		}
 		return 1;
 	}
@@ -1927,14 +1925,14 @@ bool __stdcall function_64d70(s_session_browser_summary *output)
    }
    function_13da70(entries, count, sizeof(entries[0]), (t_session_summary_compare)sort_key_less_than, 0);
    output->player_count = (short)count;
-   for (long j = 0; j < count; j++)
+   s_summary_player_sort_entry *sorted_entry = entries;
+   for (long j = 0; j < count; j++, sorted_entry++)
    {
-    s_summary_player_sort_entry *entry = &entries[j];
-    memcpy(output->player_keys[j], entry->key, sizeof(entry->key));
-    memcpy(output->player_names[j], entry->properties, sizeof(output->player_names[j]));
-    output->scores[j] = entry->sort.middle;
-    output->player_teams[j] = *(signed char *)(entry->properties + 0x7c);
-    memcpy(output->field_5e0[j], entry->properties + 0x40, sizeof(output->field_5e0[j]));
+    memcpy(output->player_keys[j], sorted_entry->key, sizeof(sorted_entry->key));
+    memcpy(output->player_names[j], sorted_entry->properties, sizeof(output->player_names[j]));
+    output->scores[j] = sorted_entry->sort.middle;
+    output->player_teams[j] = *(signed char *)(sorted_entry->properties + 0x7c);
+    memcpy(output->field_5e0[j], sorted_entry->properties + 0x40, sizeof(output->field_5e0[j]));
    }
    if ((variant[0x48] & 1) && statistics)
    {

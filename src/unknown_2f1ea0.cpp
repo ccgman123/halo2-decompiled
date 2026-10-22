@@ -217,6 +217,8 @@ public:
 	void function_2f1ea0(void const *a, void const *b, void const *input, void *collector);
 };
 
+// score 70 (was 70): the contact's point and normal sit at esp+0x20 in retail and
+// esp+0x30 in ours, so the shape's pointer takes edi here and ebx in retail.
 // @retail 0x2f1ea0
 void class_2f1ea0::function_2f1ea0(void const *a, void const *b, void const *input, void *collector)
 {
@@ -224,6 +226,8 @@ void class_2f1ea0::function_2f1ea0(void const *a, void const *b, void const *inp
 }
 
 // the same as a function
+// score 70 (was 70): as 0x2f1ea0, the contact's point and normal sit at esp+0x20
+// in retail and esp+0x30 in ours.
 // @retail 0x2f2130
 void __cdecl function_2f2130(void const *a, void const *b, void const *input, void *collector)
 {
@@ -239,7 +243,6 @@ void __cdecl function_2f23c0(body_2f23c0 const *a, body_2f23c0 const *b, void co
 	__m128 const *centre = &a->motion->transform.position;
 	c_query_point local;
 	local.inverse_transform(&b->motion->transform, centre);
-	float const radius = box->radius + sphere->radius;
 	__m128 const sign = _mm_and_ps(local.value, *(__m128 const *)g_sign_mask_4124a0);
 	__m128 const magnitude = _mm_and_ps(local.value, *(__m128 const *)g_magnitude_mask_455940);
 	placed_point_2f23c0 nearest;
@@ -250,6 +253,7 @@ void __cdecl function_2f23c0(body_2f23c0 const *a, body_2f23c0 const *b, void co
 	__m128 const squares = _mm_mul_ps(offset, offset);
 	float distance_squared;
 	_mm_store_ss(&distance_squared, _mm_add_ss(_mm_shuffle_ps(squares, squares, 0xaa), _mm_add_ss(_mm_shuffle_ps(squares, squares, 0x55), squares)));
+	float const radius = box->radius + sphere->radius;
 	if (distance_squared < radius * radius)
 	{
 		collector->add_pair(a, b);

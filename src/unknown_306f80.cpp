@@ -87,11 +87,13 @@ public:
 	bool_3058b0 function_306f80(feature_305f60 *feature);
 };
 
-// score 164 (was 253): retail keeps between in a 16-byte slot of its own (a
-// 0x58 frame, here 0x48, where it shares the slot of the edge read by index)
-// and loads the second box's half extents later, so the xmm registers differ
-// from there on; const, a union and declaring it at the top do not separate
-// the slot.
+// score 159 (was 164): the x87 products now match (second_squared times a
+// bracketed product, axes[1] first in its term). Still differs: retail keeps
+// between in a 16-byte slot of its own (a 0x58 frame, here 0x48, where it
+// shares the slot of the edge read by index), and holds the second box's
+// corner signs and product in xmm1 where ours uses xmm0, so the xmm registers
+// differ from there on; const, a union, declaring it (or first_direction) at
+// the top, computing it earlier and swapped operands do not fix either.
 // @retail 0x306f80
 bool_3058b0 pair_305f60::function_306f80(feature_305f60 *feature)
 {
@@ -107,13 +109,13 @@ bool_3058b0 pair_305f60::function_306f80(feature_305f60 *feature)
 	float const along = first_edge * second_edge.m128_f32[first_axis];
 	__m128 const second_corner = _mm_add_ps(_mm_add_ps(
 		_mm_mul_ps(axes[0], _mm_shuffle_ps(second_local, second_local, 0x00)),
-		_mm_mul_ps(_mm_shuffle_ps(second_local, second_local, 0x55), axes[1])),
+		_mm_mul_ps(axes[1], _mm_shuffle_ps(second_local, second_local, 0x55))),
 		_mm_add_ps(_mm_mul_ps(axes[2], _mm_shuffle_ps(second_local, second_local, 0xaa)), position));
 	float const second_squared = second_half_extents.m128_f32[second_axis] * second_half_extents.m128_f32[second_axis] * 4.0f;
-	float const determinant = (float)fabs(first_edge * first_edge * second_squared - along * along);
+	float const determinant = (float)fabs(second_squared * (first_edge * first_edge) - along * along);
 	__m128 between = _mm_sub_ps(second_corner, first_corner);
 	float const second_along = dot3_306f80(second_edge, between);
-	float t = first_edge * between.m128_f32[first_axis] * second_squared - second_along * along;
+	float t = second_squared * (first_edge * between.m128_f32[first_axis]) - second_along * along;
 	if (!(g_461f10 * determinant >= t))
 	{
 		float const most = 1.0f - g_461f10;

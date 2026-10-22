@@ -172,6 +172,7 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
         s_44940_entry *entry = &g_4ba138[(short)index];
         if (!((entry->unknown00 & selection_mask) & 0x1fffff) ||
             ((entry->flags >> 4) & 0x1f) != level || !(entry->unknown00 & 1) || entry->unknown10[0xa] <= 0) continue;
+        bool use_level = level != 31;
         byte weight = g_4c0b78.weights[index];
         long transform_index = entry->flags & 0xf;
         byte material_index = g_4c0b78.material_indices[(short)index];
@@ -192,7 +193,7 @@ void __stdcall function_44c90(long group, dword selection_mask, long level,
             {
                 long selected = force || (entry->unknown00 & 0x8000) ? material : NONE;
                 function_41040((short)index, part, group, weight, (s_render_part_context *)context,
-                    selected, level != 31, and_mask, or_mask);
+                    selected, use_level, and_mask, or_mask);
             }
         }
     }

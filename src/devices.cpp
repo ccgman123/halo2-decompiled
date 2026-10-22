@@ -1253,22 +1253,21 @@ bool __stdcall function_106790(long volatile device_index)
 		{
 			if (state && device->channels[0].graph_tag_index != NONE && device->channels[0].animation_id.index != NONE)
 				device->channels[0].set_frame_ratio(device->power);
-			byte const *definition = saved_definition;
-			real acceleration = *(real const *)(definition + 0xcc) * device->position +
-				*(real const *)(definition + 0xd4) * (1.0f - device->position);
-			real speed = *(real const *)(definition + 0xc8) * device->position +
-				*(real const *)(definition + 0xd0) * (1.0f - device->position);
+			real acceleration = *(real const *)(saved_definition + 0xcc) * device->position +
+				*(real const *)(saved_definition + 0xd4) * (1.0f - device->position);
+			real speed = *(real const *)(saved_definition + 0xc8) * device->position +
+				*(real const *)(saved_definition + 0xd0) * (1.0f - device->position);
 			bool increasing = device->power_velocity > 0.0f;
 			if (acceleration > 0.0f && speed > 0.0f)
 				device->flags |= 0x100;
 			else
 				device->flags &= ~0x100;
-			if (!((real)device->delay_ticks * g_510c54->rate >= *(real const *)(definition + 0x10c)) &&
+			if (!((real)device->delay_ticks * g_510c54->rate >= *(real const *)(saved_definition + 0x10c)) &&
 				device->power == 0.0f && !(device->power > group->value))
 			{
 				++device->delay_ticks;
 				if (device->delay_ticks == 1)
-					function_107980(device_index, *(long const *)(definition + 0x114));
+					function_107980(device_index, *(long const *)(saved_definition + 0x114));
 			}
 			else
 			{
@@ -1278,11 +1277,11 @@ bool __stdcall function_106790(long volatile device_index)
 					device->power_velocity = increasing ? speed : 0.0f - speed;
 				bool reached = function_11eed0(&device->power, &device->power_velocity,
 					group->value, g_510c54->rate, speed, acceleration,
-					(*(byte const *)(definition + 0xbc) & 1) != 0, 0.0f, 1.0f);
+					(*(byte const *)(saved_definition + 0xbc) & 1) != 0, 0.0f, 1.0f);
 				if (reached)
-					function_107980(device_index, *(long const *)(definition + (increasing ? 0xf0 : 0xf8)));
+					function_107980(device_index, *(long const *)(saved_definition + (increasing ? 0xf0 : 0xf8)));
 				else if (device->power_velocity != 0.0f && device->power_velocity * local_c01284_2 <= 0.0f)
-					function_107980(device_index, *(long const *)(definition +
+					function_107980(device_index, *(long const *)(saved_definition +
 						(device->power_velocity > local_c01284_2 ? 0xe0 : 0xe8)));
 				if (previous != device->power || (device->flags & 0x80))
 				{
@@ -1316,10 +1315,9 @@ bool __stdcall function_106790(long volatile device_index)
 		{
 			if (state && function_0b6760((s_index_pair const *)&device->channels[1]))
 				device->channels[1].set_frame_ratio(device->position);
-			byte const *definition = saved_definition;
 			real previous = device->position;
 			function_11eed0(&device->position, &device->position_velocity, group->value, g_510c54->rate,
-				*(real const *)(definition + 0xc0), *(real const *)(definition + 0xc4), false, 0.0f, 1.0f);
+				*(real const *)(saved_definition + 0xc0), *(real const *)(saved_definition + 0xc4), false, 0.0f, 1.0f);
 			if (previous != device->position)
 			{
 				function_107520(device_index);

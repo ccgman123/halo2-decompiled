@@ -199,7 +199,8 @@ s_actor_moving *function_1e47d0(s_actor_point_request *request)
 		{
 			actor = actor_moving_get(next_actor_index);
 			request->actor_index = next_actor_index;
-			request->next_actor_index = *(long *)((byte *)actor + 0x80);
+			if (actor)
+				request->next_actor_index = *(long *)((byte *)actor + 0x80);
 		}
 		if (actor)
 		{

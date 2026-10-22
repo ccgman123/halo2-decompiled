@@ -982,7 +982,7 @@ bool __stdcall network_session_delegate_leader(c_class_58d20 *session, const s_s
 
 	if (session_state_is_live(session) && function_058d50(session))
 	{
-		long member_index = network_session_find_member(session, identity);
+		long member_index = network_session_find_member(session, *(const s_session_member_identity *const volatile *)&identity);
 		if (member_index != NONE && member_index != session->value50)
 		{
 			if (session->function_058d20())
@@ -1012,7 +1012,7 @@ bool __stdcall network_session_boot_machine(c_class_58d20 *session, const s_sess
 
 	if (session_state_is_live(session) && function_058d50(session))
 	{
-		long member_index = network_session_find_member(session, identity);
+		long member_index = network_session_find_member(session, *(const s_session_member_identity *const volatile *)&identity);
 		if (member_index != NONE && member_index != session->current_member)
 		{
 			if (session->function_058d20())

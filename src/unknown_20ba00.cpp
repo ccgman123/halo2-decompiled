@@ -232,7 +232,7 @@ bool __stdcall function_20bbb0(short condition, long object_index, real *weight)
                     s_object_seat seats[64];
                     result = true;
                     short count = function_c8b80(function_1b8c80(*(long *)(unit + 0x14)), seats, 64);
-                    for (short i = 0; i < count; i++)
+                    for (long i = 0; i < count; i++)
                     {
                         long occupant = function_c8f60(seats[i].object_index, seats[i].seat_index);
                         if (occupant != NONE && occupant != object_index)

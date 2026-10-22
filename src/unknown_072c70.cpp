@@ -537,24 +537,23 @@ bool c_game_engine::v19(short player_index, dword mask, long, s_player_update *u
 
 	if (player)
 	{
-		s_mp_globals *g = g_4e9ae8;
 		if (mask & 1)
 		{
 			player->l164 = update->l4;
-			g->players[index].w10 = (word)update->l4;
-			g->players[index].w12 = (word)update->l4;
-			g->players[index].v = update->v8;
-			if (fabs(g->players[index].v.x - g_468d18.x) < 0.0001f &&
-				fabs(g->players[index].v.y - g_468d18.y) < 0.0001f &&
-				fabs(g->players[index].v.z - g_468d18.z) < 0.0001f)
-				g->players[index].b0 = 0;
+			g_4e9ae8->players[index].w10 = (word)update->l4;
+			g_4e9ae8->players[index].w12 = (word)update->l4;
+			g_4e9ae8->players[index].v = update->v8;
+			if (fabs(g_4e9ae8->players[index].v.x - g_468d18.x) < 0.0001f &&
+				fabs(g_4e9ae8->players[index].v.y - g_468d18.y) < 0.0001f &&
+				fabs(g_4e9ae8->players[index].v.z - g_468d18.z) < 0.0001f)
+				g_4e9ae8->players[index].b0 = 0;
 			else
-				g->players[index].b0 = 1;
+				g_4e9ae8->players[index].b0 = 1;
 		}
 		if (mask & 2)
 			player->l19c = update->l14;
 		if (mask & 4)
-			g->players[index].b14 = update->b0;
+			g_4e9ae8->players[index].b14 = update->b0;
 		if (mask & 8)
 		{
 			if (update->b18)
@@ -563,7 +562,7 @@ bool c_game_engine::v19(short player_index, dword mask, long, s_player_update *u
 				player->flags &= ~0x4;
 		}
 		if (mask & 0x10)
-			memcpy(&g->l6dc[index * 4], update->w26, 16);
+			memcpy(&g_4e9ae8->l6dc[index * 4], update->w26, 16);
 		if (mask & 0x20)
 			player->s1ac = update->s1a;
 		if (mask & 0x40)

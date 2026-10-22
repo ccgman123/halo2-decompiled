@@ -482,11 +482,11 @@ PRIVATE __forceinline byte function_1f1462(dword arg_0)
 }
 
 // @retail 0x1f1460
-void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *arg_9650d9, vector3f *arg_3a7661)
+void function_1f1460(byte const *state, s_shape_state const *ground, vector3f *up_result, vector3f *forward_result)
 {
     struct s_1f1466 { vector3f *field_0; byte const *field_4; vector3f *field_8; } local_0;
-    local_0.field_8 = arg_9650d9;
-    local_0.field_0 = arg_3a7661;
+    local_0.field_8 = forward_result;
+    local_0.field_0 = up_result;
     local_0.field_4 = state;
     byte *settings = *(byte **)(local_0.field_4 + 8);
     if (function_1f1462(*(dword *)settings))
@@ -808,9 +808,12 @@ PRIVATE inline void shape_rotate_vector(matrix3x3 const *matrix, vector3f const 
         copy = *input;
         input = &copy;
     }
-    out->i = input->j * matrix->left.i + input->k * matrix->up.i + input->i * matrix->forward.i;
-    out->j = input->i * matrix->forward.j + input->j * matrix->left.j + input->k * matrix->up.j;
-    out->k = input->i * matrix->forward.k + input->j * matrix->left.k + input->k * matrix->up.k;
+    real i = input->i;
+    real j = input->j;
+    real k = input->k;
+    out->i = j * matrix->left.i + k * matrix->up.i + i * matrix->forward.i;
+    out->j = i * matrix->forward.j + j * matrix->left.j + k * matrix->up.j;
+    out->k = i * matrix->forward.k + j * matrix->left.k + k * matrix->up.k;
 }
 
 // @retail 0x1f0450
@@ -836,14 +839,14 @@ void __stdcall function_1f0450(s_shape_state *history, byte *out, s_shape_carrie
         if (carrier)
         {
             velocity = carrier_velocity;
-            byte *const *out_reference = &out;
-            *(dword *)*out_reference |= 8;
+            *(dword *)out |= 8;
             *(matrix3x3 *)(out + 0x30) = rotation;
         }
     }
     if (override_velocity)
     {
-        *(vector3f *)(out + 0x64) = *(vector3f *)(*(byte **)(component + 0x70) + 0x30);
+        vector3f const *velocity_source = (vector3f const *)(*(byte **)(component + 0x70) + 0x30);
+        real_point3d_set((point3f *)(out + 0x64), velocity_source->i, velocity_source->j, velocity_source->k);
         current.i -= *(real *)(out + 0x64);
         current.j -= *(real *)(out + 0x68);
         current.k -= *(real *)(out + 0x6c);

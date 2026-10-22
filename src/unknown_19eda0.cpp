@@ -420,9 +420,9 @@ void function_19f680(long tag, long group, long pass, long variant, void *contex
         long attribute_count = *(long *)(attributes + 4);
         short *types = *(short **)(attributes + 8);
         long uv = NONE;
-        for (long i = 0; i < attribute_count; ++i)
+        for (long i = 0; i < attribute_count; ++i, ++types)
         {
-            if (types[i] == 3)
+            if (*types == 3)
             {
                 uv = i;
                 break;

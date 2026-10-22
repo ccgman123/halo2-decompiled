@@ -102,7 +102,8 @@ struct planes_2fdcf0
 			{
 				g_memory_2d88a0->release_block(data, capacity * sizeof(__m128), 0x12);
 			}
-			data = (__m128 *)g_memory_2d88a0->allocate_block(count * sizeof(__m128), 0x12);
+			long const plane_count = count;
+			data = (__m128 *)g_memory_2d88a0->allocate_block(plane_count * sizeof(__m128), 0x12);
 			capacity_and_flags = count;
 		}
 		__m128 *const out = data;
@@ -174,7 +175,6 @@ void class_2fdcf0::function_2fdaa0(float const *points, long stride, long count)
 	half_extents.scale(0.5f);
 }
 
-// score 8 (was 8): register choice only, in the inlined plane copy (eax and ecx against ecx and edx) and in the call's arguments after it.
 // @retail 0x2fdcf0
 class_2fdcf0::class_2fdcf0(void const *source) :
 	radius_shape_2de750(*(radius_info_2de750 const *)source)

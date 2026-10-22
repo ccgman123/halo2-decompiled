@@ -281,7 +281,7 @@ PRIVATE __forceinline s_squad_group_datum *next_group_record_202370(s_group_reco
 // @retail 0x202370
 void function_202370(void)
 {
-	s_group_record_iterator iterator;
+	s_group_record_iterator iterator = {0};
 	if (g_4f55d0->active)
 	{
 		iterator.records.data = g_51e9dc;

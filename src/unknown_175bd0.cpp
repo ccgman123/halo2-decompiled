@@ -2865,9 +2865,10 @@ void __stdcall function_179e80(s_effect_datum *effect)
 	for (long i = 0; i < event->beam_count; i++)
 	{
 		s_effect_beam *beam = &event->beams[i];
+		short beam_location = beam->location;
 		real progress = effect->event_delay > 0.0f ? effect->unknown60 / effect->event_delay : 0.0f;
 
-		long location_index = effect->location_indices[beam->location];
+		long location_index = effect->location_indices[beam_location];
 
 		while (location_index != NONE)
 		{

@@ -554,6 +554,14 @@ struct s_spawn_motion_settings_23b500
 	real vehicle_time;
 };
 
+/* the point a scaled vector away from a point */
+static inline void point_along_vector_23b500(point3f const *point, vector3f const *vector, real t, point3f *result)
+{
+	result->x = vector->i * t + point->x;
+	result->y = vector->j * t + point->y;
+	result->z = vector->k * t + point->z;
+}
+
 // @retail 0x23b500
 void function_23b500(long player_index, s_spawn_influence_list *list)
 {
@@ -603,9 +611,7 @@ void function_23b500(long player_index, s_spawn_influence_list *list)
 				real radius = (real)sqrt(speed_squared);
 				radius = radius < 0.f ? 0.f : radius > settings->maximum_radius ? settings->maximum_radius : radius;
 				point3f predicted;
-				predicted.x = object->velocity.i * settings->vehicle_time + object->position.x;
-				predicted.y = object->velocity.j * settings->vehicle_time + object->position.y;
-				predicted.z = object->velocity.k * settings->vehicle_time + object->position.z;
+				point_along_vector_23b500(&object->position, &object->velocity, settings->vehicle_time, &predicted);
 				spawn_influence_add(list, &predicted, radius, radius * 1.2f,
 					((s_spawn_influence_globals *)g_502258)->value0,
 					((s_spawn_influence_globals *)g_502258)->value4, settings->vehicle_weight);
@@ -617,9 +623,7 @@ void function_23b500(long player_index, s_spawn_influence_list *list)
 			if (*(real *)(definition + 0xcc) > 0.f && *(real *)(definition + 0xd0) > 0.f)
 			{
 				point3f predicted;
-				predicted.x = object->velocity.i * settings->projectile_time + object->position.x;
-				predicted.y = object->velocity.j * settings->projectile_time + object->position.y;
-				predicted.z = object->velocity.k * settings->projectile_time + object->position.z;
+				point_along_vector_23b500(&object->position, &object->velocity, settings->projectile_time, &predicted);
 				spawn_influence_add(list, &predicted, settings->projectile_inner, settings->projectile_outer,
 					((s_spawn_influence_globals *)g_502258)->value0,
 					((s_spawn_influence_globals *)g_502258)->value4, settings->projectile_weight);

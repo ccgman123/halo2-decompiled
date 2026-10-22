@@ -128,13 +128,12 @@ long function_101e80(long object_index)
 long function_101ec0(long object_index)
 {
 	s_object_header *header = OBJECT_HEADER(object_index);
+	byte flags = header->flags;
 	s_object *object = header->object;
 	s_object_tag *tag = OBJECT_TAG(object);
-	bool a = (header->flags & 0x10) != 0;
-	bool b = (object->flags04 & 1) != 0;
-	bool c = tag->field_38 == NONE;
+	s_object_tag *const &selected = tag;
 
-	if (a || b || c)
+	if ((flags & 0x10) || (object->flags04 & 1) || selected->field_38 == NONE)
 	{
 		if (object->parent_index != NONE)
 			object_index = object->parent_index;
@@ -273,11 +272,10 @@ bool function_102100(short link_index, long object_index, bool *out_a, bool *out
 
 	if (link->flags & 0x40)
 	{
+		result = false;
 		*out_b = true;
-		return false;
 	}
-
-	if (result)
+	else if (result)
 	{
 		s_object *holder = OBJECT_HEADER(object_index)->object;
 		if ((holder->flags12c & 1) && holder->child_index != NONE)

@@ -124,15 +124,13 @@ void __stdcall function_29bab0(long arg_0, long arg_1, vector3f const *arg_2,
 			real local_18 = (real)((double)local_2->field_1c * 0.5);
 			real local_19 = 0.0f >= local_2->field_14 ? local_1->unknown03c : local_2->field_14;
 			real local_20 = 1.0f;
-			bool local_21;
+			bool local_21 = true;
 			if (*(bool *)(local_0 + 0x654))
 			{
 				if ((double)local_15.i * local_17.i + (double)local_15.j * local_17.j < 0.99)
 					local_21 = false;
 				else if (!*(bool *)(local_0 + 0x4ae) && local_18 > local_16)
 					local_21 = false;
-				else
-					local_21 = true;
 			}
 			else
 			{

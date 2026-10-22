@@ -699,7 +699,8 @@ void c_shape_owner::query_bounds(const s_query_bounds *bounds, s_surface_key_arr
     c_instance_surface_query *query = (c_instance_surface_query *)(owner->shape + 0x50);
     c_query_transform transform, world, local;
     query_transform(&instance->matrix, &transform);
-    __m128 extent = _mm_mul_ps(_mm_sub_ps(bounds->maximum, bounds->minimum), _mm_set1_ps(0.5f));
+    __m128 half = _mm_set_ss(0.5f);
+    __m128 extent = _mm_mul_ps(_mm_shuffle_ps(half, half, 0), _mm_sub_ps(bounds->maximum, bounds->minimum));
     world.axes[0] = _mm_setzero_ps();
     world.axes[1] = _mm_setzero_ps();
     world.axes[2] = _mm_setzero_ps();
@@ -711,7 +712,6 @@ void c_shape_owner::query_bounds(const s_query_bounds *bounds, s_surface_key_arr
     query_remove_key(keys, i);
     long first = keys->count;
     --i;
-    query = (c_instance_surface_query *)(owner->shape + 0x50);
     query->query_box(&local, &extent, 0.0001f, keys);
     query_remap_keys(keys, first, instance_index);
    }

@@ -256,9 +256,9 @@ bool __stdcall function_20c2f0(long object_index, long type, real *scale)
 			goto found;
 		if ((1 << *(byte *)(object + 0xaa)) & 3)
 		{
+			long parent = *(long *)(object + 0x14);
 			if (*(short *)(object + 0x1fc) != NONE)
 			{
-				long parent = *(long *)(object + 0x14);
 				if (*(byte *)(g_4e0300->data + (parent & 0xffff) * 12 + 3) == 1)
 				{
 					long related = function_1caa10(parent);
@@ -281,9 +281,9 @@ bool __stdcall function_20c2f0(long object_index, long type, real *scale)
 		}
 		goto local_0;
 		found:
+		result = true;
 		if (scale)
 			*scale *= 2.0f;
-		result = true;
 	}
 local_0:
 	return result;
@@ -1205,7 +1205,7 @@ void function_211cc0(void)
 void function_211fd0(vector3f *out, real const *position, real scale, real time)
 {
 	real frequencies[3] = { 0.1f, 0.2f, 0.07f };
-	short i = 0;
+	long i = 0;
 
 	*out = *g_4687a4;
 	scale *= 1.0f / 3.0f;

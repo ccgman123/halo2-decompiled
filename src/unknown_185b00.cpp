@@ -726,7 +726,12 @@ void __stdcall function_187510(long player_index, real yaw_delta, real pitch_del
 			if (!(range < 0.0f)) positive_range = range;
 			if (!(to_upper >= 0.0f && positive_range > to_upper) &&
 				!(from_lower >= 0.0f && positive_range > from_lower))
-				entry->facing.yaw = fabs(to_upper) > fabs(from_lower) ? lower : upper;
+			{
+				if (fabs(to_upper) > fabs(from_lower))
+					entry->facing.yaw = lower;
+				else
+					entry->facing.yaw = upper;
+			}
 		}
 	}
 	while (entry->facing.yaw < 0.0f) entry->facing.yaw += 6.2831855f;

@@ -140,29 +140,33 @@ struct rays_2e3d40
 // segment's collector, unless it is a grid cell's; each segment keeps the
 // smaller distance left
 __forceinline void reach_all_2e3d40(char flags, element_2e1090 const *element, rays_2e3d40 const *rays,
-	ray_collector_2e4660 *collector, long collector_stride, float *left)
+	ray_collector_2e4660 *collector, long collector_stride, longs_2e1ab0 const &left)
 {
 	if (flags == 0x77 && (element->owner & 1) == 0)
 	{
 		for (int r = 0; r < rays->count; r++)
 		{
+			float &slot = ((float *)left.data)[r];
 			float const distance = collector->add_box(element->owner, r);
-			float const kept = left[r];
-			left[r] = kept < distance ? kept : distance;
+			float const kept = slot;
+			slot = kept < distance ? kept : distance;
 			collector = (ray_collector_2e4660 *)((char *)collector + collector_stride);
 		}
 	}
 }
+// score 672 (was 776): the word scan now indexes the elements, which gives
+// retail's four element pointers in slots, and each segment's slot of the
+// distances left is taken before the collector call. Still (2315 against 2334
+// bytes): retail loads the clamp constants into registers before the start
+// point, keeps the start point's fourth word in a dead 16-bit store, and its
+// frame is 0x10 larger; retail's four pointers point at the elements' owners
+// and start from the array, ours are offsets added to the array read again
+// (a local copy of the array merges them into one pointer, 776).
 // each box a segment's end reaches from the start point, by the axes' high
 // nibbles (the low nibbles say which boxes hold the start point, and the
 // high ones start the same for each segment), is passed to that segment's
 // collector, until its distance left is passed; the boxes that hold the
 // start point go to every collector
-// Near miss: 2235 against 2334 bytes, first difference at +0x1d: retail
-// loads the clamp constants into registers before the start point, keeps the
-// start point's fourth word in a dead 16-bit store, and its frame is 0x10
-// larger; the walks below are laid out alike but with other registers and
-// slots, and retail's word scan keeps four element pointers in slots.
 // @retail 0x2e3d40
 void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660 *collectors, long collector_stride)
 {
@@ -245,7 +249,7 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 
 	// the boxes that hold the start point
 	{
-		element_2e1090 const *element = elements.data;
+		long index = 0;
 		unsigned long const *word = (unsigned long const *)flags.data;
 		unsigned long const *const words_end = word + (elements.size >> 2) + 1;
 		while (word < words_end)
@@ -255,27 +259,27 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 				if ((word[1] + 0x01010101) & 0x08080808)
 				{
 					word += 1;
-					element += 4;
+					index += 4;
 				}
 				else if ((word[2] + 0x01010101) & 0x08080808)
 				{
 					word += 2;
-					element += 8;
+					index += 8;
 				}
 				else
 				{
 					word += 3;
-					element += 12;
+					index += 12;
 				}
 				continue;
 			}
 			char const *bytes = (char const *)word;
-			reach_all_2e3d40(bytes[0], element + 0, rays, collectors, collector_stride, (float *)left.data);
-			reach_all_2e3d40(bytes[1], element + 1, rays, collectors, collector_stride, (float *)left.data);
-			reach_all_2e3d40(bytes[2], element + 2, rays, collectors, collector_stride, (float *)left.data);
-			reach_all_2e3d40(bytes[3], element + 3, rays, collectors, collector_stride, (float *)left.data);
+			reach_all_2e3d40(bytes[0], &elements.data[index], rays, collectors, collector_stride, left);
+			reach_all_2e3d40(bytes[1], &elements.data[index + 1], rays, collectors, collector_stride, left);
+			reach_all_2e3d40(bytes[2], &elements.data[index + 2], rays, collectors, collector_stride, left);
+			reach_all_2e3d40(bytes[3], &elements.data[index + 3], rays, collectors, collector_stride, left);
 			word++;
-			element += 4;
+			index += 4;
 		}
 	}
 	char *const bits = flags.data;
@@ -382,15 +386,18 @@ void class_2e1090::function_2e3d40(rays_2e3d40 const *rays, ray_collector_2e4660
 		collector = (ray_collector_2e4660 *)((char *)collector + collector_stride);
 	}
 }
-// each box the moving box overlaps at the start, then each box whose three
-// intervals it enters on the way, is passed to the collector, until the
-// collector's distance left is passed
-// Near miss: 2385 against 2305 bytes, first difference at +0x1d: retail's
-// frame is 0x30 larger (the corners, the flags and the per-axis arrays sit
+// score 755 (was 755): 2385 against 2305 bytes, first difference at +0x1d:
+// retail's frame is 0x30 larger (the corners, the flags and the per-axis arrays sit
 // elsewhere), it computes the upper corner before quantizing the lower one,
 // keeps a dead 16-bit store of each corner's fourth word, and keeps an
 // axis's lower word in ebx through its walks, so its toggles are single
 // `xor byte` instructions where ours load, xor and store through bl.
+// Retail also keeps the scale's address in a slot from the start, and its
+// scan of the start boxes keeps the collector in esi and the element pointer
+// in ebx (ours: ebx and a slot).
+// each box the moving box overlaps at the start, then each box whose three
+// intervals it enters on the way, is passed to the collector, until the
+// collector's distance left is passed
 // @retail 0x2e4660
 void class_2e1090::function_2e4660(ray_2e4660 const *ray, ray_collector_2e4660 *collector)
 {

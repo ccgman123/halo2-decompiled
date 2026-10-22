@@ -111,10 +111,13 @@ bytes_2e1be0::~bytes_2e1be0()
 
 static __declspec(align(16)) const unsigned long sign_mask_2e1d10[4] = {0x80000000, 0x80000000, 0x80000000, 0x80000000};
 
-// score 281 (was 281): retail keeps &axes[0] in edi and &elements in ebx
+// score 235 (was 281): retail keeps &axes[0] in edi and &elements in ebx
 // across the body and rematerializes zeros, here the elements in edi and a
 // zero in ebx; retail also compares the quantized level as 32 bits (movzx,
-// or, cmp eax, 12), which every form tried here narrows to cmp cx, 12.
+// or, cmp eax, 12), which every form tried here (also & 0xffff, int) narrows
+// to cmp cx, 12. After the halving loop retail stores the 65532 scale before
+// the lanes' divisions and reloads it, where ours stores it ahead of the
+// field_7c store; the first corner is read again for the offsets (here too).
 // the sweep over the box from the corner at `arg_0` to the corner at
 // `arg_1`, with a grid of 2 to the power `bits`, less one, cells: the
 // quantizing scale and offsets, the largest value that still quantizes below
@@ -129,6 +132,9 @@ class_2e4ff0::class_2e4ff0(long arg_0, long arg_1, int bits)
 	sweep->lower_offset = zero;
 	sweep->upper_offset = zero;
 	sweep->scale = _mm_set_ps1(1.0f);
+	__m128 const clamp_low = *(__m128 const *)g_4125d0;
+	__m128 const clamp_high = *(__m128 const *)g_4125e0;
+	__m128 const bias = *(__m128 const *)g_4125c0;
 	float low = 10.0f;
 	float high = 11.0f;
 	for (int step = 23; step != 0; step--)
@@ -141,7 +147,7 @@ class_2e4ff0::class_2e4ff0(long arg_0, long arg_1, int bits)
 		} quantized;
 		quantized.vector = _mm_add_ps(_mm_max_ps(_mm_min_ps(
 			_mm_mul_ps(_mm_add_ps(_mm_set_ps1(1.0f + middle), sweep->lower_offset), sweep->scale),
-			*(__m128 const *)g_4125d0), *(__m128 const *)g_4125e0), *(__m128 const *)g_4125c0);
+			clamp_low), clamp_high), bias);
 		unsigned long const upper = (unsigned short)(quantized.bits[0] >> 7) | 1;
 		if (upper < 12)
 		{
@@ -153,14 +159,13 @@ class_2e4ff0::class_2e4ff0(long arg_0, long arg_1, int bits)
 		}
 	}
 	sweep->field_7c = (high + low) * 0.5f - 11.0f;
-	__m128 const minimum = *(__m128 const *)arg_0;
 	union
 	{
 		__m128 vector;
 		float lanes[4];
 	} extent;
-	extent.vector = _mm_sub_ps(*(__m128 const *)arg_1, minimum);
 	sweep->scale = _mm_set_ps1(65532.0f);
+	extent.vector = _mm_sub_ps(*(__m128 const *)arg_1, *(__m128 const *)arg_0);
 	union
 	{
 		__m128 vector;
@@ -171,7 +176,7 @@ class_2e4ff0::class_2e4ff0(long arg_0, long arg_1, int bits)
 	inverse.lanes[2] = 1.0f / extent.lanes[2];
 	inverse.lanes[3] = 0.0f;
 	sweep->scale = _mm_mul_ps(sweep->scale, inverse.vector);
-	sweep->lower_offset = _mm_xor_ps(minimum, *(__m128 const *)sign_mask_2e1d10);
+	sweep->lower_offset = _mm_xor_ps(*(__m128 const *)arg_0, *(__m128 const *)sign_mask_2e1d10);
 	sweep->upper_offset = _mm_add_ps(sweep->lower_offset, _mm_mul_ps(_mm_set_ps1(1.52597204e-05f), extent.vector));
 	sweep->scale.m128_f32[3] = 0.0f;
 	sweep->lower_offset.m128_f32[3] = 0.0f;

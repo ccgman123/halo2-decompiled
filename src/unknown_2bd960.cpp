@@ -1133,12 +1133,13 @@ void territories_update_players()
 
 				if (marker != NONE)
 				{
-					point3f center = g_4e0350->marker_entries[marker].position;
+					point3f center;
+					territory_marker_position_copy(&center, &g_4e0350->marker_entries[marker].position);
 					real dx = position.x - center.x;
 					real dy = position.y - center.y;
 					real distance_squared = dy * dy + dx * dx;
 
-					if (state->f0[i] * state->f0[i] > distance_squared &&
+					if (distance_squared < state->f0[i] * state->f0[i] &&
 						state->f40[i] > position.z - center.z &&
 						state->f20[i] > center.z - position.z)
 					{
@@ -1161,7 +1162,6 @@ void territories_update_players()
 			if (!inside)
 			{
 				long time;
-				long total;
 
 				if (state->entries90[player].a != 0xff)
 				{
@@ -1171,26 +1171,20 @@ void territories_update_players()
 				}
 				if (state->entries90[player].time_inside > 0)
 				{
-					time = state->entries90[player].time_inside + -3;
-					time = time > 0 ? time : 0;
+					time = MAX(state->entries90[player].time_inside - 3, 0);
 					state->entries90[player].time_outside = 0;
 					state->entries90[player].time_inside = (short)time;
-					total = (short)state->w110;
+					state->entries90[player].b = (byte)((short)time * 63 / (short)state->w110);
+					game_engine_globals_changed_mask_2bf(1 << (player + 6));
 				}
 				else if (state->entries90[player].time_outside > 0)
 				{
-					time = state->entries90[player].time_outside + -3;
-					time = time > 0 ? time : 0;
+					time = MAX(state->entries90[player].time_outside - 3, 0);
 					state->entries90[player].time_inside = 0;
 					state->entries90[player].time_outside = (short)time;
-					total = (short)state->w112;
+					state->entries90[player].b = (byte)((short)time * 63 / (short)state->w112);
+					game_engine_globals_changed_mask_2bf(1 << (player + 6));
 				}
-				else
-				{
-					continue;
-				}
-				state->entries90[player].b = (byte)((short)time * 63 / total);
-				game_engine_globals_changed_mask_2bf(1 << (player + 6));
 			}
 		}
 		else

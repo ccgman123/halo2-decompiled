@@ -221,10 +221,22 @@ __forceinline float along_normal_2fb150(contact_2fb150 const *other, contact_2fb
 // and lies no further in front of the closer one's plane than the tolerance
 __forceinline answer_2fb150 repeats_plane_2fb150(contact_2fb150 const *other, contact_2fb150 const *closer, float tolerance)
 {
-	bool const apart = other->point.value.m128_f32[3] < -0.1f || tolerance < along_normal_2fb150(other, closer);
+	bool const apart = other->point.value.m128_f32[3] < -0.1f ? true : along_normal_2fb150(other, closer) > tolerance;
 	return answer_2fb150(!apart);
 }
 
+// score 467 (was 532): retail's order of steps. The plane test now forms
+// its answer as a byte (a ternary, then `!`), as retail does (sete and two
+// tests), and the first shape's pointer is read just after the part's, before
+// the two kind calls. Still: retail keeps `this` in esi and the container's
+// body in ebx (ours edi/esi) and reads the entry's agent from memory after
+// the none-agent call each time, where ours loads it once ahead of the call
+// (reading it at each use scores 497); retail places the along-normal
+// arithmetic of the plane test after the loop and jumps back (ours inline,
+// 36 bytes short overall; `bool apart = true; if (!(w < -0.1f)) apart = ...` gives
+// retail's length but a stack byte, 471); the swap copies the integer fields
+// through ebx with spills in retail; a new contact's slot comes from the
+// incremented size (`size++` then `size - 1`, 492 here).
 // a query against a container's triangles, each through its part's agent:
 // the triangles' contacts are gathered, sorted closest first, those that
 // only repeat a closer one's plane dropped, and the rest passed to the
@@ -257,9 +269,10 @@ void class_2fb150::function_2fb150(void const *a_, void const *b_, void const *i
 		}
 		part_agent_2fb150 *agent = (part_agent_2fb150 *)entry->agent;
 		part.shape = container->child->part(entry->key, buffer);
+		shape_2fb150 const *a_shape = a->shape;
 		part.key = entry->key;
 		long const kind_b = part.shape->kind();
-		long const kind_a = a->shape->kind();
+		long const kind_a = a_shape->kind();
 		if (input->dispatcher->handlers[kind_a][kind_b] == (handler_2ed170)function_2f0e70)
 		{
 			if (contacts.size == (long)(contacts.capacity_and_flags & 0x7fffffff))

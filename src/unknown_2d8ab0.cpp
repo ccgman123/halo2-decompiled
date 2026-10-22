@@ -88,9 +88,9 @@ void c_2d8ab0::function_2d8ab0()
 		{
 			// two strings, one after the other
 			unsigned int first = string_length_2d8d80(label);
-			char const *text = *(char const **)mark;
-			unsigned int second = string_length_2d8d80(text + first + 1);
-			function_2d89d0(*(char const **)mark, first + second + 2);
+			unsigned int second = string_length_2d8d80(*(char const **)mark + first + 1);
+			unsigned int total = first + second + 2;
+			function_2d89d0(*(char const **)mark, total);
 			mark += 12;
 			break;
 		}

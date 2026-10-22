@@ -1812,10 +1812,11 @@ void function_269250(long clump_index, long actor_index)
 	s_prop_node_view *node;
 	while ((node = clump_member_prop_next(&nodes)) != NULL)
 	{
-		long object_slot = node->object_index & 0xffff;
+		long object_index = node->object_index;
+		long object_slot = object_index & 0xffff;
 		if (g_4de300[object_slot] != g_4de2fc)
 			g_4de300[object_slot] = g_4de2fc;
-		long prop_index = function_26b120(node->object_index, clump_index);
+		long prop_index = function_26b120(object_index, clump_index);
 		if (prop_index != NONE)
 		{
 			s_clump_prop *prop = (s_clump_prop *)(g_50241c->data + (prop_index & 0xffff) * sizeof(s_clump_prop));

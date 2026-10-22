@@ -82,11 +82,8 @@ bool function_29d7b0(long index, s_pathfinding_data *pathfinding, s_type_d4fbfa 
 		*normal = edge_normal;
 	s_pathfinding_edge *edge = &pathfinding->edges[index];
 	point3f *first = &pathfinding->vertices[edge->vertices[0]];
-	point3f *second = &pathfinding->vertices[edge->vertices[1]];
 	vector3f delta;
-	delta.i = second->x - first->x;
-	delta.j = second->y - first->y;
-	delta.k = second->z - first->z;
+	vector3d_from_points3d(first, &pathfinding->vertices[edge->vertices[1]], &delta);
 	real length = function_30bf0(&delta);
 	if (length > 0.0f)
 	{

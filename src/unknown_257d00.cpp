@@ -1959,9 +1959,6 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 	byte local_3 = 1;
 	switch (local_1->type)
 	{
-	case 0:
-		local_3 = local_2->field_0 == 0;
-		break;
 	case 1:
 		if (*(long *)((byte *)local_0 + 0x1c) != NONE)
 		{
@@ -2023,6 +2020,18 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 				(local_7.x - local_2->field_18.x) * local_2->field_c.i > local_1->unknown08;
 		}
 		break;
+	case 7: case 8:
+		if (local_2->field_3 & 4)
+		{
+			bool local_9 = arg_1 != local_0->unknown018 || local_0->unknown264;
+			if ((local_2->field_3 & 8) && local_9)
+				local_2->field_0 = 0;
+			local_3 = local_2->field_0 == 0;
+		}
+		break;
+	case 0:
+		local_3 = local_2->field_0 == 0;
+		break;
 	case 5:
 		if (arg_1 == local_0->unknown018)
 		{
@@ -2034,43 +2043,12 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			local_3 = local_2->field_0 == 0;
 		}
 		break;
-	case 6:
-		if (!(local_2->field_3 & 0x20) && arg_1 == local_0->unknown018)
-		{
-			byte *local_8 = (byte *)g_5023fc;
-			*(long *)(local_8 + 0x1c) = local_1->unknown28;
-			*(short *)(local_8 + 0x20) = NONE;
-			*(real *)(local_8 + 0x28) = 1000.f;
-			*(real *)(local_8 + 0x2c) = 1000.f;
-			local_8[0x22] |= 0x29;
-			local_8[0x22] |= 0x48;
-			local_2->field_3 |= 0x20;
-			*(short *)g_502400 = 0x4c;
-			local_3 = false;
-		}
-		break;
-	case 7: case 8:
-		if (local_2->field_3 & 4)
-		{
-			bool local_9 = arg_1 != local_0->unknown018 || local_0->unknown264;
-			if ((local_2->field_3 & 8) && local_9)
-				local_2->field_0 = 0;
-			local_3 = local_2->field_0 == 0;
-		}
-		break;
 	case 9:
 		if (arg_1 == local_0->unknown018)
 			local_3 = !recorded_animation_playing(arg_1);
 		break;
 	case 10:
 		local_3 = !local_1->unknown8c;
-		break;
-	case 11:
-		if (arg_1 == local_0->unknown018)
-		{
-			byte *local_10 = (byte *)object_get(arg_1);
-			local_3 = *(short *)(local_10 + *(short *)(local_10 + 0x342) + 0xc) != 14;
-		}
 		break;
 	case 12:
 		switch (*(short *)((byte *)local_1 + 6))
@@ -2088,11 +2066,25 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			break;
 		}
 		break;
-	case 14:
-		if (!(local_2->field_3 & 0x20))
+	case 11:
+		if (arg_1 == local_0->unknown018)
 		{
+			byte *local_10 = (byte *)object_get(arg_1);
+			local_3 = *(short *)(local_10 + *(short *)(local_10 + 0x342) + 0xc) != 14;
+		}
+		break;
+	case 6:
+		if (!(local_2->field_3 & 0x20) && arg_1 == local_0->unknown018)
+		{
+			byte *local_8 = (byte *)g_5023fc;
+			*(long *)(local_8 + 0x1c) = local_1->unknown28;
+			*(short *)(local_8 + 0x20) = NONE;
+			*(real *)(local_8 + 0x28) = 1000.f;
+			*(real *)(local_8 + 0x2c) = 1000.f;
+			local_8[0x22] |= 0x29;
+			local_8[0x22] |= 0x48;
 			local_2->field_3 |= 0x20;
-			*(short *)g_502400 = *(short *)((byte *)local_1 + 6);
+			*(short *)g_502400 = 0x4c;
 			local_3 = false;
 		}
 		break;
@@ -2107,6 +2099,23 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 			*(long *)(local_11 + 0x2c) = local_1->unknown2c;
 			local_2->field_3 |= 0x20;
 			*(short *)g_502400 = 0x7e;
+			local_3 = false;
+		}
+		break;
+	case 21:
+		if (!(local_2->field_3 & 0x20) && function_25ab50(local_1->unknown28))
+		{
+			function_1c1080((s_slot_82 *)g_5023fc, local_1->unknown28);
+			local_2->field_3 |= 0x20;
+			*(short *)g_502400 = 0x82;
+			local_3 = false;
+		}
+		break;
+	case 14:
+		if (!(local_2->field_3 & 0x20))
+		{
+			local_2->field_3 |= 0x20;
+			*(short *)g_502400 = *(short *)((byte *)local_1 + 6);
 			local_3 = false;
 		}
 		break;
@@ -2162,15 +2171,7 @@ short __stdcall function_259430(long arg_0, long arg_1, s_cs_state *arg_2, long 
 		else if (local_1->unknownb0 != NONE)
 			local_3 = local_1->unknownd1;
 		break;
-	case 21:
-		if (!(local_2->field_3 & 0x20) && function_25ab50(local_1->unknown28))
-		{
-			function_1c1080((s_slot_82 *)g_5023fc, local_1->unknown28);
-			local_2->field_3 |= 0x20;
-			*(short *)g_502400 = 0x82;
-			local_3 = false;
-		}
-		break;
+
 	}
 	if (local_3)
 		{ local_30 = 1; goto local_31; }

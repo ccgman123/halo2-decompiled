@@ -599,25 +599,19 @@ bool c_session_state_joining::update()
 	s_session_owner *o = owner;
 	c_class_58d20 *c = o->session_c;
 	c_class_58d20 *a = o->session_a;
-	if (unknown104 == 0)
+	if (unknown104 == 0 && flag10)
 	{
-		if (flag10)
+		function_06f4b0(this);
+	}
+	if (unknown104 == 0 && !flag10)
+	{
+		if (a->state != 0)
 		{
-			function_06f4b0(this);
+			function_06f700(this);
 		}
-		if (unknown104 == 0)
+		else
 		{
-			if (!flag10)
-			{
-				if (a->state != 0)
-				{
-					function_06f700(this);
-				}
-				else
-				{
-					function_06fcc0(this);
-				}
-			}
+			function_06fcc0(this);
 		}
 	}
 	if (unknown104 != 0)
@@ -1359,20 +1353,23 @@ bool function_71f80(c_session_state_matchmaking *state)
 	{
 		if (!function_058d90(session) && current > 2 && current <= 8)
 		{
-			long next;
-			long type = session->type;
-			if (type >= 2 && type <= 4)
-				next = 7;
-			else if (type == 5)
-				next = 9;
-			else
-				goto local_1;
-			function_06df60(owner, next, 0, 0);
-			state->mode = 2;
-			local_0 = true;
+			switch (session->type)
+			{
+			case 2:
+			case 3:
+			case 4:
+				function_06df60(owner, 7, 0, 0);
+				state->mode = 2;
+				local_0 = true;
+				break;
+			case 5:
+				function_06df60(owner, 9, 0, 0);
+				state->mode = 2;
+				local_0 = true;
+				break;
+			}
 		}
 	}
-local_1:
 	return local_0;
 }
 

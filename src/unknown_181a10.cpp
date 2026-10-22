@@ -149,11 +149,14 @@ struct s_query_batch_result
 	byte unknown01[3];
 	real fraction;
 	short material;
-	byte unknown0a[0x24 - 0xa];
+	byte unknown0a[2];
+	point3f position;
+	vector3f normal;
 	long index;
 	long other_index;
 	bool flag2c;
-	byte unknown2d[0x3c - 0x2d];
+	byte unknown2d[3];
+	vector3f surface_vector;
 };
 
 class c_query_batch_collector : public c_query_collector
@@ -550,7 +553,7 @@ void c_query_batch_collector::collect(s_batch_contact const *contact)
 				byte *record = *(byte **)((byte *)g_4e0340 + 0x2c) + entry * 8;
 				bsp3d_get_plane((s_bsp3d *)g_4e0340, *(short *)record, &plane);
 				if (record[4] & 0x20)
-					results[key].flag2c = function_181db0(*(short *)(record + 6), (vector3f *)((byte *)&results[key] + 0x30));
+					results[key].flag2c = function_181db0(*(short *)(record + 6), &results[key].surface_vector);
 				side = plane.n.j * origin.y + plane.n.k * origin.z + plane.n.i * origin.x - plane.d;
 			}
 			else
@@ -569,7 +572,7 @@ void c_query_batch_collector::collect(s_batch_contact const *contact)
 				plane.n = normal;
 				side = plane.n.k * origin.z + plane.n.j * origin.y + plane.n.i * origin.x - plane.d;
 			}
-			if (side > 0.0f) *(vector3f *)((byte *)&results[key] + 0x18) = plane.n;
+			if (side > 0.0f) results[key].normal = plane.n;
 			else valid = false;
 		}
 		short material;
@@ -591,8 +594,8 @@ void c_query_batch_collector::collect(s_batch_contact const *contact)
 	if (valid && contact->normal.k > scale)
 	{
 		results[key].found = true;
-		real_point3d_set((point3f *)((byte *)&results[key] + 0xc), hit_x, hit_y, hit_z);
-		*(vector3f *)((byte *)&results[key] + 0x18) = contact->normal;
+		real_point3d_set(&results[key].position, hit_x, hit_y, hit_z);
+		real_point3d_set((point3f *)&results[key].normal, contact->normal.i, contact->normal.j, contact->normal.k);
 		results[key].fraction = distance;
 		results[key].index = index;
 		results[key].other_index = other_index;

@@ -32,7 +32,7 @@ long function_19ec40(
 	{
 		do
 		{
-			short key = *(short const volatile *)&key_a;
+			short key = key_a;
 			s_marker_entry *entry = &globals->marker_entries[i];
 
 			if (key == -1 || key == entry->key_a)

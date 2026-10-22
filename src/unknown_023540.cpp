@@ -20,12 +20,8 @@
 #include "geometry_cache.h"
 #include "unknown_234c64.h"
 
-struct s_interface_function_context
+struct s_interface_function_values
 {
-    long index;
-    real (__stdcall *evaluate)(long context, long name);
-    long field_8;
-    byte unknown0c[4];
     vector3f field_10;
     vector3f field_1c;
     real field_28, field_2c;
@@ -33,6 +29,15 @@ struct s_interface_function_context
     vector3f field_3c;
     vector3f field_48;
     vector3f field_54;
+};
+
+struct s_interface_function_context
+{
+    long index;
+    real (__stdcall *evaluate)(long context, long name);
+    long field_8;
+    byte unknown0c[4];
+    s_interface_function_values values;
     short field_60;
     byte unknown62[0x12];
     bool field_74;
@@ -43,34 +48,33 @@ struct s_interface_function_context
 // @retail 0x2c3b0
 void function_2c3b0(s_interface_function_context *context)
 {
-    vector3f *copied_direction = &context->field_1c;
-    s_interface_function_context volatile *initialization = context;
-    initialization->field_74 = false;
-    initialization->evaluate = NULL;
-    initialization->field_77 = false;
-    initialization->field_76 = false;
-    initialization->index = NONE;
-    initialization->field_8 = NONE;
-    initialization->field_10.i = 0.09f;
-    initialization->field_48.i = 0.09f;
-    initialization->field_10.j = 0.09f;
-    initialization->field_48.j = 0.09f;
-    initialization->field_10.k = 0.09f;
-    initialization->field_48.k = 0.09f;
-    initialization->field_30.i = 0.12f;
-    initialization->field_30.j = 0.12f;
-    initialization->field_30.k = 0.12f;
-    initialization->field_28 = 0.4f;
-    initialization->field_2c = 0.4f;
-    context->field_3c.i = (real)(cos(0.0) * cos(-1.2566370964050293));
-    context->field_3c.j = (real)(sin(0.0) * cos(-1.2566370964050293));
-    context->field_3c.k = (real)sin(-1.2566370964050293);
-    vector3f const *direction = &context->field_3c;
-    vector3f volatile *negative = &context->field_54;
+    s_interface_function_values *values = &context->values;
+    context->index = NONE;
+    context->field_8 = NONE;
+    context->field_74 = false;
+    context->evaluate = NULL;
+    context->field_77 = false;
+    context->field_76 = false;
+    values->field_10.i = 0.09f;
+    values->field_30.i = 0.12f;
+    values->field_48.i = 0.09f;
+    values->field_10.j = 0.09f;
+    values->field_30.j = 0.12f;
+    values->field_48.j = 0.09f;
+    values->field_10.k = 0.09f;
+    values->field_30.k = 0.12f;
+    values->field_48.k = 0.09f;
+    context->values.field_28 = 0.4f;
+    context->values.field_2c = 0.4f;
+    values->field_3c.i = (real)(cos(0.0) * cos(-1.2566370964050293));
+    values->field_3c.j = (real)(sin(0.0) * cos(-1.2566370964050293));
+    values->field_3c.k = (real)sin(-1.2566370964050293);
+    vector3f const *direction = &values->field_3c;
+    vector3f *negative = &values->field_54;
     negative->i = 0.0f - direction->i;
     negative->j = 0.0f - direction->j;
     negative->k = 0.0f - direction->k;
-    *copied_direction = context->field_3c;
+    values->field_1c = values->field_3c;
     context->field_60 = NONE;
 }
 
@@ -825,26 +829,23 @@ struct s_24490_definition
 	s_geometry_block_info block;
 };
 
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
 // @retail 0x24490
 void *function_24490(long key, s_24490_definition *definition, long entry_key)
 {
 	long index = find_table_entry(key);
 	if (index == NONE)
 		return NULL;
-	long maximum = definition->count - 1;
-	long group = 5 - (short)g_4b89b0[index].unknown4;
-	if (group >= maximum)
-		group = maximum;
-	long entry_count = definition->groups[group].count;
-	long i = 0;
-	if (entry_count > 0)
+	long level = (short)g_4b89b0[index].unknown4;
+	long group = MIN(5 - level, definition->count - 1);
+	s_24490_group *block = &definition->groups[group];
+	for (long i = 0; i < block->count; i++)
 	{
-		s_24490_entry *current = definition->groups[group].entries;
-		do
+		s_24490_entry *entry = &block->entries[i];
+		if (entry->key == entry_key)
 		{
-		if (current->key == entry_key)
-		{
-			long count = current->count / 5;
+			long count = entry->count / 5;
 			if (!function_12de70(&definition->block, 3))
 				return NULL;
 			byte *data = definition->data;
@@ -853,10 +854,6 @@ void *function_24490(long key, s_24490_definition *definition, long entry_key)
 			*(long *)(data + 8) = size;
 			return data;
 		}
-	
-			++i;
-			++current;
-		} while (i < entry_count);
 	}
 	return NULL;
 }

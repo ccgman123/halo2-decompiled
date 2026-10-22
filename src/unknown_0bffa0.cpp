@@ -1366,7 +1366,7 @@ bool __stdcall function_bab40(long object_index, long name, real *value);
 bool function_bad50(long object_index, long index, point3f *out);
 color3f *function_131c20(color3f const *a, color3f const *b, dword flags, real t, color3f *result);
 color3f *function_131d60(color4f const *a, color4f const *b, dword flags, real t,
-    color3f const *tint, color3f *result);
+    color3f *result, color3f const *tint);
 long function_baf80(long object_index);
 bool object_or_parent_hidden(long object_index);
 bool function_b9d20(long object_index);
@@ -1438,9 +1438,9 @@ void __stdcall function_c0c80(long light_index)
         function_bab40(object_index, light->name, fraction);
         function_bad50(object_index, light->colour_index, (point3f *)&tint);
         function_131d60(&first, &second, *(dword *)(definition + 0x34),
-            *fraction, &tint, &light->colour);
+            *fraction, &light->colour, &tint);
         function_131d60(&pair_first, &pair_second, *(dword *)(definition + 0x34),
-            light->fraction, &tint, &light->pair_colour);
+            light->fraction, &light->pair_colour, &tint);
         real blend = light->fraction;
         light->intensity = (1.0f - blend) *
             *(real *)(definition + 0x70) + *(real *)(definition + 0x74) * blend;
@@ -1558,11 +1558,11 @@ long __stdcall function_c1720(long object_index, long remove_from_partition, lon
         {
             if (remove_from_partition)
             {
-                byte *light = lights->data + (iterator.datum_index & 0xffff) * 0x110;
-                if (light[2] & 2)
+                s_light_ab *light = &((s_light_ab *)lights->data)[iterator.datum_index & 0xffff];
+                if (light->flags & 2)
                 {
-                    function_1cae40(&g_4e0310_partition, iterator.datum_index, (long *)(light + 0x10));
-                    light[2] &= ~8;
+                    function_1cae40(&g_4e0310_partition, iterator.datum_index, (long *)((byte *)light + 0x10));
+                    light->flags &= ~8;
                 }
             }
             if (update)

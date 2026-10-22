@@ -93,7 +93,8 @@ void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
    function_20ba60(0, arg_0, local_1, NONE, arg_2, local_2 ? &local_3 : NULL);
    if (local_0->field_12c != NONE)
    {
-    s_actor_view *local_4 = actor_get(local_0->field_12c);
+    long actor_index = local_0->field_12c;
+    s_actor_view *local_4 = actor_get(actor_index);
     s_1fbac0_event local_8;
     local_8.unknown00 = 0;
     local_8.unknown02 = 1;
@@ -102,7 +103,7 @@ void function_1c95d0(long arg_0, long arg_1, short arg_2, real arg_3)
     local_8.data.unknown08 = 0;
     local_8.data.unknown0c = 0;
     local_8.data.unknown10 = 0;
-    function_1fbac0(local_0->field_12c, arg_0, true, 1, &local_8);
+    function_1fbac0(actor_index, arg_0, true, 1, &local_8);
     long local_9 = local_4->unknown07c;
     if (local_9 != NONE)
     {

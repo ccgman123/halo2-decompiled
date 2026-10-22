@@ -38,9 +38,9 @@ D3DTexture *function_23e340(short width, short height, short format,
 	D3DTexture *result = 0;
 	if (header && buffer)
 	{
-		header->Lock = 0;
 		header->Format = (g_4507c8[format] << 8) | 0x10029;
 		header->Size = (((((dword)w * 4) >> 6) - 1) << 24) | ((height - 1) << 12) | (w - 1);
+		header->Lock = 0;
 		header->Data = (dword)buffer & 0x0fffffff;
 		header->Common = 0x40001;
 		result = header;

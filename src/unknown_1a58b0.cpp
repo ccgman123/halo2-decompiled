@@ -1125,14 +1125,12 @@ bool function_e4050(long object_index);
 bool function_109e00(long object_index, vector3f *velocity, bool definition_flag_required);
 void havok_component_rigid_body_point_velocity_get(long rigid_body_index, s_havok_component *component, point3f const *point, vector3f *velocity);
 
-#pragma optimize("g", off)
 PRIVATE __forceinline void function_1a68a2(vector3f const *arg_0, real arg_1, vector3f *arg_2)
 {
     arg_2->i = arg_0->i * arg_1;
     arg_2->j = arg_0->j * arg_1;
     arg_2->k = arg_0->k * arg_1;
 }
-#pragma optimize("", on)
 
 // @retail 0x1a68a0
 void function_1a68a0(long object_index, vector3f *velocity)
@@ -1167,7 +1165,10 @@ void function_1a68a0(long object_index, vector3f *velocity)
 			relative.i = velocity->i - local_3.field_0.i;
 			relative.j = velocity->j - local_3.field_0.j;
 			relative.k = velocity->k - local_3.field_0.k;
-			real projection = unit->normal.i * relative.i + unit->normal.k * relative.k + unit->normal.j * relative.j;
+			real along_i = unit->normal.i * relative.i;
+			real along_k = unit->normal.k * relative.k;
+			real along_j = unit->normal.j * relative.j;
+			real projection = (along_i + along_k) + along_j;
 			vector3f projected;
 			function_1a68a2(&unit->normal, projection, &projected);
 			velocity->i -= projected.i;

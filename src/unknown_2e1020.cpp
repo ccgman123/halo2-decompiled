@@ -52,10 +52,14 @@ __forceinline void report_2e10b0(element_2e1090 const *box, unsigned long const 
 	{
 		return;
 	}
-	pair_2e1090 pair;
-	pair.first = 0;
-	pair.second = owner;
-	pairs->append(pair);
+	if (pairs->size == (pairs->capacity_and_flags & 0x7fffffff))
+	{
+		function_2d91d0(pairs, sizeof(pair_2e1090));
+	}
+	pair_2e1090 *added = &pairs->data[pairs->size];
+	added->first = 0;
+	added->second = owner;
+	pairs->size++;
 }
 
 // longs in a block from the allocator's stack area
@@ -75,16 +79,26 @@ struct stack_longs_2e10b0
 	}
 };
 
+// score 383 (was 521): one byte longer than retail. The pair is stored in
+// place after the room check (append by value builds it first and spills the
+// owner), and the element count is read again for the clearing loop. Still:
+// retail reads the count once into ebx ahead of the allocator and keeps the
+// stack area's free size in edx (ours re-reads it through a pointer); retail
+// keeps the bits in edi and indexes them ([edi+eax*4]) where ours keeps them in
+// ebx and forms each word's address with lea (local helpers that read and
+// write the word separately compile alike); the low corner words sit at 0x20
+// in retail, apart from the y/z slots, where ours shares 0x28 with them (no
+// declaration order moves it); the grid cell's box is read before its address
+// is formed.
 // every box the bounds overlap, as pairs with no first owner
 // @retail 0x2e10b0
 void class_2e1090::function_2e10b0(bounds_2e0020 const *bounds, pairs_2e1090 *pairs)
 {
-	long const count = elements.size;
-	stack_longs_2e10b0 stack_bits((count >> 5) + 4);
+	stack_longs_2e10b0 stack_bits((elements.size >> 5) + 4);
 	long *bits = stack_bits.data;
 	__m128 *block = (__m128 *)bits;
 	__m128 const zero = _mm_setzero_ps();
-	for (long blocks = count >> 7; blocks >= 0; blocks--)
+	for (long blocks = elements.size >> 7; blocks >= 0; blocks--)
 	{
 		_mm_store_ps((float *)block++, zero);
 	}

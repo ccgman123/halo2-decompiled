@@ -773,17 +773,17 @@ void function_1ed4a0(s_state_c570 *state, dword *output, byte const *input)
   component = g_51e9b8->data + (*(long *)(input + 0x40) & 0xffff) * 0xa0;
   long object_index = *(long *)(component + 8);
   byte *object = *(byte **)(g_4e0300->data + (object_index & 0xffff) * 12 + 8);
-  if (!(bool)((object[0xc0] >> 6) & 1))
+  if (!(bool)((*(word *)(object + 0xc0) >> 6) & 1))
   {
    byte *other = *(byte **)(g_4e0300->data + (state->field_14 & 0xffff) * 12 + 8);
    transform4x3f matrix;
    function_142a60((transform4x3f *)(other + *(short *)(other + 0x116) + (short)state->field_18 * 0x34),
     (transform4x3f *)state->field_1c, &matrix);
-   real dot = g_4687b0->j * matrix.up.j + g_4687b0->k * matrix.up.k + g_4687b0->i * matrix.up.i;
+   real dot = dot3f(g_4687b0, &matrix.up);
    state->field_0c = dot > 0.5f ? movement_counter_increment(state->field_0c) : 0;
    if (state->field_0c)
    {
-    real projection = matrix.forward.j * matrix.up.j + matrix.forward.k * matrix.up.k + matrix.forward.i * matrix.up.i;
+    real projection = dot3f(&matrix.forward, &matrix.up);
     matrix.forward.i -= matrix.up.i * projection;
     matrix.forward.j -= matrix.up.j * projection;
     matrix.forward.k -= matrix.up.k * projection;
@@ -836,7 +836,7 @@ attached_done:
     state->field_0c = movement_counter_increment(state->field_0c);
     goto increment_duration;
    }
-   real dot = g_4687b0->k * state->position.z + g_4687b0->j * state->position.y + g_4687b0->i * state->position.x;
+   real dot = dot3f(g_4687b0, (vector3f *)&state->position);
    state->field_0c = dot > 0.5f ? movement_counter_increment(state->field_0c) : 0;
    if (!state->field_0c || state->field_0d < movement_round_ticks(g_510c54->field_2_3 * 0.15f)) goto increment_duration;
    long other_index = *(long *)(input + 0xc);
@@ -860,15 +860,15 @@ attached_done:
    function_1201a0((vector3f *)&state->position, g_4687b0);
    transform4x3f matrix;
    function_ba160(object_index, &matrix);
-   vector3f up = *(vector3f *)&state->position;
-   matrix.forward.i -= up.i;
-   matrix.forward.j -= up.j;
-   matrix.forward.k -= up.k;
+   matrix.up = *(vector3f *)&state->position;
+   matrix.forward.i -= matrix.up.i;
+   matrix.forward.j -= matrix.up.j;
+   matrix.forward.k -= matrix.up.k;
    if (function_30bf0(&matrix.forward) != 0.0f)
    {
-    matrix.left.i = matrix.forward.k * up.j - up.k * matrix.forward.j;
-    matrix.left.j = up.k * matrix.forward.i - matrix.forward.k * up.i;
-    matrix.left.k = matrix.forward.j * up.i - up.j * matrix.forward.i;
+    matrix.left.i = matrix.forward.k * matrix.up.j - matrix.up.k * matrix.forward.j;
+    matrix.left.j = matrix.up.k * matrix.forward.i - matrix.forward.k * matrix.up.i;
+    matrix.left.k = matrix.forward.j * matrix.up.i - matrix.up.j * matrix.forward.i;
     transform4x3f inverse;
     function_141590(node_matrix, &inverse);
     function_142a60(&inverse, &matrix, (transform4x3f *)state->field_1c);

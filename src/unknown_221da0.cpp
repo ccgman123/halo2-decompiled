@@ -503,9 +503,15 @@ static inline void *tag_block_get_first(long count, void *elements)
 	return NULL;
 }
 
-static inline bool playback_sound_effect_valid(s_playback_sound_effect const *effect)
+static inline s_playback_sound_effect const *playback_sound_effect_valid(s_playback_sound_effect const *effect)
 {
-	return effect && effect->definition_tag_index != NONE && effect->override_count > 0;
+	s_playback_sound_effect const *result = effect;
+	if (effect)
+	{
+		if (effect->definition_tag_index == NONE || effect->override_count <= 0)
+			result = NULL;
+	}
+	return result;
 }
 
 static inline s_effect_components *sound_effect_tag_get_components(long tag_index)
@@ -521,11 +527,8 @@ void function_222770(long tag_index, long handle, s_effect_inputs const *inputs,
 	s_platform_playback_view *playback = (s_platform_playback_view *)function_18d090(tag_index, handle);
 	s_platform_playback_view *class_playback = (s_platform_playback_view *)sound_get_class(tag_index);
 
-	if (!class_playback)
-	{
-		source = NULL;
-	}
-	else
+	source = NULL;
+	if (class_playback)
 	{
 		void *filter = tag_block_get_first(class_playback->filter_count, class_playback->filters);
 		void *pitch_lfo = tag_block_get_first(class_playback->pitch_lfo_count, class_playback->pitch_lfos);
@@ -537,7 +540,6 @@ void function_222770(long tag_index, long handle, s_effect_inputs const *inputs,
 		effects->filter = filter;
 		effects->pitch_lfo = pitch_lfo;
 		effects->filter_lfo = filter_lfo;
-		source = NULL;
 		if (playback_sound_effect_valid(effect))
 		{
 			source = class_playback;

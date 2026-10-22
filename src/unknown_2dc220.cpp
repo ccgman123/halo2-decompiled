@@ -129,20 +129,22 @@ struct plane_test_2dc220
 				__m128 const distance = _mm_add_ps(_mm_add_ps(_mm_mul_ps(group->x, centre_x), _mm_mul_ps(group->y, centre_y)), _mm_add_ps(_mm_mul_ps(group->z, centre_z), group->d));
 				if (_mm_movemask_ps(_mm_sub_ps(distance, reach)) != 0xf)
 				{
-					return 0;
+					goto outside;
 				}
 				inside &= _mm_movemask_ps(_mm_add_ps(distance, reach));
 				group++;
 				magnitude++;
 			} while (--remaining >= 0);
-			if (inside != 0xf)
-			{
-				return 2;
-			}
 		}
-		held.function_2ff570((position_2ff210 const *)position, commands);
-		held.function_2ff210((position_2ff210 const *)position, commands);
-		return 1;
+		if (inside == 0xf)
+		{
+			held.function_2ff570((position_2ff210 const *)position, commands);
+			held.function_2ff210((position_2ff210 const *)position, commands);
+			return 1;
+		}
+		return 2;
+	outside:
+		return 0;
 	}
 };
 
@@ -160,11 +162,18 @@ public:
 	void function_2dc220(pending_2ddbd0 *pending, void const *root, fixed_point_2dc220 const *fixed_point);
 };
 
-// score 409 (was 409): the same length and order as retail; the walk's
-// position is loaded before the first command's range check, the two bounds
-// of a split at the next unit read the node's corner once where retail reads
-// it twice (one instruction shorter there, one longer elsewhere), and a few
-// loads are scheduled one instruction apart.
+// score 330 (was 376): the same length as retail. A split at the next
+// unit stores the high bound first, so the node's corner is read again for
+// the low one (as retail does; storing them in retail's order reads it once
+// into ebx), and the plane test collects at the end with the outside case
+// after it. Still: the walk's position is loaded before the first command's
+// range check; the first side's bound loop loads q[1] once ahead of its
+// branch (retail loads it in each arm; testing the corner bounds first, which
+// helps 0x2dce60, costs 245 here); in the plane test retail spills the centre
+// splats z/y/x to 0x20/0x30/0x40 (ours x/y/z) and reloads z and y at the loop
+// top, entering past them, where ours reloads them on the back edge (a 7-byte
+// pad and the outside case land there); declaration orders, non-const splats
+// and other loop forms did not move it.
 // The same walk as 0x2dce60 below, for the nodes a set of planes holds: the
 // box is the third argument
 // @retail 0x2dc220
@@ -215,11 +224,9 @@ void class_2dc220::function_2dc220(pending_2ddbd0 *pending, void const *root, fi
 		{
 			other[0] = box[0];
 			other[1] = box[1];
-			long low = commands[1];
-			long const high = ((low + 1) << position->shift) + position->corner[op - 0x20];
-			low = (low << position->shift) + position->corner[op - 0x20];
-			other[0].m128_f32[op - 0x20] = (float)low * scale;
-			box[1].m128_f32[op - 0x20] = (float)high * scale;
+			long const low = commands[1];
+			box[1].m128_f32[op - 0x20] = (float)(((low + 1) << position->shift) + position->corner[op - 0x20]) * scale;
+			other[0].m128_f32[op - 0x20] = (float)((low << position->shift) + position->corner[op - 0x20]) * scale;
 			first_offset = 0;
 			commands += 3;
 			second_offset = commands[-1];
@@ -314,9 +321,12 @@ void class_2dc220::function_2dc220(pending_2ddbd0 *pending, void const *root, fi
 		case 0x61:
 		case 0x62:
 		case 0x63:
-			copy.values[op - 0x60] = commands[1];
+		{
+			long const read = commands[1];
 			commands += 2;
+			copy.values[op - 0x60] = read;
 			goto record_value;
+		}
 		case 0x64:
 		case 0x65:
 		case 0x66:
@@ -475,11 +485,21 @@ public:
 	void function_2dce60(pending_2ddbd0 *pending, void const *root, __m128 const *offset);
 };
 
-// score 252 (was 865): the same length and order as retail; the walk's
-// position is loaded before the first command's range check, the per-side
-// states and the second side's commands trade stack slots, as do the two
-// bounds of a split at the next unit, a few loads are scheduled one
-// instruction apart, and our build pads one loop where retail pads another.
+// score 124 (was 178): the same length as retail. The first side's bound
+// loop tests for the corner bounds first: with the three-byte arm first (as
+// retail lays it out) the compiler loads q[1] once ahead of the branch, five
+// bytes short, which misaligned everything after it; this way the length and
+// alignment match but the two arms sit in the other order and the three-byte
+// arm's registers differ (ecx/edx swapped). Tried for the arm-first order: the
+// operands in any order, an inline reader, `!(bound < 0x29)`, `bound > 0x28`,
+// a `continue` arm, a separate local for the shift or the index, and an inline
+// for the whole loop (+24 bytes). Still: the walk's position is loaded before
+// the first command's range check; a split at the next unit keeps its low
+// bound at another slot and computes the high one with inc (retail lea, after
+// loading the low into ecx; locals, `value`, a separate `low + 1` and operand
+// orders all compile alike); the per-side states trade stack slots; the
+// three-byte reads of case 0x29 have ecx/edx swapped (any macro form gives
+// the same code).
 // Walks the commands below a node whose box is `offset` (a lower and an upper
 // corner, narrowed in place as the walk goes down): a split gives each side
 // its box, a side the sphere misses is dropped, a side it holds whole has its
@@ -633,9 +653,12 @@ void class_2dce60::function_2dce60(pending_2ddbd0 *pending, void const *root, __
 		case 0x61:
 		case 0x62:
 		case 0x63:
-			copy.values[op - 0x60] = commands[1];
+		{
+			long const read = commands[1];
 			commands += 2;
+			copy.values[op - 0x60] = read;
 			goto record_value;
+		}
 		case 0x64:
 		case 0x65:
 		case 0x66:
@@ -685,17 +708,17 @@ void class_2dce60::function_2dce60(pending_2ddbd0 *pending, void const *root, __
 		for (long bound = commands[first_offset]; bound >= 0x26 && bound <= 0x2b; bound = commands[first_offset])
 		{
 			unsigned char const *q = commands + first_offset;
-			if (bound >= 0x29)
-			{
-				box[0].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 1) * scale;
-				box[1].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 4) * scale;
-				first_offset += 7;
-			}
-			else
+			if (bound < 0x29)
 			{
 				box[0].m128_f32[bound - 0x26] = (float)((q[1] << position->shift) + position->corner[bound - 0x26]) * scale;
 				box[1].m128_f32[bound - 0x26] = (float)((q[2] << position->shift) + position->corner[bound - 0x26]) * scale;
 				first_offset += 3;
+			}
+			else
+			{
+				box[0].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 1) * scale;
+				box[1].m128_f32[bound - 0x29] = (float)READ_3_2DCE60(q + 4) * scale;
+				first_offset += 7;
 			}
 		}
 		for (long bound = commands[second_offset]; bound >= 0x26 && bound <= 0x2b; bound = commands[second_offset])

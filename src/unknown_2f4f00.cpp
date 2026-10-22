@@ -329,7 +329,7 @@ __forceinline void capsule_triangle_2f4f00(void const *a, void const *b, void co
 		outside = true;
 	}
 	contact_2f4f00 *contact = contacts;
-	for (int end = 0; end < 2; end++, contact++)
+	for (int end = 0; end < 2;)
 	{
 		if (!outside && (signs[end] & 7) == 7)
 		{
@@ -347,6 +347,8 @@ __forceinline void capsule_triangle_2f4f00(void const *a, void const *b, void co
 				contact->point.m128_f32[3] = heights[end].m128_f32[3] - radius;
 				contact->normal = normal;
 			}
+			end++;
+			contact++;
 			continue;
 		}
 		int bit = 1;
@@ -385,7 +387,7 @@ __forceinline void capsule_triangle_2f4f00(void const *a, void const *b, void co
 			{
 				across = cross_2f4f00(direction, side);
 			}
-			else if (closest.distance_squared > 1.4210854715202004e-14f)
+			else if (!(closest.distance_squared <= 1.4210854715202004e-14f))
 			{
 				across = closest.offset;
 			}
@@ -402,12 +404,13 @@ __forceinline void capsule_triangle_2f4f00(void const *a, void const *b, void co
 				}
 			}
 			across = normalized_2f4f00(across);
-			float distance;
-			_mm_store_ss(&distance, sum_2f4f00(_mm_mul_ps(across, closest.offset)));
-			if (distance < 0.0f)
+			float dot;
+			_mm_store_ss(&dot, sum_2f4f00(_mm_mul_ps(across, closest.offset)));
+			float distance = dot;
+			if (dot < 0.0f)
 			{
 				across = _mm_xor_ps(across, *(__m128 const *)g_4124a0);
-				distance = -distance;
+				distance = -dot;
 			}
 			contact->point = _mm_add_ps(closest.first_point, _mm_mul_ps(splat_2f4f00(triangle->radius - distance), across));
 			contact->point.m128_f32[3] = distance - radius;
@@ -417,6 +420,8 @@ __forceinline void capsule_triangle_2f4f00(void const *a, void const *b, void co
 		{
 			break;
 		}
+		end++;
+		contact++;
 	}
 }
 
@@ -463,10 +468,18 @@ __forceinline void report_pair_2f4f00(contact_2f4f00 const *contacts, void const
 	}
 }
 
-// score 541 (was 579): the frame is laid out differently, the registers differ
-// in places, the edge planes' terms are copied with integer moves where retail
-// uses the FPU, and the code for the edges is placed before the report instead
-// of after the return.
+// score 570 (was 541): retail's frame is 0x10 smaller (it keeps the outside
+// flag at 0x10, sharing the inside case's slope slot; ours gives it its own
+// byte), and retail keeps the second body in ebx and the capsule in edi, ours
+// the other way round;
+// the edge planes' terms are copied with integer moves where retail uses
+// the FPU, and the code for the edges is placed before the report instead of
+// after the return. Round 47 changed the shared end loop to step the end and
+// the contact in each arm (retail has the increments in both arms and the
+// loop test at the top), which took 31-33 off 0x2f5960, 0x2f63d0 and
+// 0x2f6db0 but added 32 to 0x2f4f00; a block scope for the end loop, or a
+// goto into it, scored worse over the four. The edge contact's dot product
+// is read into its own local, so the sign flip stays on the FPU as in retail.
 // The closer contact of the capsule and the triangle passed to the collector,
 // with the triangle's weights kept in the object
 // @retail 0x2f4f00
@@ -482,10 +495,16 @@ void class_2f4f00::function_2f4f00(void const *a, void const *b, void const *inp
 	timer_add_2ebc80("Et");
 }
 
-// score 469 (was 551): the frame is laid out differently, the registers differ
-// in places, the edge planes' terms are copied with integer moves where retail
-// uses the FPU, and the code for the edges is placed before the report instead
-// of after the return.
+// score 454 (was 469): the frame is laid out differently, the registers
+// differ in places;
+// the edge planes' terms are copied with integer moves where retail uses
+// the FPU, and the code for the edges is placed before the report instead of
+// after the return. Round 47 changed the shared end loop to step the end and
+// the contact in each arm (retail has the increments in both arms and the
+// loop test at the top), which took 31-33 off 0x2f5960, 0x2f63d0 and
+// 0x2f6db0 but added 32 to 0x2f4f00; a block scope for the end loop, or a
+// goto into it, scored worse over the four. The edge contact's dot product
+// is read into its own local, so the sign flip stays on the FPU as in retail.
 // The closer contact of the capsule and the triangle passed to the collector,
 // with the triangle's weights worked out here
 // @retail 0x2f5960
@@ -503,10 +522,18 @@ void __cdecl function_2f5960(void const *a, void const *b, void const *input, vo
 	timer_add_2ebc80("Et");
 }
 
-// score 418 (was 993): the frame is laid out differently, the registers differ
-// in places, the edge planes' terms are copied with integer moves where retail
-// uses the FPU, and the code for the edges is placed before the report instead
-// of after the return.
+// score 389 (was 418): the frame is laid out differently, the registers
+// differ in places (retail: inside case, report, ret, then the edges' code
+// jumping back; ending the query inline with a goto to the report and placing
+// the edges' code after it scored 522: the corner loops rotate);
+// the edge planes' terms are copied with integer moves where retail uses
+// the FPU, and the code for the edges is placed before the report instead of
+// after the return. Round 47 changed the shared end loop to step the end and
+// the contact in each arm (retail has the increments in both arms and the
+// loop test at the top), which took 31-33 off 0x2f5960, 0x2f63d0 and
+// 0x2f6db0 but added 32 to 0x2f4f00; a block scope for the end loop, or a
+// goto into it, scored worse over the four. The edge contact's dot product
+// is read into its own local, so the sign flip stays on the FPU as in retail.
 // The pair passed to the collector when the capsule and the triangle overlap,
 // with the triangle's weights kept in the object
 // @retail 0x2f63d0
@@ -519,10 +546,16 @@ void class_2f63d0::function_2f63d0(void const *a, void const *b, void const *inp
 	timer_add_2ebc80("Et");
 }
 
-// score 470 (was 538): the frame is laid out differently, the registers differ
-// in places, the edge planes' terms are copied with integer moves where retail
-// uses the FPU, and the code for the edges is placed before the report instead
-// of after the return.
+// score 434 (was 470): the frame is laid out differently, the registers
+// differ in places;
+// the edge planes' terms are copied with integer moves where retail uses
+// the FPU, and the code for the edges is placed before the report instead of
+// after the return. Round 47 changed the shared end loop to step the end and
+// the contact in each arm (retail has the increments in both arms and the
+// loop test at the top), which took 31-33 off 0x2f5960, 0x2f63d0 and
+// 0x2f6db0 but added 32 to 0x2f4f00; a block scope for the end loop, or a
+// goto into it, scored worse over the four. The edge contact's dot product
+// is read into its own local, so the sign flip stays on the FPU as in retail.
 // The pair passed to the collector when the capsule and the triangle overlap,
 // with the triangle's weights worked out here
 // @retail 0x2f6db0

@@ -226,13 +226,12 @@ void function_264940(long actor_index, long prop_ref_index)
 		else
 		{
 			object = *(byte **)(headers + (object_index & 0xffff) * 12 + 8);
-			long player_index = *(long *)(object + 0x13c);
-			if (player_index != NONE)
+			if (*(long *)(object + 0x13c) != NONE)
 			{
 				if (category <= 0)
 				{
 					actor[0x30c] = true;
-					*(short *)(actor + 0x310) = ai_player_index_get(player_index);
+					*(short *)(actor + 0x310) = ai_player_index_get(*(long *)(object + 0x13c));
 				}
 				else
 				{
@@ -739,7 +738,7 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 	byte *object = *(byte **)(g_4e0300->data + (reference->object_index & 0xffff) * 12 + 8);
 	bool suppressed = (squad && (squad[2] & 1)) || *(short *)(actor + 0x84) == 1 || actor[0x228];
 	bool current = *(long *)(actor + 0x338) == prop_ref_index;
-	byte *unit = object[0xaa] == 0 ? object : NULL;
+	bool is_unit = object[0xaa] == 0;
 	if (*(short *)(actor + 4) == 15 && *(long *)(actor + 0x26c) != NONE)
 	{
 		byte *parent = *(byte **)(g_4e0300->data + (*(long *)(actor + 0x26c) & 0xffff) * 12 + 8);
@@ -790,7 +789,7 @@ void __stdcall function_264b50(long actor_index, long prop_ref_index, s_2641c0 *
 	}
 	else
 	{
-		long root = function_baf40(unit && *(long *)(unit + 0x14) != NONE ? *(long *)(unit + 0x14) : reference->object_index);
+		long root = function_baf40(is_unit && *(long *)(object + 0x14) != NONE ? *(long *)(object + 0x14) : reference->object_index);
 		long mode = prop[0x25] && prop[0x23] ? 2 : 0;
 		bool alternate = !current;
 		short sight = function_1c8df0(root, &motion->field_0, *(short *)((byte *)motion + 0x28),

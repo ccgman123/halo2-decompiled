@@ -288,7 +288,7 @@ void __stdcall function_186ab0(long arg_0, real arg_1, real arg_2, s_player_acti
             }
             else
                 local_1->field_92 = false;
-            if ((local_3.field_18 & 0x60) || (local_3.field_18 & 0x4630200))
+            if (local_3.field_18 & 0x4630260)
                 local_1->field_91 = false;
             if (local_1->field_91 && local_4->field_14 == NONE)
                 local_3.field_18 |= 0x4000;

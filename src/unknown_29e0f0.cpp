@@ -86,7 +86,7 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
     long local_0 = NONE;
     long local_1 = NONE;
     long local_2 = NONE;
-    real local_3 = 3.402823466e38f;
+    real best_distance = 3.402823466e38f;
     bool local_4 = false;
     s_29e0f3 *local_5 = (s_29e0f3 *)g_4e0348;
     s_29e0f2 *local_6 = NULL;
@@ -104,16 +104,16 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
                 {
                     s_29e0f5 *local_10 = &local_9->field_34[local_8->unknown10];
                     s_29e0f1 *local_11 = local_6->field_70;
-                    point3f local_12;
-                    function_210850((s_type_c3b527 const *)local_8, &local_12);
-                    dword local_13[2] = {0, 0};
+                    point3f marker_position;
+                    function_210850((s_type_c3b527 const *)local_8, &marker_position);
+                    dword visited_groups[2] = {0, 0};
                     for (short local_14 = 0; local_14 < local_10->field_80; ++local_14)
                     {
-                        long &local_15 = *(long *)&arg_2;
+                        long local_15;
                         local_15 = local_10->field_84[local_14].field_0;
-                        if ((local_13[local_15 >> 5] & (1 << (local_15 & 31))) || local_15 < 0 || local_15 >= local_11->field_40) continue;
-                        local_13[local_15 >> 5] |= 1 << (local_15 & 31);
-                        dword local_16[1] = {0};
+                        if ((visited_groups[local_15 >> 5] & (1 << (local_15 & 31))) || local_15 < 0 || local_15 >= local_11->field_40) continue;
+                        visited_groups[local_15 >> 5] |= 1 << (local_15 & 31);
+                        dword visited_points[1] = {0};
                         short local_17 = local_10->field_84[local_14].field_2;
                         short local_18 = local_17;
                         short local_19 = NONE;
@@ -123,10 +123,10 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
                         for (short local_23 = local_14; local_23 < local_10->field_80 && local_10->field_84[local_23].field_0 == local_15; ++local_23)
                         {
                             local_18 = local_10->field_84[local_23].field_2;
-                            local_16[local_18 >> 5] |= 1 << (local_18 & 31);
+                            visited_points[local_18 >> 5] |= 1 << (local_18 & 31);
                             if (local_18 >= 0 && local_18 < local_22->field_0)
                             {
-                                real local_24 = function_29e2ea(&local_12, &local_22->field_4[local_18]);
+                                real local_24 = function_29e2ea(&marker_position, &local_22->field_4[local_18]);
                                 if (local_21 > local_24) { local_21 = local_24; local_19 = local_18; }
                             }
                         }
@@ -139,25 +139,25 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
                         {
                             short local_29 = local_19;
                             point3f *local_30 = &local_22->field_4[local_19];
-                            real local_31 = function_29e3b1(&local_12, local_30);
+                            real local_31 = function_29e3b1(&marker_position, local_30);
                             bool local_32 = false;
                             while (local_28 >= 0 && local_28 < local_22->field_0)
                             {
                                 if (local_32 && ((local_27 == 0 && local_28 > local_18) || (local_27 == 1 && local_28 < local_17))) break;
-                                if (local_16[local_28 >> 5] & (1 << (local_28 & 31)))
+                                if (visited_points[local_28 >> 5] & (1 << (local_28 & 31)))
                                 {
                                     local_30 = &local_22->field_4[local_28];
                                     local_29 = local_28;
-                                    local_31 = function_29e3b1(&local_12, local_30);
+                                    local_31 = function_29e3b1(&marker_position, local_30);
                                 }
                                 short local_33 = local_20 + local_28;
                                 if (local_33 >= 0 && local_33 < arg_3->field_b4 && arg_3->field_0[local_33].field_4 != 2)
                                 {
                                     point3f *local_34 = &local_22->field_4[local_28];
                                     real local_35 = function_29e3b1(local_34, arg_0) + function_29e3b1(local_30, local_34) + local_31;
-                                    if (local_3 > local_35 && function_29de20(local_33, arg_3, arg_0, arg_1) == 1)
+                                    if (best_distance > local_35 && function_29de20(local_33, arg_3, arg_0, arg_1) == 1)
                                     {
-                                        local_3 = local_35;
+                                        best_distance = local_35;
                                         local_0 = (short)local_15;
                                         local_1 = local_28;
                                         local_2 = local_29;
@@ -183,7 +183,7 @@ bool __stdcall function_29e0f0(point3f const *arg_0, long arg_1, s_reference arg
                         } while (local_37 < 4);
                         if (local_37 < 4)
                         {
-                            function_29e64d(&arg_4->field_30[local_37], &local_12);
+                            function_29e64d(&arg_4->field_30[local_37], &marker_position);
                             ++local_37;
                             arg_4->field_2c = true;
                         }

@@ -66,7 +66,9 @@ struct s_object_view
 	word physics_active : 1;
 	word flag7c0 : 1;
 	word physics_disabled : 1;
-	word : 7;
+	word : 2;
+	word flag11c0 : 1;
+	word : 4;
 	byte unknown0c2[0xd4 - 0xc2];
 	long field_x10a40f;
 	byte unknown0d8[0x10e - 0xd8];
@@ -149,9 +151,7 @@ return_exit:
 short function_b8d30(long object_index, long marker_name, s_object_marker *markers, short count, bool flag)
 {
     long marker_object_index = object_index;
-    struct { volatile long node_count; short result; } scratch;
-    short &result = scratch.result;
-    result = 0;
+    short result = 0;
 
     if (!flag)
         marker_object_index = function_b8ca0(object_index);
@@ -162,20 +162,21 @@ short function_b8d30(long object_index, long marker_name, s_object_marker *marke
 
         if (model_index != NONE)
         {
+            s_model_definition_view const *model = TAG_DATA(s_model_definition_view, model_index);
             byte const *region_permutations = (byte *)object + object->region_permutations_offset;
-            bool mirrored = TEST_FIELD_BIT(object->mirrored);
             transform4x3f const *field_50 = (transform4x3f *)((byte *)object + object->node_matrices_offset);
-            volatile long &node_count = scratch.node_count;
-            node_count = object->node_matrices_size / sizeof(transform4x3f);
-            long render_model_index = TAG_DATA(s_model_definition_view, model_index)->render_model_index;
+            bool mirrored = TEST_FIELD_BIT(object->mirrored);
+            volatile long node_count = object->node_matrices_size / sizeof(transform4x3f);
 
-            result = function_1d8f50(function_1d8f00(render_model_index, marker_name), render_model_index,
+            long marker_group_index = function_1d8f00(model->render_model_index, marker_name);
+
+            result = function_1d8f50(marker_group_index, model->render_model_index,
                 region_permutations, NULL, field_50, mirrored, markers, count);
-            if (result)
-                return result;
+
         }
     }
 
+    if (!result)
     {
         s_object_view *object = OBJECT_GET(object_index);
 
@@ -203,7 +204,7 @@ short function_b8d30(long object_index, long marker_name, s_object_marker *marke
             markers->matrix.rotation.left.k = 0.0f - markers->matrix.rotation.left.k;
         }
         if (!marker_name)
-            return 1;
+            result = 1;
     }
     return result;
 }
@@ -225,14 +226,15 @@ void __stdcall function_b9b90(long object_index, bool disable)
 	s_object_view *object = header->object;
 	dword const &type = header->type;
 	dword type_mask = 1 << type;
+	long component_index = object->havok_component_index;
 
 	if ((type_mask & 0x1883) &&
 		TEST_FIELD_BIT(((s_physics_flags *)((byte *)object + 0xc0))->active) &&
-		object->havok_component_index != NONE)
+		component_index != NONE)
 	{
 		if (!disable)
 		{
-			havok_component_rigid_bodies_activate(havok_component_get(object->havok_component_index));
+			havok_component_rigid_bodies_activate(havok_component_get(component_index));
 		}
 		else
 			goto update;
@@ -630,91 +632,94 @@ static __forceinline long object_query_next_ab(s_record_pool *data, long index)
 bool function_bba80(long object_index)
 {
     bool result = false;
-    long root = NONE;
-    long index = object_index;
-    s_object_header_view *headers = (s_object_header_view *)g_4e0300->data;
-    while (index != NONE)
     {
-        root = index;
-        index = *(long *)((byte *)headers[index & 0xffff].object + 0x14);
-    }
-    s_object_header_view *header = OBJECT_HEADER_GET(root);
-    dword flags = *(dword *)((byte *)header->object + 4);
-    if (!(((byte *)header)[2] & 1) || !(bool)((flags >> 8) & 1) || (bool)((flags >> 18) & 1))
-        return result;
-    s_object_link_iterator links;
-    short cluster = function_b8a80(root, &links);
-    while (cluster != NONE)
-    {
-        if (((dword *)((byte *)g_4e6948 + 0x1138))[cluster >> 5] & (1 << (cluster & 31)))
-            break;
-        cluster = function_b8b20(&links);
-    }
-    if (cluster == NONE)
-        return result;
-
-    byte *object = (byte *)OBJECT_GET(object_index);
-    byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
-    long model_index = *(long *)(definition + 0x38);
-    real radius_squared = *(real *)(object + 0x3c) * *(real *)(object + 0x3c);
-    real range_squared = 0.0f;
-    if (model_index != NONE)
-    {
-        real range = *(real *)(g_4e3b44[model_index & 0xffff].bytes + 0x28);
-        if (range > 0.0f)
+        long root = NONE;
+        long index = object_index;
+        s_object_header_view *headers = (s_object_header_view *)g_4e0300->data;
+        while (index != NONE)
         {
-            range *= 1.2f;
-            range_squared = range * range;
+            root = index;
+            index = *(long *)((byte *)headers[index & 0xffff].object + 0x14);
         }
-        else
-            range_squared = 1600.0f;
-    }
-    s_record_pool *players = g_4e8c24;
-    long player_index = object_query_next_ab(players, NONE);
-    while (player_index != NONE)
-    {
-        byte *player = players->data + (player_index & 0xffff) * 0x21c;
-        long unit_index = *(long *)(player + 0x2c);
-        if (unit_index != NONE)
+        s_object_header_view *header = OBJECT_HEADER_GET(root);
+        dword flags = *(dword *)((byte *)header->object + 4);
+        if (!(((byte *)header)[2] & 1) || !(bool)((flags >> 8) & 1) || (bool)((flags >> 18) & 1))
+            goto done;
+        s_object_link_iterator links;
+        short cluster = function_b8a80(root, &links);
+        while (cluster != NONE)
         {
-            s_object_marker marker;
-            function_b8d30(unit_index, 0x04000095, &marker, 1, false);
-            point3f position = marker.matrix.position;
-            point3f *centre = (point3f *)(object + 0x30);
-            vector3f offset;
-            offset.i = centre->x - position.x;
-            offset.j = centre->y - position.y;
-            offset.k = centre->z - position.z;
-            real distance_squared = offset.k * offset.k + offset.j * offset.j + offset.i * offset.i;
-            byte *unit = (byte *)OBJECT_GET(*(long *)(player + 0x2c));
-            real zoom = function_c8880(*(long *)(player + 0x2c), *(signed char *)(unit + 0x240));
-            if (zoom > 0.0001f)
-                distance_squared /= zoom * zoom;
-            if (distance_squared < radius_squared)
-            {
-                result = true;
+            if (((dword *)((byte *)g_4e6948 + 0x1138))[cluster >> 5] & (1 << (cluster & 31)))
                 break;
-            }
-            if (distance_squared < range_squared)
+            cluster = function_b8b20(&links);
+        }
+        if (cluster == NONE)
+            goto done;
+
+        byte *object = (byte *)OBJECT_GET(object_index);
+        byte *definition = g_4e3b44[*(long *)object & 0xffff].bytes;
+        long model_index = *(long *)(definition + 0x38);
+        real radius_squared = *(real *)(object + 0x3c) * *(real *)(object + 0x3c);
+        real range_squared = 0.0f;
+        if (model_index != NONE)
+        {
+            real range = *(real *)(g_4e3b44[model_index & 0xffff].bytes + 0x28);
+            if (range > 0.0f)
             {
+                range *= 1.2f;
+                range_squared = range * range;
+            }
+            else
+                range_squared = 1600.0f;
+        }
+        s_record_pool *players = g_4e8c24;
+        long player_index = object_query_next_ab(players, NONE);
+        while (player_index != NONE)
+        {
+            byte *player = players->data + (player_index & 0xffff) * 0x21c;
+            long unit_index = *(long *)(player + 0x2c);
+            if (unit_index != NONE)
+            {
+                s_object_marker marker;
+                function_b8d30(unit_index, 0x04000095, &marker, 1, false);
+                point3f position = marker.matrix.position;
+                point3f *centre = (point3f *)(object + 0x30);
+                vector3f offset;
                 offset.i = centre->x - position.x;
                 offset.j = centre->y - position.y;
                 offset.k = centre->z - position.z;
-                vector3f *forward = (vector3f *)((byte *)OBJECT_GET(*(long *)(player + 0x2c)) + 0x15c);
-                double radius_value = *(real *)(object + 0x3c);
-                double const &radius = radius_value;
-                real magnitude = function_30bf0(&offset);
-                if (offset.k * forward->k + offset.j * forward->j + offset.i * forward->i >
-                    cos(atan2((double)magnitude, radius) + 0.7853981852531433f))
+                real distance_squared = offset.k * offset.k + offset.j * offset.j + offset.i * offset.i;
+                byte *unit = (byte *)OBJECT_GET(*(long *)(player + 0x2c));
+                real zoom = function_c8880(*(long *)(player + 0x2c), *(signed char *)(unit + 0x240));
+                if (zoom > 0.0001f)
+                    distance_squared /= zoom * zoom;
+                if (distance_squared < radius_squared)
                 {
                     result = true;
-                    break;
+                    goto done;
+                }
+                if (distance_squared < range_squared)
+                {
+                    offset.i = centre->x - position.x;
+                    offset.j = centre->y - position.y;
+                    offset.k = centre->z - position.z;
+                    vector3f *forward = (vector3f *)((byte *)OBJECT_GET(*(long *)(player + 0x2c)) + 0x15c);
+                    double radius_value = *(real *)(object + 0x3c);
+                    double const &radius = radius_value;
+                    real magnitude = function_30bf0(&offset);
+                    if (offset.k * forward->k + offset.j * forward->j + offset.i * forward->i >
+                        cos(atan2((double)magnitude, radius) + 0.7853981852531433f))
+                    {
+                        result = true;
+                        goto done;
+                    }
                 }
             }
+            players = g_4e8c24;
+            player_index = object_query_next_ab(players, player_index);
         }
-        players = g_4e8c24;
-        player_index = object_query_next_ab(players, player_index);
     }
+done:
     return result;
 }
 
@@ -1493,31 +1498,35 @@ void function_1d96d0(long index);
 // @retail 0xbc5e0
 void __stdcall function_bc5e0(long index)
 {
-    byte *object = (byte *)OBJECT_GET(index);
+    s_object_view *object = OBJECT_GET(index);
     bool disabled;
-    if (object[0xc0] & 0x40)
+    if (TEST_FIELD_BIT(object->physics_active))
     {
-        byte *component = g_51e9b8->data + (*(long *)(object + 0xb4) & 0xffff) * 0xa0;
-        bool active = havok_component_any_rigid_body_active((s_havok_component *)component);
-        if (active) *(dword *)(component + 4) &= ~0x10000;
-        if ((active || (object[0xc1] & 1)) && *(long *)(component + 0x74) > 0)
+        s_havok_component *component = havok_component_get(object->havok_component_index);
+        bool active = havok_component_any_rigid_body_active(component);
+        if (!active)
         {
-            if (!(*(dword *)(component + 4) & 0x100) && havok_component_main_rigid_body_movable((s_havok_component *)component))
+            if (!TEST_FIELD_BIT(object->physics_disabled)) goto motion_done;
+        }
+        else component->unknown04 &= ~0x10000;
+        if (component->rigid_bodies.size > 0)
+        {
+            if (!TEST_FIELD_BIT(component->flag8) && havok_component_main_rigid_body_movable(component))
             {
                 transform4x3f matrix;
-                function_1d4360((s_havok_component *)component, &matrix);
+                function_1d4360(component, &matrix);
                 vector3f *forward = &matrix.forward, *up = &matrix.up;
-                if (*(dword *)(component + 4) & 2) forward = up = 0;
+                if (TEST_FIELD_BIT(component->flag1)) up = forward = 0;
                 else function_b91d0(index, forward, up);
                 function_b7430(index, &matrix.position, forward, up, 0, false, false, false, true);
                 if (active)
                 {
                     vector3f linear, angular;
                     vector3f *angular_pointer = 0;
-                    havok_component_rigid_body_linear_velocity_get((s_havok_component *)component, 0, &linear);
-                    if (!(*(dword *)(component + 4) & 2))
+                    havok_component_rigid_body_linear_velocity_get(component, 0, &linear);
+                    if (!TEST_FIELD_BIT(component->flag1))
                     {
-                        havok_component_rigid_body_angular_velocity_get((s_havok_component *)component, 0, &angular);
+                        havok_component_rigid_body_angular_velocity_get(component, 0, &angular);
                         angular_pointer = &angular;
                     }
                     function_b7740(index, &linear, angular_pointer, false);
@@ -1526,20 +1535,21 @@ void __stdcall function_bc5e0(long index)
             }
             else function_b7740(index, g_4687a4, g_4687a4, false);
         }
+    motion_done:
         disabled = !active;
-        if (((byte *)g_4e6948)[0xc] != 4 && (*(word *)(object + 0xc0) & 0x800))
+        if (((byte *)g_4e6948)[0xc] != 4 && TEST_FIELD_BIT(object->flag11c0))
         {
-            function_1d96d0(*(long *)(object + 0xb4));
-            object[0xc1] &= ~8;
+            function_1d96d0(object->havok_component_index);
+            ((byte *)object)[0xc1] &= ~8;
         }
     }
     else
     {
-        long parent = *(long *)(object + 0x14);
-        disabled = parent == NONE || (((byte *)OBJECT_GET(parent))[0xc1] & 1);
+        long parent = object->parent_index;
+        disabled = parent != NONE ?
+            TEST_FIELD_BIT(OBJECT_GET(parent)->physics_disabled) : true;
     }
-    if (disabled) object[0xc1] |= 1;
-    else object[0xc1] &= ~1;
+    object->physics_disabled = disabled ? 1 : 0;
 }
 
 PRIVATE __forceinline void object_attachment_point(transform4x3f const *matrix, point3f const *point, point3f *result)
@@ -1564,7 +1574,7 @@ long function_baf80(long index);
 void function_bba20(long index);
 
 // @retail 0xb93b0
-void __stdcall function_b93b0(volatile long parent_index, volatile long index, volatile short node)
+void __stdcall function_b93b0(long parent_index, volatile long index, volatile short node)
 {
     s_record_pool *pool = g_4e0300;
     long offset = (index & 0xffff) * 12;
@@ -1588,7 +1598,8 @@ void __stdcall function_b93b0(volatile long parent_index, volatile long index, v
     parent = (byte *)OBJECT_GET(parent_index);
     transform4x3f *nodes = (transform4x3f *)(parent + *(short *)(parent + 0x116));
     *(long *)(object + 0x14) = parent_index;
-    object[0x18] = (byte)node;
+    short node_index = node;
+    object[0x18] = (byte)node_index;
     *(long *)((byte *)OBJECT_GET(index) + 0xc) = *(long *)(parent + 0x10);
     *(long *)(parent + 0x10) = index;
     header->flags |= 0x80;
@@ -1596,7 +1607,7 @@ void __stdcall function_b93b0(volatile long parent_index, volatile long index, v
     *(short *)(object + 0x2c) = NONE;
     *(short *)(object + 0x2e) = g_4686c4;
     transform4x3f inverse;
-    function_141590(&nodes[(short)node], &inverse);
+    function_141590(&nodes[node_index], &inverse);
     point3f position;
     vector3f forward, up;
     object_attachment_point(&inverse, (point3f *)(object + 0x64), &position);

@@ -707,21 +707,20 @@ bool function_e68c0(long type, long unit_index);
 // @retail 0x9ee20
 bool c_unit_exit_vehicle_event_definition::v11(long a, long const *entities, long c, void const *data)
 {
+	bool result = false;
 	long unit_index = function_a58d0(entities[0]);
 	long vehicle_index = function_a58d0(entities[1]);
-	bool result = false;
 	if (unit_index == NONE || vehicle_index == NONE)
 		return result;
 	s_record_pool *local_1 = g_4e0300;
-	s_typed_object_header *headers = (s_typed_object_header *)local_1->data;
-	if (((1 << headers[unit_index & 0xffff].type) & 3) && ((1 << headers[vehicle_index & 0xffff].type) & 3))
+	if (((1 << ((s_typed_object_header *)local_1->data)[unit_index & 0xffff].type) & 3) && ((1 << ((s_typed_object_header *)local_1->data)[vehicle_index & 0xffff].type) & 3))
 	{
-		s_vehicle_event_unit_view *unit = (s_vehicle_event_unit_view *)headers[unit_index & 0xffff].object;
+		s_vehicle_event_unit_view *unit = (s_vehicle_event_unit_view *)((s_typed_object_header *)local_1->data)[unit_index & 0xffff].object;
 		if (unit->parent_index != NONE && unit->parent_index == vehicle_index &&
 			unit->seat_index != NONE && unit->seat_index == *(long const *)data)
 		{
 			function_e68c0(0x1d, unit_index);
-			return true;
+			result = true;
 		}
 	}
 	return result;

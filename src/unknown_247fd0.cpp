@@ -99,8 +99,9 @@ void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 		local_1->field_38 = function_x82e52f(&g_4e7408->seed, 0, 0);
 		if (arg_0->field_50 != local_1)
 		{
-			arg_0->field_44 &= ~0xf80f;
+			dword flags = arg_0->field_44 & ~0xf80f;
 			arg_0->field_50 = local_1;
+			arg_0->field_44 = flags;
 		}
 		function_173ba0(~arg_0->field_44 & 0xf80f, arg_0->field_48, arg_0->field_4c, arg_0->field_50, arg_0->field_00);
 		arg_0->field_44 |= 0xf80f;
@@ -122,7 +123,8 @@ void function_247fd0(s_247fd3 *arg_1, s_particle_system_datum *arg_2,
 				real local_8 = local_1->field_0c > 0.f ? 1.f / local_1->field_0c : 0.f;
 				local_7->flag0 = true;
 				local_7->unknown04 = 0.f;
-				local_7->unknown08 = local_8 > 0.f ? 1.f / local_8 : 1.f;
+				if (local_8 > 0.f) local_7->unknown08 = 1.f / local_8;
+				else local_7->unknown08 = 1.f;
 			}
 		}
 	}

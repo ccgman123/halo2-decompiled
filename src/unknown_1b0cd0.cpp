@@ -465,10 +465,11 @@ void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_lis
 				}
 			}
 		}
+		short mode = list->mode;
 		if (actor->unknown086 >= 7)
 		{
 			if (state->position_index != NONE)
-				actor->unknown488 = function_1b1970(actor_index, list->mode, &forward, &left, state->position_index);
+				actor->unknown488 = function_1b1970(actor_index, mode, &forward, &left, state->position_index);
 			else
 				actor->unknown488 = false;
 			actor->unknown41c = 3;
@@ -501,56 +502,45 @@ void __stdcall function_1b1a90(long actor_index, s_slot *slot, s_slot_target_lis
 }
 
 /* invites the actors of the actor's group (or squad) of the same team */
-struct s_1b1d90_locals
-{
-	long field_00;
-	byte field_04[0xc];
-	s_ai_actor_iterator field_10;
-};
-
 // @retail 0x1b1d90
 short __stdcall function_1b1d90(long actor_index, long leader_index, s_slot *slot, long unknown)
 {
+	long count = 0;
 	s_actor_view *actor = actor_get(actor_index);
 	s_slot_7e *state = (s_slot_7e *)slot;
-	s_1b1d90_locals locals;
-	locals.field_00 = 0;
+	s_ai_actor_iterator group_iterator;
 
 	if (state->unknown20 != NONE)
 	{
-		ai_actor_iterator_new(state->unknown20, &locals.field_10);
-		for (s_actor_view *other = (s_actor_view *)ai_actor_iterator_next(&locals.field_10); other;
-			other = (s_actor_view *)ai_actor_iterator_next(&locals.field_10))
+		ai_actor_iterator_new(state->unknown20, &group_iterator);
+		for (s_actor_view *other = (s_actor_view *)ai_actor_iterator_next(&group_iterator); other;
+			other = (s_actor_view *)ai_actor_iterator_next(&group_iterator))
 		{
 			if (other != actor && actor->unknown004 == other->unknown004 &&
-				function_26eae0(leader_index, locals.field_10.actor_index, 3, 1.0f))
+				function_26eae0(leader_index, group_iterator.actor_index, 3, 1.0f))
 			{
-				locals.field_00++;
+				count++;
 			}
 		}
-		return (short)locals.field_00;
 	}
-	if (actor->unknown030 != NONE)
+	else if (actor->unknown030 != NONE)
 	{
-		s_squad_actor_iterator *iterator = (s_squad_actor_iterator *)&locals.field_10;
+		s_squad_actor_iterator squad_walk;
 
-		function_204d30(iterator, actor->unknown030);
-		long other_index = iterator->next_actor_index;
+		function_204d30(&squad_walk, actor->unknown030);
+		s_actor_view *other;
 
-		while (g_4f55d0->active && other_index != NONE)
+		while ((other = (s_actor_view *)squad_actors_next(&squad_walk)) != NULL)
 		{
-			s_actor_view *other = actor_get(other_index);
-			long index = other_index;
-
-			other_index = other->unknown020;
+			long index = squad_walk.actor_index;
 			if (other != actor && actor->unknown004 == other->unknown004 &&
 				function_26eae0(leader_index, index, 3, 1.0f))
 			{
-				locals.field_00++;
+				count++;
 			}
 		}
 	}
-	return (short)locals.field_00;
+	return (short)count;
 }
 
 s_slot_handler_2x g_47df60 =

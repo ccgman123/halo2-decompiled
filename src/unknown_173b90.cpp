@@ -471,11 +471,10 @@ typedef void (__stdcall *particle_callback_175610)(s_particle_175610 *, s_partic
 // @retail 0x175610
 void function_175610(s_particle_value_cache *cache, s_particle_system_datum *system, s_particle_location_datum *location, particle_callback_175610 callback, void *context)
 {
-	s_particle_system_datum * *system_reference = &system;
-	s_effect_particle_system_definition *definition = (*system_reference)->function_1751d0();
-	if ((*system_reference) != cache->field_48)
+	s_effect_particle_system_definition *definition = system->function_1751d0();
+	if (system != cache->field_48)
 	{
-		cache->field_48 = (*system_reference);
+		cache->field_48 = system;
 		cache->mask &= 0xfffff98f;
 	}
 	if (location != cache->field_4c)
@@ -495,7 +494,7 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 		{
 			real multiplier = 1.0f;
 			real scale = 1.0f;
-			if (TEST_FIELD_BIT((*system_reference)->flag10))
+			if (TEST_FIELD_BIT(system->flag10))
 				multiplier = function_3eb70();
 			matrix3x3 rotation;
 			point3f origin;
@@ -518,8 +517,8 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 			while (particle_index != NONE)
 			{
 				s_particle_175610 *particle = DATUM(g_51ec84, s_particle_175610, particle_index);
-				point3f position = particle->position;
-				vector3f velocity = particle->velocity;
+				point3f translated_position = particle->position;
+				vector3f motion = particle->velocity;
 				if (particle != cache->field_50)
 				{
 					cache->field_50 = particle;
@@ -536,19 +535,19 @@ void function_175610(s_particle_value_cache *cache, s_particle_system_datum *sys
 					scale = function_246cd0(&emitter_definition->scale, cache->values) * multiplier;
 				if (definition->unknown0c)
 				{
-					vector3f value = *(vector3f const *)&position;
-					position.x = (rotation_result->left.i * value.j + rotation_result->forward.i * value.i) + rotation_result->up.i * value.k;
-					position.y = (rotation_result->forward.j * value.i + rotation_result->up.j * value.k) + rotation_result->left.j * value.j;
-					position.z = (rotation_result->forward.k * value.i + rotation_result->up.k * value.k) + rotation_result->left.k * value.j;
-					position.x = origin_result->x + position.x;
-					position.y = origin_result->y + position.y;
-					position.z = origin_result->z + position.z;
-					value = velocity;
-					velocity.i = (rotation_result->left.i * value.j + rotation_result->forward.i * value.i) + rotation_result->up.i * value.k;
-					velocity.j = (rotation_result->forward.j * value.i + rotation_result->up.j * value.k) + rotation_result->left.j * value.j;
-					velocity.k = (rotation_result->forward.k * value.i + rotation_result->up.k * value.k) + rotation_result->left.k * value.j;
+					point3f position_input = translated_position;
+					translated_position.x = (rotation_result->left.i * position_input.y + rotation_result->forward.i * position_input.x) + rotation_result->up.i * position_input.z;
+					translated_position.y = (rotation_result->forward.j * position_input.x + rotation_result->up.j * position_input.z) + rotation_result->left.j * position_input.y;
+					translated_position.z = (rotation_result->forward.k * position_input.x + rotation_result->up.k * position_input.z) + rotation_result->left.k * position_input.y;
+					translated_position.x = origin_result->x + translated_position.x;
+					translated_position.y = origin_result->y + translated_position.y;
+					translated_position.z = origin_result->z + translated_position.z;
+					vector3f velocity_input = motion;
+					motion.i = (rotation_result->left.i * velocity_input.j + rotation_result->forward.i * velocity_input.i) + rotation_result->up.i * velocity_input.k;
+					motion.j = (rotation_result->forward.j * velocity_input.i + rotation_result->up.j * velocity_input.k) + rotation_result->left.j * velocity_input.j;
+					motion.k = (rotation_result->forward.k * velocity_input.i + rotation_result->up.k * velocity_input.k) + rotation_result->left.k * velocity_input.j;
 				}
-				callback(particle, cache, &position, &velocity, scale, &color, context);
+				callback(particle, cache, &translated_position, &motion, scale, &color, context);
 			}
 		}
 		emitter_index = emitter->next_index;
@@ -732,6 +731,7 @@ void function_175270(s_particle_system_datum *particle_system, s_particle_system
 // @retail 0x175a80
 void function_175a80(bool tinted, dword color_a, dword color_b, s_particle_system_datum *particle_system, bool multiplied)
 {
+	dword packed = color_a;
 	if (!multiplied)
 	{
 		if (tinted)
@@ -742,8 +742,9 @@ void function_175a80(bool tinted, dword color_a, dword color_b, s_particle_syste
 			color.red *= 0.5f;
 			color.green *= 0.5f;
 			color.blue *= 0.5f;
-			particle_system->color = pack_color3f(&color);
+			packed = pack_color3f(&color);
 		}
+		else return;
 	}
 	else if (tinted)
 	{
@@ -755,12 +756,9 @@ void function_175a80(bool tinted, dword color_a, dword color_b, s_particle_syste
 		color.red *= other.red;
 		color.green *= other.green;
 		color.blue *= other.blue;
-		particle_system->color = pack_color3f(&color);
+		packed = pack_color3f(&color);
 	}
-	else
-	{
-		particle_system->color = color_a;
-	}
+	particle_system->color = packed;
 }
 
 extern vector3f *g_4687bc;
@@ -1054,7 +1052,7 @@ void __stdcall function_174420(long system_index, bool view_pass, bool camera_re
                                 if (!visible)
                                 {
                                     real distance = (real)(sqrt(delta.k * delta.k + delta.j * delta.j + delta.i * delta.i) * g_4b9dcc);
-                                    draw = function_249bb0((s_distance_fade const *)definition, distance) > 0.0f;
+                                    if (!(function_249bb0((s_distance_fade const *)definition, distance) > 0.0f)) draw = false;
                                 }
                                 *(dword *)((byte *)location + 0x30) = g_4ba034;
                             }
@@ -1126,7 +1124,8 @@ void __stdcall function_174220(bool view_pass)
             else if (attached && definition->location_mode == 2) draw = false;
             if (draw) function_174420(index, same_view, camera_relative, false);
         }
+        long next_index = index == NONE ? 0 : (index & 0xffff) + 1;
         systems = g_510c74;
-        index = data_datum_index(systems, function_16bc00(systems, index == NONE ? 0 : (index & 0xffff) + 1));
+        index = data_datum_index(systems, function_16bc00(systems, next_index));
     }
 }

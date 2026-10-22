@@ -155,9 +155,10 @@ real function_24e9c7(s_24e9c7_marker const *marker, s_24e9c7_placement const *pl
 				real size = placement->size + 1.0f;
 				real across_i = size * -placement->forward_j;
 				real across_j = size * placement->forward_i;
-				long height = (long)((bounds.y1 - bounds.y0) * bitmap->height * placement->scale);
-				long half_width = (long)((bounds.x1 - bounds.x0) * bitmap->width * placement->scale) / 2;
+				real scale = placement->scale;
+				long height = (long)((bounds.y1 - bounds.y0) * bitmap->height * scale);
 				result = (real)height;
+				long half_width = (long)((bounds.x1 - bounds.x0) * bitmap->width * scale) / 2;
 				s_24e9c7_point up;
 				up.x = -(result * placement->forward_i);
 				up.y = -(placement->forward_j * result);

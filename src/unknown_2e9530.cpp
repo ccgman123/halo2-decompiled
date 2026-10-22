@@ -359,9 +359,10 @@ __forceinline bool unmoved_2e96a0(bounded_2e9530 const *self, bounds_2e9140 cons
 // first side's bounds (in the second side's frame, widened by one and a half
 // times the tolerance) overlap, brought up to date in key order; left as they
 // are while the bounds moved less than half the tolerance
-// score 423 (was 617): register choice from the start: retail keeps this in
-// esi and spills it to the stack before the first call, and the element
-// shifts and stack slots fall into other registers and offsets.
+// score 414 (was 423): the placements now load in retail's order; retail
+// keeps `half` and the key walk in other stack slots, reads g_480398 before
+// the children's fields are stored, and the in-place refresh reads the
+// elements' size after their data, so its registers differ from there on.
 // @retail 0x2e96a0
 void class_2e96a0::function_2e96a0(void const *a, void const *b, void const *input, pair_query_2e90f0 query)
 {
@@ -369,7 +370,9 @@ void class_2e96a0::function_2e96a0(void const *a, void const *b, void const *inp
 	pair_side_2e96a0 const *side_a = (pair_side_2e96a0 const *)a;
 	pair_side_2e96a0 const *side_b = (pair_side_2e96a0 const *)b;
 	c_query_transform transform;
-	transform.inverse_product(&side_b->placement->transform, &side_a->placement->transform);
+	placement_2e96a0 const *const placement_b = side_b->placement;
+	placement_2e96a0 const *const placement_a = side_a->placement;
+	transform.inverse_product(&placement_b->transform, &placement_a->transform);
 	float const half = ((query_input_2e96a0 const *)input)->tolerance * 0.5f;
 	bounds_2e9140 bounds;
 	((bounded_shape_2e96a0 const *)side_a->shape)->bounds_in(&transform, half + ((query_input_2e96a0 const *)input)->tolerance, &bounds);
@@ -397,9 +400,10 @@ void class_2e96a0::function_2e96a0(void const *a, void const *b, void const *inp
 }
 // the objects kept for the children of the second side's tree that the
 // first side's bounds overlap, brought up to date in key order
-// score 518 (was 546): as 0x2e96a0, retail keeps this in esi and the second
-// side in edi, and spills this before the first call; the frame is 0x10
-// bytes larger and the stack slots differ.
+// score 512 (was 518): the container is read before the sort and stored
+// after it, as retail does; retail keeps the sort's key order temporary and
+// the refresh's ends in other stack slots, and the refresh's registers differ
+// (retail: value edx, size eax, keys ecx).
 // @retail 0x2e9d90
 void class_2e9d90::function_2e9d90(void const *a, void const *b, void const *input, pair_query_2e90f0 query)
 {
@@ -413,13 +417,14 @@ void class_2e9d90::function_2e9d90(void const *a, void const *b, void const *inp
 	children_2e96a0 children;
 	keys_2e96a0 keys;
 	tree->overlapping_keys(&bounds, &keys);
-	children.container = tree->container;
+	collection_2e9210 const *const container = tree->container;
 	if (keys.size > 1)
 	{
 		function_2e9360(keys.data, 0, keys.size - 1, key_order_2e9360());
 	}
 	children.child.placement = ((description_2e9210 const *)a)->field_8;
 	children.child.parent = a;
+	children.container = container;
 	if (g_480398)
 	{
 		refresh_in_place_2e96a0(self, &keys, a, &children, context, query);

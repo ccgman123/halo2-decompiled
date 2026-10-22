@@ -261,17 +261,26 @@ __forceinline __m128 cross_309b50(__m128 const &a, __m128 const &b)
 // the point of the simplex's first three first-shape points with these weights
 __forceinline __m128 weighted_309b50(__m128 const *points, float const *weights)
 {
-	float const w0 = weights[0];
-	float const w1 = weights[1];
-	float const w2 = weights[2];
-	return _mm_add_ps(_mm_add_ps(_mm_mul_ps(_mm_set_ps1(w0), points[0]), _mm_mul_ps(_mm_set_ps1(w1), points[1])), _mm_mul_ps(_mm_set_ps1(w2), points[2]));
+	__m128 const w0 = _mm_set_ps1(weights[0]);
+	__m128 const w1 = _mm_set_ps1(weights[1]);
+	__m128 const w2 = _mm_set_ps1(weights[2]);
+	__m128 const second = _mm_mul_ps(w1, points[1]);
+	__m128 const third = _mm_mul_ps(w2, points[2]);
+	return _mm_add_ps(_mm_add_ps(_mm_mul_ps(w0, points[0]), second), third);
 }
 
-// score 738 (was 1251): retail lays out the simplex's cases from four points
-// down to none, then the three growth steps; our build starts from one point
-// and follows each growth step into the next case, so nearly every line is
-// offset (the cases are written from none up here because that scores
-// lowest). The hull, the restart and the three endings follow retail's code.
+// score 572 (was 738): the switch only jumps to labelled blocks written in
+// retail's order (four points down to none, then the three growth steps);
+// with the cases' code inside the switch our build laid it out from case 0
+// along the growth gotos. The second-shape points are declared before the
+// first-shape ones, which puts them in retail's slots, and the tetrahedron's
+// cross product is spelled out (the shared helper scored 696). Still: the
+// frame is 0x10 larger (retail shares 0x20 between the hull's new point, the
+// first step's answer and the collapsed case's along vector, and keeps the
+// weights at 0x20 and 0x30; ours at 0x40 and 0x20), retail reloads the second
+// difference for the tetrahedron's second edge and multiplies the other
+// product first, and retail's copies of the face's corners add the offset to
+// the pointer before storing.
 // The penetration of the two shapes: 0 with the direction, point and
 // distance in `arg_0` (or nothing found by the first step), 2 when the
 // simplex can't grow or the hull fails too often, and from the hull, 1 when
@@ -287,46 +296,30 @@ long class_309b50::function_309b50(long arg_0)
 		switch (simplex->count)
 		{
 		case 0:
-		first:
-			if (((search_3093e0 *)this)->function_3094d0(result).value)
-			{
-				return 0;
-			}
-			grown = 0;
+			goto first;
+		case 1:
 			goto point;
-		grow_point:
-			grown = 1;
-			((search_3093e0 *)this)->function_309610();
+		case 2:
 			goto segment;
-		grow_segment:
-			grown = 2;
-			((search_3093e0 *)this)->function_309700();
+		case 3:
 			goto triangle;
-		grow_triangle:
-		{
-			scored_support_3093e0 scored;
-			grown = 3;
-			((search_3093e0 *)this)->function_3093e0(&normal, differences, &scored);
-			if (scored.distance < 0.001f)
-			{
-				goto separated;
-			}
-			differences[simplex->count] = _mm_sub_ps(scored.support.first, scored.support.second_placed);
-			simplex->points[simplex->count] = scored.support.first;
-			simplex->points[simplex->count + 4] = scored.support.second;
-			simplex->count++;
-			goto tetrahedron;
-		}
 		case 4:
-		tetrahedron:
+			goto tetrahedron;
+		default:
+			goto expand;
+		}
+	tetrahedron:
 		{
 			__m128 const a = _mm_sub_ps(differences[0], differences[1]);
 			__m128 const b = _mm_sub_ps(differences[1], differences[2]);
-			normal = _mm_sub_ps(
-				_mm_mul_ps(_mm_shuffle_ps(a, a, 0xc9), _mm_shuffle_ps(b, b, 0xd2)),
-				_mm_mul_ps(_mm_shuffle_ps(a, a, 0xd2), _mm_shuffle_ps(b, b, 0xc9)));
+			__m128 const a_yzx = _mm_shuffle_ps(a, a, 0xc9);
+			__m128 const b_zxy = _mm_shuffle_ps(b, b, 0xd2);
+			__m128 const a_zxy = _mm_shuffle_ps(a, a, 0xd2);
+			__m128 const b_yzx = _mm_shuffle_ps(b, b, 0xc9);
+			__m128 const first = _mm_mul_ps(a_yzx, b_zxy);
+			normal = _mm_sub_ps(first, _mm_mul_ps(a_zxy, b_yzx));
 			float const height = dot3_309b50(_mm_sub_ps(differences[3], differences[0]), normal);
-			if ((float)fabs(height) > 0.001f)
+			if (!((float)fabs(height) <= 0.001f))
 			{
 				goto expand;
 			}
@@ -336,8 +329,7 @@ long class_309b50::function_309b50(long arg_0)
 			}
 			simplex->count--;
 		}
-		case 3:
-		triangle:
+	triangle:
 		{
 			normal = cross_309b50(_mm_sub_ps(differences[0], differences[1]), _mm_sub_ps(differences[1], differences[2]));
 			float length_squared;
@@ -352,8 +344,7 @@ long class_309b50::function_309b50(long arg_0)
 			}
 			simplex->count--;
 		}
-		case 2:
-		segment:
+	segment:
 		{
 			__m128 const along = _mm_sub_ps(differences[0], differences[1]);
 			float length_squared;
@@ -368,8 +359,7 @@ long class_309b50::function_309b50(long arg_0)
 			}
 			simplex->count--;
 		}
-		case 1:
-		point:
+	point:
 		{
 			float length_squared;
 			_mm_store_ss(&length_squared, sum_309b50(_mm_mul_ps(differences[0], differences[0])));
@@ -383,10 +373,36 @@ long class_309b50::function_309b50(long arg_0)
 			}
 			simplex->count--;
 		}
-			goto first;
-		default:
-			goto expand;
+	first:
+			if (((search_3093e0 *)this)->function_3094d0(result).value)
+			{
+				return 0;
+			}
+			grown = 0;
+			goto point;
+	grow_point:
+		grown = 1;
+		((search_3093e0 *)this)->function_309610();
+		goto segment;
+	grow_segment:
+		grown = 2;
+		((search_3093e0 *)this)->function_309700();
+		goto triangle;
+	grow_triangle:
+	{
+		scored_support_3093e0 scored;
+		grown = 3;
+		((search_3093e0 *)this)->function_3093e0(&normal, differences, &scored);
+		if (scored.distance < 0.001f)
+		{
+			goto separated;
 		}
+		differences[simplex->count] = _mm_sub_ps(scored.support.first, scored.support.second_placed);
+		simplex->points[simplex->count] = scored.support.first;
+		simplex->points[simplex->count + 4] = scored.support.second;
+		simplex->count++;
+		goto tetrahedron;
+	}
 
 	collapsed_simplex:
 		{
@@ -445,13 +461,13 @@ long class_309b50::function_309b50(long arg_0)
 	expand:
 		{
 			class_30a810 hull(&differences[0], &differences[1], &differences[2], &differences[3]);
+			points_309b50 seconds;
 			points_309b50 firsts;
 			firsts.size = 4;
 			firsts.data[0] = simplex->points[0];
 			firsts.data[1] = simplex->points[1];
 			firsts.data[2] = simplex->points[2];
 			firsts.data[3] = simplex->points[3];
-			points_309b50 seconds;
 			seconds.size = 4;
 			seconds.data[0] = simplex->points[4];
 			seconds.data[1] = simplex->points[5];

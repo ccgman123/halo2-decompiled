@@ -887,14 +887,10 @@ bool function_2c3030(s_pathfinding_data const *data, point2f const *origin, real
         point2f first, second;
         vector2d_from_points2d(&positive, start, &first);
         vector2d_from_points2d(&negative, start, &second);
-        bool crossing = false;
-        if ((first.y * direction.y + first.x * direction.x < 0.0f ? 1 : 0) == side &&
-            first.x * direction.y - first.y * direction.x < 0.0f)
-            crossing = true;
-        if (second.x * direction.y - second.y * direction.x < 0.0f)
-            crossing = true;
-        if (first_vertex == NONE)
-            crossing = true;
+        bool first_crossing = (first.y * direction.y + first.x * direction.x < 0.0f ? 1 : 0) == side &&
+            first.x * direction.y - first.y * direction.x < 0.0f;
+        bool second_crossing = second.x * direction.y - second.y * direction.x < 0.0f;
+        bool crossing = first_crossing || second_crossing || first_vertex == NONE;
         long vertex = ((crossing != first_open) == side) ? vertex1 : vertex0;
         if (vertex == previous_vertex)
         {

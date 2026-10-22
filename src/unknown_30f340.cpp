@@ -148,6 +148,13 @@ void owner_30c8e0::function_30f340(member_30c8e0 *member)
 	flag_12c = flag;
 }
 
+// score 334 (new): the code is retail's apart from register choice and one
+// merge: retail keeps the constraint's first member in the dead first-loop
+// counter's slot and the second in the dead dded slot, so it emits the
+// pair append twice; ours keeps both in one slot and the compiler merges the
+// two appends into one (79 bytes shorter). It also holds member in ebp and
+// this in esi, ours the other way round. Names and a hoisted declaration of
+// the second member did not change it.
 // adds the member, gives its island the constraints added with it, and notes
 // each member its constraints and actions tie it to that is not fixed; an
 // action the fixed island held moves to the member's island

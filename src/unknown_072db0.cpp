@@ -1102,7 +1102,6 @@ s_query_batch *function_73e00(long lower, s_query_batch *batch, const s_query_id
 	long value4, long value5, long value6, long upper, long count, const long *players)
 {
 	long attribute_count = batch->attribute_count;
-	long operation_count = batch->operation_count;
 	s_query_attribute *first = &batch->attributes[attribute_count];
 	first[0].id = 0xfffe;
 	first[0].type = 2;
@@ -1117,7 +1116,7 @@ s_query_batch *function_73e00(long lower, s_query_batch *batch, const s_query_id
 	s_query_attribute *second = &batch->attributes[attribute_count];
 	second[0].id = 0xfffe;
 	second[0].type = 2;
-	second[0].wide = value1;
+	second[0].wide = first[0].wide;
 	query_attribute_set(&second[1], 1, value1);
 	query_attribute_set(&second[2], 4, value4);
 	query_attribute_set(&second[3], 5, value5);
@@ -1127,6 +1126,7 @@ s_query_batch *function_73e00(long lower, s_query_batch *batch, const s_query_id
 	query_attribute_set(upper_first, 2, upper);
 	s_query_attribute *upper_second = &batch->attributes[attribute_count++];
 	query_attribute_set(upper_second, 3, upper);
+	long operation_count = batch->operation_count;
 	s_query_operation *local_0 = &batch->operations[operation_count];
 	for (long i = 0; i < count; i++)
 	{

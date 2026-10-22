@@ -417,9 +417,8 @@ PRIVATE __forceinline void normalize_cross_vector(vector3f *v)
 	if (!(fabs(length) < k_real_epsilon))
 	{
 		real inverse = 1.0f / length;
-		v->i = inverse * v->i;
-		v->j = v->j * inverse;
-		v->k = v->k * inverse;
+		for (long component = 0; component < 3; ++component)
+			v->n[component] *= inverse;
 	}
 }
 

@@ -88,9 +88,10 @@ void function_130bb0(s_fog_state *fog)
 // @retail 0x130de0
 long function_130de0(s_fog_state *fog)
 {
+	long result;
 	if (fog->pending.intensity > 0.0f)
 	{
-		long result = 3;
+		result = 3;
 		real distance;
 
 		if (fog->value10c != 1.0f)
@@ -118,20 +119,20 @@ long function_130de0(s_fog_state *fog)
 		if (fog->layers[0].distance >= distance)
 		{
 use_layer0:
+			result = 4;
 			fog->layers[0].color = fog->pending.color;
 			fog->layers[0].intensity = fog->pending.intensity;
 			fog->layers[0].distance = fog->value110;
 			fog->layers[0].height = fog->pending.distance;
-			result = 4;
 		}
 		else if (fog->layers[1].distance >= distance)
 		{
 use_layer1:
+			result = 5;
 			fog->layers[1].color = fog->pending.color;
 			fog->layers[1].intensity = fog->pending.intensity;
 			fog->layers[1].distance = fog->value110;
 			fog->layers[1].height = fog->pending.distance;
-			result = 5;
 		}
 		else
 		{
@@ -141,17 +142,21 @@ use_layer1:
 		fog->value10c = 0.0f;
 		fog->value118 = 1.0f;
 local_1:
-		return result;
+		goto finished;
 	}
 	if (fog->layers[0].intensity > 0.0f || fog->layers[1].intensity > 0.0f)
 	{
-		return 1;
+		result = 1;
+		goto finished;
 	}
 	if (fog->layers[2].intensity > 0.0f)
 	{
-		return 2;
+		result = 2;
+		goto finished;
 	}
-	return 0;
+	result = 0;
+finished:
+	return result;
 }
 
 static __forceinline color3f const *fog_black(void)

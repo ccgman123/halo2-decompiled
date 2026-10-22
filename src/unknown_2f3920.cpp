@@ -246,7 +246,14 @@ void __cdecl function_2f3d00(void const *a, void const *b, void const *input, vo
 {
 	capsule_contact_2f3920(a, b, input, collector);
 }
-// score 8 (was 8): the two arrays of placed ends trade stack slots (retail puts the second capsule's below the first's).
+// the ends of both segments, placed in the world; the second segment's ends
+// come first in the frame
+struct placed_ends_2f40e0
+{
+	__m128 side_b[2];
+	__m128 side_a[2];
+};
+
 // @retail 0x2f40e0
 void __cdecl function_2f40e0(void const *a, void const *b, void const *input, void *collector)
 {
@@ -255,11 +262,11 @@ void __cdecl function_2f40e0(void const *a, void const *b, void const *input, vo
 	body_2f40e0 const *side_b = (body_2f40e0 const *)b;
 	capsule_2f40e0 const *capsule_a = side_a->shape;
 	capsule_2f40e0 const *capsule_b = side_b->shape;
-	__m128 ends_a[2];
+	placed_ends_2f40e0 ends;
 	{
 		c_query_transform const *frame = &side_a->placement->transform;
 		__m128 const *end = capsule_a->ends;
-		__m128 *placed = ends_a;
+		__m128 *placed = ends.side_a;
 		for (int count = 2; count != 0; count--)
 		{
 			*placed = transform_point_2f40e0(frame, end);
@@ -267,11 +274,10 @@ void __cdecl function_2f40e0(void const *a, void const *b, void const *input, vo
 			end++;
 		}
 	}
-	__m128 ends_b[2];
 	{
 		c_query_transform const *frame = &side_b->placement->transform;
 		__m128 const *end = capsule_b->ends;
-		__m128 *placed = ends_b;
+		__m128 *placed = ends.side_b;
 		for (int count = 2; count != 0; count--)
 		{
 			*placed = transform_point_2f40e0(frame, end);
@@ -279,10 +285,10 @@ void __cdecl function_2f40e0(void const *a, void const *b, void const *input, vo
 			end++;
 		}
 	}
-	__m128 direction_a = _mm_sub_ps(ends_a[1], ends_a[0]);
-	__m128 direction_b = _mm_sub_ps(ends_b[1], ends_b[0]);
+	__m128 direction_a = _mm_sub_ps(ends.side_a[1], ends.side_a[0]);
+	__m128 direction_b = _mm_sub_ps(ends.side_b[1], ends.side_b[0]);
 	closest_points_308590 closest;
-	function_308590(&ends_a[0], &direction_a, &ends_b[0], &direction_b, &closest);
+	function_308590(&ends.side_a[0], &direction_a, &ends.side_b[0], &direction_b, &closest);
 	float radius = capsule_b->radius + capsule_a->radius;
 	if (closest.distance_squared < radius * radius)
 	{

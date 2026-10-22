@@ -912,13 +912,7 @@ void __stdcall function_25eea0(
 	short count,
 	s_type_b36ac5 *positions)
 {
-	s_character_weapon *weapon = NULL;
-	long weapon_index = function_1e1f20(actor_index);
-
-	if (weapon_index != NONE)
-	{
-		weapon = (s_character_weapon *)function_1e5280(actor_index, unit_weapon_view_get(weapon_index)->tag_index);
-	}
+	s_character_weapon *weapon = (s_character_weapon *)function_1e5240(actor_index);
 
 	if (!weapon)
 	{
@@ -942,9 +936,10 @@ void __stdcall function_25eea0(
 
 				if (unit_weapon_index != NONE)
 				{
+					long tag_index = unit_weapon_view_get(unit_weapon_index)->tag_index;
 					long owner_index = ((s_unit_actor_view *)unit)->actor_index;
 					s_character_weapon *candidate = (s_character_weapon *)function_1e5280(owner_index != NONE ? owner_index : actor_index,
-						unit_weapon_view_get(unit_weapon_index)->tag_index);
+						tag_index);
 
 					if (candidate && (!weapon || weapon->unknown0c > candidate->unknown0c))
 					{
@@ -966,7 +961,7 @@ void __stdcall function_25eea0(
 
 	if (style)
 	{
-		short mode = style->unknown31 > 0 ? style->unknown31 - 1 : style->unknown24;
+		short mode = style->unknown31 <= 0 ? style->unknown24 : style->unknown31 - 1;
 
 		switch (mode)
 		{
@@ -1035,7 +1030,6 @@ void __stdcall function_25eea0(
 		if (context->unknown278 > 0)
 		{
 			real nearest = 3.4028235e38f;
-			real bonus = 6.f;
 
 			for (short j = 0; j < context->line_count; j++)
 			{
@@ -1045,7 +1039,7 @@ void __stdcall function_25eea0(
 					real t;
 
 					vector3d_from_points3d(&context->lines[j].point, &position->position, &offset);
-					t = context->lines[j].direction.i * offset.i + context->lines[j].direction.k * offset.k + offset.j * context->lines[j].direction.j;
+					t = dot3f(&context->lines[j].direction, &offset);
 					if (t > 0.f)
 					{
 						vector3f closest;
@@ -1061,6 +1055,8 @@ void __stdcall function_25eea0(
 					}
 				}
 			}
+
+			real bonus = 6.f;
 
 			if (12.25f > nearest)
 			{

@@ -347,9 +347,8 @@ bool function_44690(s_word_bit_iterator *iterator, long *out);
 // @retail 0x16de20
 void function_16de20(short index, s_16e150_bits const *table, dword *output)
 {
-	long word_count = (table->count + 31) >> 5;
-	long bytes = word_count * sizeof(dword);
-	dword const *base = table->bits + index * word_count;
+	long bytes = ((table->count + 31) & ~31) >> 3;
+	dword const *base = table->bits + index * ((table->count + 31) >> 5);
 	if (table->clusters[index].flags & 2)
 	{
 		dword portal_bits[16];
@@ -358,10 +357,11 @@ void function_16de20(short index, s_16e150_bits const *table, dword *output)
 		memcpy(output, function_16e150(table, index), bytes);
 		memcpy(expanded, output, bytes);
 		memset(visited, 0, ((table->portal_count + 31) >> 5) * sizeof(dword));
+		long word_count = (table->count + 31) >> 5;
 		for (;;)
 		{
 			s_word_bit_iterator iterator;
-			iterator.count = (short)((table->count + 31) >> 5);
+			iterator.count = (short)word_count;
 			iterator.index = 0;
 			iterator.remaining = *output;
 			iterator.words = output;

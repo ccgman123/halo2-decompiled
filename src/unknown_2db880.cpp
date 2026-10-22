@@ -99,6 +99,13 @@ static inline float angle_2db880(float cosine)
 // within a step of 1 / frequency: the centre of mass's offset, and the
 // rotation still to make (none below a thousandth of a radian)
 // @retail 0x2db880
+// score 13 (was 13): retail reads the position before the frequency and keeps
+// the offset in xmm0, the position in xmm1 and the home position in xmm2;
+// ours reads the frequency first and keeps the home position in xmm1, the
+// position in xmm2 and the offset in xmm3. Reordering the statements, the
+// operands of the sum and of the product, splitting the difference in two
+// steps and reading the values into locals early all leave the code exactly
+// as it was, so the scheduler picks the order on its own.
 void __cdecl function_2db880(hkVector4 const *position, c_component_rotation const *rotation, real frequency, hkRigidBody *body)
 {
 	__m128 linear;

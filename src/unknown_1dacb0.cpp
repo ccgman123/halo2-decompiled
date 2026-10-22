@@ -1105,9 +1105,12 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 		iterator.step = 0;
 		iterator.mode_entry = NULL;
 		iterator.class_entry = NULL;
-		while ((weapon_type_entry = graph_weapon_type_iterate(&iterator, &iterator_mode, &iterator_weapon_class,
-			&iterator_weapon_type)) != NULL)
+		do
 		{
+			weapon_type_entry = graph_weapon_type_iterate(&iterator, &iterator_mode, &iterator_weapon_class,
+				&iterator_weapon_type);
+			if (!weapon_type_entry)
+				break;
 			c_type_709360 animation_id;
 			s_graph_named_animation *named = (s_graph_named_animation *)function_1dd560(
 				(s_sorted_array *)&weapon_type_entry->named_animation_count, set, sizeof(s_graph_named_animation));
@@ -1117,11 +1120,7 @@ c_type_709360 s_graph_tag::animation_get(long mode, long weapon_class, long weap
 				animation_id = named->animation_id;
 			}
 			result = animation_id;
-			if (result.index != NONE)
-			{
-				break;
-			}
-		}
+		} while (result.index == NONE);
 		if (found_mode)
 		{
 			*found_mode = iterator_mode;
@@ -1166,9 +1165,12 @@ c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon
 		iterator.step = 0;
 		iterator.mode_entry = NULL;
 		iterator.class_entry = NULL;
-		while ((weapon_type_entry = graph_weapon_type_iterate(&iterator, &iterator_mode, &iterator_weapon_class,
-			&iterator_weapon_type)) != NULL)
+		do
 		{
+			weapon_type_entry = graph_weapon_type_iterate(&iterator, &iterator_mode, &iterator_weapon_class,
+				&iterator_weapon_type);
+			if (!weapon_type_entry)
+				break;
 			c_type_709360 animation_id;
 			s_graph_named_animation *named = (s_graph_named_animation *)function_1dd560(
 				(s_sorted_array *)&weapon_type_entry->overlay_count, set, sizeof(s_graph_named_animation));
@@ -1178,11 +1180,7 @@ c_type_709360 s_graph_tag::overlay_get(long mode, long weapon_class, long weapon
 				animation_id = named->animation_id;
 			}
 			result = animation_id;
-			if (result.index != NONE)
-			{
-				break;
-			}
-		}
+		} while (result.index == NONE);
 		if (found_mode)
 		{
 			*found_mode = iterator_mode;

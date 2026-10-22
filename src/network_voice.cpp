@@ -1397,6 +1397,8 @@ s_voice_routing g_527104;
 long voice_player_settings_get_active_value(s_voice_player_settings *settings, long player);
 dword function_56c60(s_voice_player_settings *settings, long player);
 
+static __forceinline bool function_57d63(long arg_0, long arg_1);
+
 // @retail 0x55990
 void function_55990(s_voice_player_values *values)
 {
@@ -1435,7 +1437,7 @@ void function_55990(s_voice_player_values *values)
 				{
 					dword target = 1 << j;
 					if ((mask & target) &&
-						(voice_test_unknownF0(j, i) || voice_port_flag1(j) || voice_port_flag2(j)))
+						(function_57d63(j, i) || voice_port_flag1(j) || voice_port_flag2(j)))
 						mask &= ~target;
 				}
 				values->values[i] = mask;

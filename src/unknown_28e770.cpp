@@ -2,6 +2,7 @@
 #include "unknown_2551c0.h"
 #include "globals.h"
 #include "object_markers.h"
+#include "normalize3d.h"
 
 struct s_28e770
 {
@@ -293,9 +294,11 @@ void __stdcall function_28e770(long arg_0, long arg_1)
 								real local_27 = (real)local_3->field_26 * g_510c54->rate;
 								local_27 = local_27 < 0.0f ? 0.0f : local_27 > 5.0f ? 5.0f : local_27;
 								real local_28 = (1.0f - local_27 * (1.0f / 3.0f)) * 2.0f;
-								local_29->i += local_28 * direction.i;
-								local_29->j += direction.j * local_28;
-								local_29->k += direction.k * local_28;
+								vector3f contribution;
+								vector3f_scale(&direction, local_28, &contribution);
+								local_29->i += contribution.i;
+								local_29->j += contribution.j;
+								local_29->k += contribution.k;
 								if (function_30bf0(local_29) == 0.0f)
 									*local_29 = local_13;
 							}

@@ -221,7 +221,7 @@ bool function_1952f0(real a1, real a2, real a3, real a4, long bits)
 }
 
 // @retail 0x195560
-bool function_195560(vector3f const *b, vector3f const *a, vector3f const *up_a, vector3f const *up_b)
+bool function_195560(vector3f const *up_a, vector3f const *a, vector3f const *up_b, vector3f const *b)
 {
 	bool result = false;
 	if (a->quantized_equal(b))

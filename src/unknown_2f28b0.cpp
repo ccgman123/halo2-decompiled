@@ -264,12 +264,12 @@ found:
 		points->normal = between;
 		if (distance_squared < 1.192092896e-07f)
 		{
-			float minimum = (float)fabs(direction.m128_f32[0]);
+			float minimum = fabsf(direction.m128_f32[0]);
 			int smallest = 0;
 			int second = 1;
-			float const y = (float)fabs(direction.m128_f32[1]);
+			float const y = fabsf(direction.m128_f32[1]);
 			int third = 2;
-			float const z = (float)fabs(direction.m128_f32[2]);
+			float const z = fabsf(direction.m128_f32[2]);
 			if (y < minimum)
 			{
 				second = 0;
@@ -306,7 +306,7 @@ found:
 		__m128 other_end_point = segment[0];
 		float other_projection = -offset_along_other;
 		float projection = offset_along;
-		for (; ; end++)
+		for (; ;)
 		{
 			if ((clamped & ends_clamped) == 0)
 			{
@@ -379,12 +379,15 @@ found:
 			direction = _mm_xor_ps(direction, sign);
 			other_direction = _mm_xor_ps(other_direction, sign);
 			projection = length_squared - projection - cosine;
-			ends_clamped = 5;
 			point++;
+			end++;
+			ends_clamped = 5;
 		}
 	}
 }
 
+// score 63 (was 66): the sign mask is held in xmm6 here and in xmm4 in retail,
+// and the scaled axis products take the other of the two registers.
 // @retail 0x2f28f0
 void __cdecl function_2f28f0(body_2f28f0 const *body, __m128 const *segment, float radius, contact_point_2f28f0 *points)
 {
@@ -400,10 +403,8 @@ void *__fastcall function_31bc70(void *arg_0);
 // second capsule's radius; each of the three contacts found keeps its id
 // from the owner while it lies within the tolerance and is added to the
 // results, and gives its id back when it no longer does
-// score 6 (was 15): the segment in its own block puts it at esp+0x60 as in
-// retail; retail still schedules `mov esi, 2` one instruction earlier in the
-// near-zero normal block and `inc edx` before `mov eax, 5` at the end of the
-// parallel-ends loop, and addresses the capsule ends' store as [ecx + eax].
+// score 1 (was 15): the store of the transformed capsule ends puts the base
+// and the index the other way round: [eax + ecx] here, [ecx + eax] in retail.
 // @retail 0x2f3030
 void indexed_2f28b0::function_2f3030(body_2f28f0 const *a, body_2f28f0 const *b, input_2f3030 const *input, results_2f3030 *results)
 {

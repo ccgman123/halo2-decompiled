@@ -135,9 +135,10 @@ inline __m128 transformed_2f90a0(c_query_transform const *transform, __m128 cons
 	return _mm_add_ps(_mm_add_ps(x, y), z);
 }
 
-// score 70 (was 99): retail keeps &entries[i] in the points slot at esp+0x1c
-// for the add-contact branch and tests valid through cl; written that way
-// here, esi and edi swap for the whole loop (135).
+// score 13 (was 70): with &entries[i] held in a local for the add-contact
+// branch, only that branch's tail differs: retail takes &entries[i] (lea)
+// before the 0xffff test and marks it valid through it, then reloads the id
+// into eax/cx where ours uses ecx/dx; the else branch differs the same way.
 // a contact point of the pair for one ray
 // @retail 0x2f90a0
 void class_2f90a0::function_2f90a0(void const *a_, void const *b_, void const *input, void *collector)
@@ -181,9 +182,10 @@ void class_2f90a0::function_2f90a0(void const *a_, void const *b_, void const *i
 			point->position.transform(&b->motion->transform, &at);
 			point->normal.rotate(&b->motion->transform, &output.normal);
 			point->position_and_distance[3] = (output.fraction - 1.0f) * ((float const *)&each->start)[3];
+			contact_entry_2f90a0 *entry = &entries[i];
 			if (!entries[i].valid)
 			{
-				entries[i].id = manager->add_contact(a, b, input, point);
+				entry->id = manager->add_contact(a, b, input, point);
 				if (entries[i].id != 0xffff)
 				{
 					entries[i].valid = true;

@@ -926,13 +926,13 @@ bool function_159610(void)
 
 	if (game_engine_get())
 	{
-		real timer = 1.0f;
+		double timer = 1.0;
 
 		if (g_4b9ed8 != NONE)
 		{
 			timer = function_xaee93d()->timers[g_4b9ed8];
 		}
-		if (timer >= 1.0f)
+		if (timer >= 1.0)
 		{
 			long player_index = NONE;
 
@@ -1650,16 +1650,13 @@ void function_15e460(long object_index, long value)
 // @retail 0x15eb20
 bool function_15eb20(long player_index)
 {
-	bool result = true;
-
-	if (game_engine_get() && player_index != NONE)
-	{
-		if (g_4e6948->mode_180 == 7 && juggernaut_is((short)player_index) && (g_4e6948->flags22c & 2))
-		{
-			return true;
-		}
-		result = engine_options()->value1c4 != 1;
-	}
+	bool result = false;
+	if (!game_engine_get() || player_index == NONE)
+		result = true;
+	else if (g_4e6948->mode_180 == 7 && juggernaut_is((short)player_index) && (g_4e6948->flags22c & 2))
+		result = true;
+	else if (engine_options()->value1c4 != 1)
+		result = true;
 	return result;
 }
 
@@ -3149,13 +3146,12 @@ real function_159690(long player_index, long target_index)
 	s_engine_player_fade *target = (s_engine_player_fade *)engine_player_get(target_index);
 	real result = 0.0f;
 	long target_unit = target->unit_index;
-	if (target_unit != NONE)
+	if (target->unit_index != NONE)
 	{
 		long unit_index = player->unit_index;
-		char death_time = player->death_time;
-		if (unit_index == NONE && death_time != NONE)
+		if (unit_index == NONE && player->death_time != NONE)
 		{
-			real amount = 1.0f - (real)death_time / g_510c54->field_2_3;
+			real amount = 1.0f - (real)player->death_time / g_510c54->field_2_3;
 			amount = amount < 0.0f ? 0.0f : amount > 1.0f ? 1.0f : amount;
 			result = powf(amount, 1.9f);
 		}

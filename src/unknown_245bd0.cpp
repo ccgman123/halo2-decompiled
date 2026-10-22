@@ -350,7 +350,7 @@ bool function_246360(
 	vector3f const *u = direction;
 	vector3f const *v = &capsule->vector;
 	real a = length_sq3f(v);
-	real uv = v->k * u->k + v->j * u->j + v->i * u->i;
+	real uv = (v->k * u->k + v->j * u->j) + v->i * u->i;
 	real uu = length_sq3f(u);
 	real den = uu * a - uv * uv;
 	if (den == g_45dbd8)

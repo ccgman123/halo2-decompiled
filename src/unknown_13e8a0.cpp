@@ -648,8 +648,8 @@ void function_13f700(box2f const *bounds, box2f const *clip, short first,
 void __stdcall function_13f0e0(text_glyph_callback callback, short_rectangle2d const *bounds,
 	short *arg_c5cac5, short_rectangle2d const *clip, short line_gap, real scale, dword const *text)
 {
-	long line = 0;
 	long tab = 0;
+	long line = 0;
 	long maximum_lines = 0;
 	long wrapped_line = 0;
 	point2f position = { (real)bounds->left, (real)bounds->top };
@@ -668,25 +668,28 @@ void __stdcall function_13f0e0(text_glyph_callback callback, short_rectangle2d c
 				line_bounds.x0 = g_4e73a0.tab_stops[(short)tab - 1] * scale;
 			else
 			{
-				if ((short)line == 0)
-					line_bounds.x0 += g_4e73a0.unknown5e * scale;
-				else
+				if ((short)line != 0)
 					line_bounds.x0 += g_4e73a0.unknown60 * scale;
+				else
+					line_bounds.x0 += g_4e73a0.unknown5e * scale;
 			}
 			if ((short)tab < g_4e73a0.tab_stop_count)
 				line_bounds.x1 = g_4e73a0.tab_stops[(short)tab] * scale;
 		}
 		else
 		{
-			if ((short)line == 0)
-				line_bounds.x0 += g_4e73a0.unknown5e * scale;
-			else
+			if ((short)line != 0)
 				line_bounds.x0 += g_4e73a0.unknown60 * scale;
+			else
+				line_bounds.x0 += g_4e73a0.unknown5e * scale;
 		}
 		s_font_header *header = iterator.field_4_3;
 		position.x = *(short *)header->unknown0a * scale + line_bounds.x0;
-		position.y = (header->ascending_height +
-			(header->leading_height + line_gap + header->descending_height + header->ascending_height) * ((short)wrapped_line + (short)line)) * scale + line_bounds.y0;
+		long height = header->descending_height + line_gap;
+		height += header->leading_height;
+		long ascent = header->ascending_height;
+		height += ascent;
+		position.y = (ascent + height * ((short)wrapped_line + (short)line)) * scale + line_bounds.y0;
 		s_text_line_measurement measured = function_13ef40(&iterator, &position, &line_bounds, scale);
 		header = iterator.field_4_3;
 		switch (justification)
@@ -717,13 +720,10 @@ void __stdcall function_13f0e0(text_glyph_callback callback, short_rectangle2d c
 		iterator.index = (short)measured.index;
 		switch (iterator.token)
 		{
-		case _text_token_end:
-			goto done;
-		case _text_token_newline:
-			line += maximum_lines + 1;
-			tab = 0;
-			maximum_lines = 0;
-			wrapped_line = 0;
+		case _text_token_character:
+			wrapped_line++;
+			if ((short)wrapped_line > (short)maximum_lines)
+				maximum_lines = wrapped_line;
 			break;
 		case _text_token_tab:
 			if ((short)tab < g_4e73a0.tab_stop_count)
@@ -732,14 +732,17 @@ void __stdcall function_13f0e0(text_glyph_callback callback, short_rectangle2d c
 				wrapped_line = 0;
 			}
 			break;
+		case _text_token_newline:
+			tab = 0;
+			line += maximum_lines + 1;
+			maximum_lines = 0;
+			wrapped_line = 0;
+			break;
 		case _text_token_justification:
 			wrapped_line = 0;
 			break;
-		case _text_token_character:
-			wrapped_line++;
-			if ((short)wrapped_line > (short)maximum_lines)
-				maximum_lines = wrapped_line;
-			break;
+		case _text_token_end:
+			goto done;
 		}
 	} while (iterator.token != _text_token_end);
 done:

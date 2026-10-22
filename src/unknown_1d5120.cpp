@@ -130,7 +130,7 @@ bool function_1d5120(s_havok_component *arg_0, long arg_1, long arg_2, long arg_
    break;
   }
   ((real *)&local_1.m_translation.m_quad)[2] += (local_4 ? -1.0f : 1.0f) * arg_4;
-  if (local_4) --local_5; else ++local_5;
+  local_5 -= local_4 ? 1 : -1;
  }
  ((c_contact_query_world *)g_51e9a4)->remove(local_2);
  havok_reference_remove((c_havok_reference_counted *)local_2);

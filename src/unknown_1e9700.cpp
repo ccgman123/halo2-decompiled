@@ -86,9 +86,11 @@ void function_1ea5b0(long player_index, s_statborg *statistics, long threshold, 
 	short consecutive = ++*(short *)(row + 0x16);
 	if ((short)old_maximum < consecutive && g_510ca0 && !g_510ca1 && index != NONE)
 	{
+		long minimum = g_46ddc0[12].minimum;
+		long maximum = g_46ddc0[12].maximum;
 		long value = consecutive;
-		if (value < g_46ddc0[12].minimum) value = g_46ddc0[12].minimum;
-		else if (value > g_46ddc0[12].maximum) value = g_46ddc0[12].maximum;
+		if (value < minimum) value = minimum;
+		else if (value > maximum) value = maximum;
 		g_511bf4.groups[index][12].value = (word)value;
 	}
 	if (g_55e4d0[g_4e9ae8->engine_index])

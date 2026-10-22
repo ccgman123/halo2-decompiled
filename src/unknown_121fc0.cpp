@@ -21,24 +21,28 @@ void font_cache_initialize(void);
 void font_cache_pixels_initialize(void);
 void function_593e0(void);
 
-/* the next whitespace-separated token of a string (NULL when there is none);
-   the token is terminated in place and *next set to the text after it */
-static inline char *next_token_121fc0(char *string, char **next)
+/* the next token of a string separated by any of the delimiters (NULL when
+   there is none); the token is terminated in place and *next set to the text
+   after it */
+static inline char *function_xe9ecc4(char *string, char const *delimiters, char **next)
 {
-	char *token = string;
-	if (token)
+	char *end = string;
+	char *token;
+
+	if (end)
 	{
-		token += strspn(token, "\t\n\r ");
-		token = *token ? token : NULL;
+		end += strspn(end, delimiters);
+		if (!*end)
+			end = NULL;
 	}
-	char *rest = token;
-	if (token)
+	token = end;
+	if (end)
 	{
-		rest = strpbrk(token, "\t\n\r ");
-		if (rest)
-			*rest++ = 0;
+		end = strpbrk(end, delimiters);
+		if (end)
+			*end++ = 0;
 	}
-	*next = rest;
+	*next = end;
 	return token;
 }
 
@@ -72,9 +76,7 @@ void function_121fc0(void)
 		bool local_7;
 		dword local_8;
 		function_1a1480(local_3, local_5, sizeof(local_5) - 1, 7, 6, &local_7, &local_8, &local_6);
-		if (!local_6)
-			while (!local_6)
-				SwitchToThread();
+		function_120d50(&local_6, false);
 		if (local_7)
 		{
 			char *local_9[11] = {0};
@@ -83,7 +85,7 @@ void function_121fc0(void)
 			local_8 = local_8 > sizeof(local_5) - 1 ? sizeof(local_5) - 1 : local_8;
 			local_5[local_8] = 0;
 			char *local_12;
-			char *local_13 = next_token_121fc0(local_5, &local_12);
+			char *local_13 = function_xe9ecc4(local_5, "\t\n\r ", &local_12);
 			while (local_13)
 			{
 				if (local_10 < 11)
@@ -108,7 +110,7 @@ void function_121fc0(void)
 					}
 					local_10++;
 				}
-				local_13 = next_token_121fc0(local_12, &local_12);
+				local_13 = function_xe9ecc4(local_12, "\t\n\r ", &local_12);
 			}
 		}
 		g_4e3b40 = true;

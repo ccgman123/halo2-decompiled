@@ -7,6 +7,7 @@
 #include "object_markers.h"
 #include "object_iterator.h"
 #include "sound_sources.h"
+#include "vector_products.h"
 
 /* the item (the object data) */
 struct s_item
@@ -838,12 +839,13 @@ void function_10d710(vector3f const *facing, long object_index, point3f const *o
             {
                 real root = (real)sqrt(square);
                 vector3f axis;
-                axis.i = (facing->k * old->j - facing->j * old->k) / root;
-                axis.j = (facing->i * old->k - facing->k * old->i) / root;
-                axis.k = (facing->j * old->i - facing->i * old->j) / root;
+                cross3f(old, facing, &axis);
+                item_vector_scale(&axis, 1.0f / root);
                 real scalar = root * 0.5f;
                 real scale = scalar * scalar * 2.0f - 1.0f;
-                real dot = (forward->k * axis.k + forward->j * axis.j + forward->i * axis.i) * 2.0f;
+                real projection = forward->k * axis.k + forward->j * axis.j;
+                projection += forward->i * axis.i;
+                real dot = projection * 2.0f;
                 up.i = (forward->k * axis.j - forward->j * axis.k) * (scalar * 2.0f) + forward->i * scale + dot * axis.i;
                 up.j = (axis.k * forward->i - forward->k * axis.i) * (scalar * 2.0f) + axis.j * dot + forward->j * scale;
                 up.k = (forward->j * axis.i - axis.j * forward->i) * (scalar * 2.0f) + axis.k * dot + forward->k * scale;
@@ -1235,14 +1237,14 @@ bool __stdcall function_10b4d0(long object_index)
                     point3f position;
                     s_type_1e6529 data;
                     data.unknown7c = NONE;
-                    function_b9dd0(object_index, &position);
+                    point3f *event_point = function_b9dd0(object_index, &position);
                     function_d6660(&data, damage_index);
                     data.owner = owner;
                     *(byte *)&data.unknown84 = 4;
                     data.unknown54 = 1.0f;
                     object_get_root_location(object_index, (s_location *)&data.unknown1c);
-                    data.origin = position;
-                    data.position = position;
+                    data.origin = *event_point;
+                    data.position = *event_point;
                     function_d6c80(&data, NONE);
                 }
                 function_176780(object_index, (s_effect_owner const *)&owner, 0.0f, *(long *)(definition + 0x128), 0.0f, NULL, NULL);

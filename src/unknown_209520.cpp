@@ -966,14 +966,13 @@ long function_16b990(s_record_pool *data, long index);
 // @retail 0x2090a0
 void function_2090a0(void)
 {
-    byte *scenario = (byte *)g_4e0350;
-
     g_4f9384->valid = true;
     record_pool_release_all(g_4f9384);
     g_4f9388 = true;
     g_4f938c = NONE;
     if (g_4686c0 != NONE && g_4e6948->mode != 4)
     {
+        byte *scenario = (byte *)g_4e0350;
         long thread_index = function_2097c0(NONE, 1);
         s_hs_thread *thread = hs_thread_get(thread_index);
         for (long i = 0; i < *(long *)(scenario + 0x1c0); i++)
@@ -1007,8 +1006,8 @@ void function_2090a0(void)
         record_pool_release(g_4f9384, thread_index);
         for (long i = 0; i < *(long *)(scenario + 0x1b8); i++)
         {
-            s_hs_script *script = &((s_hs_scenario_view *)scenario)->scripts[i];
-            if (script->type == 0 || script->type == 1 || script->type == 2)
+            short type = ((s_hs_scenario_view *)scenario)->scripts[i].type;
+            if (type >= 0 && type <= 2)
                 function_2097c0(i, 0);
         }
     }

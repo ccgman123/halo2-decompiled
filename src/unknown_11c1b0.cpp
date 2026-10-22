@@ -32,8 +32,9 @@ bool __stdcall function_11c1b0(short arg_0, bool arg_1)
 {
     short local_0 = g_4e6948->index;
     bool local_1 = false;
+    short local_7;
     if (arg_0 != NONE && (arg_0 < 0 || arg_0 >= *(long *)((byte *)g_4e0350 + 0x210)))
-        return local_1;
+        goto finish;
     if (g_4686c4 == arg_0 && local_0 == arg_0)
         return true;
     for (dword local_2 = 0; local_2 < 68; local_2++)
@@ -41,7 +42,7 @@ bool __stdcall function_11c1b0(short arg_0, bool arg_1)
         if (g_440df0[local_2].field_0)
             g_440df0[local_2].field_0(arg_0);
     }
-    short local_7 = local_0;
+    local_7 = local_0;
     if (local_0 != NONE && local_0 != arg_0)
     {
         function_137da0();
@@ -69,25 +70,29 @@ bool __stdcall function_11c1b0(short arg_0, bool arg_1)
         g_4e0340 = NULL;
         g_4e033c = NULL;
         g_4686c4 = arg_0;
-        if (!cache_files_load_structure_bsp((s_structure_bsp_reference *)local_4))
+        if (cache_files_load_structure_bsp((s_structure_bsp_reference *)local_4))
+        {
+            function_16e2c0(*(long *)(local_4 + 0x14));
+            long local_6 = *(long *)(local_4 + 0x1c);
+            if (local_6 != NONE)
+                g_4e0344 = (s_structure_bsp_globals *)g_4e3b44[local_6 & 0xffff].bytes;
+            else
+                g_4e0344 = NULL;
+            g_4e0348 = (s_match_globals *)g_4e3b44[*(long *)(local_4 + 0x14) & 0xffff].bytes;
+            g_4e0340 = *(s_slot_entry_list **)((byte *)g_4e0348 + 0x18);
+            g_4e033c = (s_bsp3d *)g_4e0340;
+        }
+        else
         {
             g_4686c4 = NONE;
             local_1 = false;
             goto local_5;
         }
-        function_16e2c0(*(long *)(local_4 + 0x14));
-        long local_6 = *(long *)(local_4 + 0x1c);
-        if (local_6 != NONE)
-            g_4e0344 = (s_structure_bsp_globals *)g_4e3b44[local_6 & 0xffff].bytes;
-        else
-            g_4e0344 = NULL;
-        g_4e0348 = (s_match_globals *)g_4e3b44[*(long *)(local_4 + 0x14) & 0xffff].bytes;
-        g_4e0340 = *(s_slot_entry_list **)((byte *)g_4e0348 + 0x18);
-        g_4e033c = (s_bsp3d *)g_4e0340;
     }
     if (local_7 != arg_0)
         function_137d40();
 local_5:
     g_4e6398 = g_485ab0;
+finish:
     return local_1;
 }

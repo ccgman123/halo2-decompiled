@@ -144,7 +144,6 @@ void function_223080(long arg_0, long arg_1, long arg_2, s_223080 *arg_3,
 {
 	s_223081 local_0;
 	s_grid_pair local_1, local_2, local_3;
-	(void)&arg_3; (void)&arg_4; (void)&arg_5; (void)&arg_6;
 	arg_3->field_0 = arg_0;
 	arg_3->field_4 = arg_1;
 	arg_3->field_8 = arg_2;

@@ -6,6 +6,7 @@
 
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
+#include "vector_products.h"
 #include "globals.h"
 #include "unknown_0d0690.h"
 #include "geometry_cache.h"
@@ -982,9 +983,10 @@ long function_d1850(long object_index, bool value, s_effect_color_query *query)
         {
             s_object *object = OBJECT_FROM_INDEX(object_index);
             byte *volatile definition = g_4e3b44[object->tag_index & 0xffff].bytes;
-            long volatile flags = 0;
-            if ((bool)((*(dword *)((byte *)object + 4) >> 13) & 1)) flags = 1;
-            if ((bool)((definition[2] >> 1) & 1)) flags |= 1;
+            dword object_flags = *(dword *)((byte *)object + 4);
+            byte tag_flags = definition[2];
+            long volatile flags = (object_flags >> 13) & 1;
+            flags |= (tag_flags >> 1) & 1;
             point3f *point = (point3f *)((byte *)object + 0x30);
             long status = function_d2a50(flags, object_index, value, query, 0, point);
             if (surface_status_failed(status))
@@ -1067,10 +1069,7 @@ struct s_lighting_parameter_block
 void function_117c80(vector3f const *input, vector3f *output, real angle);
 real function_13b390(void const *function, real input, real range);
 
-PRIVATE __forceinline real lighting_pin(real value, real lower, real upper)
-{
-	return value < lower ? lower : value > upper ? upper : value;
-}
+#define lighting_pin(value, lower, upper) ((value) < (lower) ? (lower) : (value) > (upper) ? (upper) : (value))
 
 PRIVATE __forceinline void lighting_pin_color(color3f const *input, color3f const *lower, color3f const *upper, color3f *out)
 {
@@ -1105,10 +1104,12 @@ PRIVATE __forceinline void lighting_rotate(vector3f const *input, real angle, ve
 	real sine = (real)sin(angle);
 	real cosine = (real)cos(angle);
 	vector3f axis = *g_4687b0;
+	vector3f perpendicular;
+	cross3f(input, &axis, &perpendicular);
 	real projection = (axis.k * input->k + axis.j * input->j + axis.i * input->i) * (1.0f - cosine);
-	out->i = input->i * cosine + axis.i * projection - (axis.k * input->j - axis.j * input->k) * sine;
-	out->j = input->j * cosine + axis.j * projection - (axis.i * input->k - axis.k * input->i) * sine;
-	out->k = input->k * cosine + axis.k * projection - (axis.j * input->i - axis.i * input->j) * sine;
+	out->i = input->i * cosine + axis.i * projection - perpendicular.i * sine;
+	out->j = input->j * cosine + axis.j * projection - perpendicular.j * sine;
+	out->k = input->k * cosine + axis.k * projection - perpendicular.k * sine;
 }
 
 PRIVATE __forceinline real lighting_normalize_ordered(vector3f *v, real square)
@@ -1131,66 +1132,71 @@ bool function_d37f0(s_lighting_parameter_block *block, long type, s_effect_color
 {
 	s_lighting_parameters *parameters = NULL;
 	long count = block->count;
-	dword mask = 1 << (type + 1);
-	for (long i = 0; i < count; i++)
+	if (count > 0)
 	{
-		if ((block->entries[i].flags & mask) || (block->entries[i].flags & 1))
-			parameters = &block->entries[i];
+		dword mask = 1 << (type + 1);
+		for (long i = 0; i < count; i++)
+		{
+			if ((block->entries[i].flags & mask) || (block->entries[i].flags & 1))
+				parameters = &block->entries[i];
+		}
 	}
-	if (!parameters)
-		return false;
-	vector3f const *input_normal = (vector3f const *)query;
-	vector3f normal = { input_normal->i, input_normal->j, input_normal->k };
-	real length = (real)sqrt(input_normal->i * input_normal->i + input_normal->j * input_normal->j + input_normal->k * input_normal->k);
-	s_lighting_record *const *record_reference = &record;
-	(*record_reference)->length = length;
-	lighting_normalize_ordered(&normal, (normal.k * normal.k + normal.j * normal.j) + normal.i * normal.i);
-	color3f adjusted;
-	adjusted.red = lightmap->red + parameters->bias;
-	adjusted.green = lightmap->green + parameters->bias;
-	adjusted.blue = lightmap->blue + parameters->bias;
-	color3f primary;
-	lighting_pin_color(&adjusted, &parameters->lower1, &parameters->upper1, &primary);
-	record->color1 = primary;
-	function_117c80(&normal, &record->direction1, parameters->angle1 * 0.01745329238474369f);
-	lighting_negate(&record->direction1);
-	color3f limited_base;
-	color3f limited_lightmap;
-	lighting_pin_color(base, &parameters->lower_base, &parameters->upper_base, &limited_base);
-	lighting_pin_color(&adjusted, &parameters->lower2, &parameters->upper2, &limited_lightmap);
-	real square = length * length;
-	record->color2.red = ((limited_base.red * limited_lightmap.red) * square) * 2.0f + record->color1.red * (1.0f - square);
-	record->color2.green = ((limited_base.green * limited_lightmap.green) * square) * 2.0f + record->color1.green * (1.0f - square);
-	record->color2.blue = ((limited_base.blue * limited_lightmap.blue) * square) * 2.0f + record->color1.blue * (1.0f - square);
-	vector3f turned = record->direction1;
-	lighting_negate(&turned);
-	lighting_rotate(&turned, parameters->angle2 * 0.01745329238474369f, &record->direction2);
-	lighting_pin_color(&adjusted, &parameters->lower0, &parameters->upper0, &record->color0);
-	record->direction0 = normal;
-	lighting_negate(&record->direction0);
-	if (record->direction0.k > -0.75f)
+	bool result = parameters != NULL;
+	if (result)
 	{
-		record->direction0.k = lighting_pin(record->direction0.k, -1.0f, -0.75f);
-		lighting_normalize_ordered(&record->direction0,
-		(record->direction0.i * record->direction0.i + record->direction0.j * record->direction0.j) +
-		record->direction0.k * record->direction0.k);
+		vector3f const *input_normal = (vector3f const *)query;
+		vector3f normal = { input_normal->i, input_normal->j, input_normal->k };
+		real length = (real)sqrt(input_normal->i * input_normal->i + input_normal->j * input_normal->j + input_normal->k * input_normal->k);
+		s_lighting_record *const *record_reference = &record;
+		(*record_reference)->length = length;
+		lighting_normalize_ordered(&normal, (normal.k * normal.k + normal.j * normal.j) + normal.i * normal.i);
+		color3f adjusted;
+		adjusted.red = lightmap->red + parameters->bias;
+		adjusted.green = lightmap->green + parameters->bias;
+		adjusted.blue = lightmap->blue + parameters->bias;
+		color3f primary;
+		lighting_pin_color(&adjusted, &parameters->lower1, &parameters->upper1, &primary);
+		record->color1 = primary;
+		function_117c80(&normal, &record->direction1, parameters->angle1 * 0.01745329238474369f);
+		lighting_negate(&record->direction1);
+		color3f limited_base;
+		color3f limited_lightmap;
+		lighting_pin_color(base, &parameters->lower_base, &parameters->upper_base, &limited_base);
+		lighting_pin_color(&adjusted, &parameters->lower2, &parameters->upper2, &limited_lightmap);
+		real square = length * length;
+		record->color2.red = ((limited_base.red * limited_lightmap.red) * square) * 2.0f + record->color1.red * (1.0f - square);
+		record->color2.green = ((limited_base.green * limited_lightmap.green) * square) * 2.0f + record->color1.green * (1.0f - square);
+		record->color2.blue = ((limited_base.blue * limited_lightmap.blue) * square) * 2.0f + record->color1.blue * (1.0f - square);
+		vector3f turned = record->direction1;
+		lighting_negate(&turned);
+		lighting_rotate(&turned, parameters->angle2 * 0.01745329238474369f, &record->direction2);
+		lighting_pin_color(&adjusted, &parameters->lower0, &parameters->upper0, &record->color0);
+		record->direction0 = normal;
+		lighting_negate(&record->direction0);
+		if (record->direction0.k > -0.75f)
+		{
+			record->direction0.k = lighting_pin(record->direction0.k, -1.0f, -0.75f);
+			lighting_normalize_ordered(&record->direction0,
+			(record->direction0.i * record->direction0.i + record->direction0.j * record->direction0.j) +
+			record->direction0.k * record->direction0.k);
+		}
+		real luminance = 2.0f * (0.11f * lightmap->blue + 0.59f * lightmap->green + 0.3f * lightmap->red);
+		record->value1c = lighting_function(&parameters->value1c, lighting_pin(luminance, 0.0f, 1.0f));
+		real scale1 = lighting_function(&parameters->scale1, length);
+		real scale2 = lighting_function(&parameters->scale2, length);
+		record->color1.red *= scale1;
+		record->color1.green *= scale1;
+		record->color1.blue *= scale1;
+		record->color2.red *= scale2;
+		record->color2.green *= scale2;
+		record->color2.blue *= scale2;
+		luminance = 0.114f * adjusted.blue + 0.587f * adjusted.green + 0.299f * adjusted.red;
+		real scale0 = (lighting_function(&parameters->scale0, luminance) * (1.0f - (0.1f * length + 0.6f))) * 1.4f;
+		record->color0.red *= scale0;
+		record->color0.green *= scale0;
+		record->color0.blue *= scale0;
 	}
-	real luminance = 2.0f * (0.11f * lightmap->blue + 0.59f * lightmap->green + 0.3f * lightmap->red);
-	record->value1c = lighting_function(&parameters->value1c, lighting_pin(luminance, 0.0f, 1.0f));
-	real scale1 = lighting_function(&parameters->scale1, length);
-	real scale2 = lighting_function(&parameters->scale2, length);
-	record->color1.red *= scale1;
-	record->color1.green *= scale1;
-	record->color1.blue *= scale1;
-	record->color2.red *= scale2;
-	record->color2.green *= scale2;
-	record->color2.blue *= scale2;
-	luminance = 0.114f * adjusted.blue + 0.587f * adjusted.green + 0.299f * adjusted.red;
-	real scale0 = (lighting_function(&parameters->scale0, luminance) * (1.0f - (0.1f * length + 0.6f))) * 1.4f;
-	record->color0.red *= scale0;
-	record->color0.green *= scale0;
-	record->color0.blue *= scale0;
-	return true;
+	return result;
 }
 
 real g_467484 = 15.0f;
@@ -1224,20 +1230,19 @@ void function_d4080(long type, s_effect_color_query const *query, s_lighting_rec
 		function_117c80(&normal, &record->direction1, g_467484);
 		lighting_negate(&record->direction1);
 		color3f limited;
-		limited.red = base.red < 0.25 ? 0.25f : base.red > 0.75 ? 0.75f : base.red;
-		limited.green = base.green < 0.25 ? 0.25f : base.green > 0.75 ? 0.75f : base.green;
-		limited.blue = base.blue < 0.25 ? 0.25f : base.blue > 0.75 ? 0.75f : base.blue;
-		color3f reflected;
-		reflected.red = lighting_pin((lightmap.red * limited.red) * 2.0f, 0.0f, 1.0f);
-		reflected.green = lighting_pin((lightmap.green * limited.green) * 2.0f, 0.0f, 1.0f);
-		reflected.blue = lighting_pin((lightmap.blue * limited.blue) * 2.0f, 0.0f, 1.0f);
-		if (!(reflected.red > 0.0f)) reflected.red = 0.0f;
-		if (!(reflected.green > 0.0f)) reflected.green = 0.0f;
-		if (!(reflected.blue > 0.0f)) reflected.blue = 0.0f;
+		limited.red = base.red < 0.25 ? 0.25 : base.red > 0.75 ? 0.75 : base.red;
+		limited.green = base.green < 0.25 ? 0.25 : base.green > 0.75 ? 0.75 : base.green;
+		limited.blue = base.blue < 0.25 ? 0.25 : base.blue > 0.75 ? 0.75 : base.blue;
+		record->color2.red = lighting_pin((lightmap.red * limited.red) * 2.0f, 0.0f, 1.0f);
+		record->color2.green = lighting_pin((lightmap.green * limited.green) * 2.0f, 0.0f, 1.0f);
+		record->color2.blue = lighting_pin((lightmap.blue * limited.blue) * 2.0f, 0.0f, 1.0f);
+		if (!(record->color2.red > 0.0f)) record->color2.red = 0.0f;
+		if (!(record->color2.green > 0.0f)) record->color2.green = 0.0f;
+		if (!(record->color2.blue > 0.0f)) record->color2.blue = 0.0f;
 		real square = length * length;
-		record->color2.red = (1.0f - square) * record->color1.red + reflected.red * square;
-		record->color2.green = (1.0f - square) * record->color1.green + reflected.green * square;
-		record->color2.blue = (1.0f - square) * record->color1.blue + reflected.blue * square;
+		record->color2.red = (1.0f - square) * record->color1.red + record->color2.red * square;
+		record->color2.green = (1.0f - square) * record->color1.green + record->color2.green * square;
+		record->color2.blue = (1.0f - square) * record->color1.blue + record->color2.blue * square;
 		vector3f turned = record->direction1;
 		lighting_negate(&turned);
 		lighting_rotate(&turned, g_467494 * 0.01745329238474369f, &record->direction2);
@@ -1269,6 +1274,8 @@ void function_d4080(long type, s_effect_color_query const *query, s_lighting_rec
 	lighting_pin_color(&record->color2, &lower, &upper, &record->color2);
 	lighting_pin_color(&record->color0, &lower, &upper, &record->color0);
 }
+
+#undef lighting_pin
 
 #include "unknown_03bcb0.h"
 
@@ -1551,7 +1558,7 @@ PRIVATE __forceinline void surface_sample_unpack(short const *source, s_sample_p
 long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, long flags, bool value)
 {
     s_structure_lightmap_triangle const *triangle = (s_structure_lightmap_triangle const *)surface;
-    volatile long result = 2;
+    long result = 2;
     if (*(long const *)triangle->unknown08 == NONE)
     {
         s_mesh *mesh = NULL;
@@ -1572,10 +1579,19 @@ long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, 
             }
             byte *bsp = (byte *)g_4e0344->locations;
             long index = triangle->instance_index;
-            bool per_vertex = index != NONE &&
-                *(word *)(*(byte **)((byte *)g_4e0348 + 0x144) + index * 0x58 + 0x56) != 0;
             real u = 0.0f, v = 0.0f;
             real base_u = 0.0f, base_v = 0.0f;
+            long bitmap_index = NONE;
+            long palette_index = NONE;
+            bool per_vertex = index != NONE &&
+                *(word *)(*(byte **)((byte *)g_4e0348 + 0x144) + index * 0x58 + 0x56) != 0;
+            if (!per_vertex)
+            {
+                byte *entry = index != NONE ? *(byte **)(bsp + 0x4c) + index * 4 :
+                    *(byte **)(bsp + 0x2c) + triangle->cluster_index * 4;
+                bitmap_index = *(short *)entry;
+                palette_index = (signed char)entry[2];
+            }
             vector3f normal = *g_4687b0;
             color3f base = *g_468734;
             color3f lightmap = *g_46872c;
@@ -1583,10 +1599,8 @@ long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, 
                 *(byte **)((byte *)g_4e0348 + 0xa8) + *(short *)(part + 4) * 0x20));
             if (!per_vertex)
             {
-                byte *entry = index != NONE ? *(byte **)(bsp + 0x4c) + index * 4 :
-                    *(byte **)(bsp + 0x2c) + triangle->cluster_index * 4;
                 function_d2bf0(mesh, triangle->lightmap_part_index, triangle->u, triangle->v, &u, &v);
-                result = function_d2f90(flags, *(short *)entry, (signed char)entry[2], u, v, &lightmap);
+                result = function_d2f90(flags, bitmap_index, palette_index, u, v, &lightmap);
             }
             else
             {
@@ -1629,14 +1643,16 @@ long __stdcall function_d1e10(void const *surface, s_effect_color_query *query, 
             if (block)
             {
                 byte *data = *(byte **)(block + 0xc) + *(long *)(block + 4);
-                s_sample_point points[3];
+                s_sample_point point_a;
+                s_sample_point point_b;
+                s_sample_point point_c;
                 s_sample_point const *a, *b, *c;
                 if (block[0] == 0x39)
                 {
-                    surface_sample_unpack((short *)(data + vertices[0] * 10), &points[0]);
-                    surface_sample_unpack((short *)(data + vertices[1] * 10), &points[1]);
-                    surface_sample_unpack((short *)(data + vertices[2] * 10), &points[2]);
-                    a = &points[0]; b = &points[1]; c = &points[2];
+                    surface_sample_unpack((short *)(data + vertices[0] * 10), &point_a);
+                    surface_sample_unpack((short *)(data + vertices[1] * 10), &point_b);
+                    surface_sample_unpack((short *)(data + vertices[2] * 10), &point_c);
+                    a = &point_a; b = &point_b; c = &point_c;
                 }
                 else
                 {

@@ -4,6 +4,7 @@
 #include "unknown_11c920.h"
 #include "unknown_0259d0.h"
 #include "unknown_1eb550.h"
+#include "normalize3d.h"
 
 // @flags /O2 /arch:SSE /Gr
 
@@ -117,24 +118,42 @@ PRIVATE __forceinline void normalize_particle_vector_2b(vector3f *v)
     }
 }
 
+PRIVATE __forceinline real particle_direction_squared_2b(vector3f const *v)
+{
+    real squared = v->k * v->k;
+    squared += v->j * v->j;
+    squared += v->i * v->i;
+    return squared;
+}
+
+PRIVATE __forceinline void normalize_particle_direction_2b(vector3f *v)
+{
+    real squared = particle_direction_squared_2b(v);
+    if (squared != 0.0f)
+    {
+        real inverse = inverse_sqrt_2b96(squared);
+        scale_particle_vector_2b(inverse, v);
+    }
+}
+
 // @retail 0x2b98b0
 void function_2b98b0(s_particle_2b96 const *particle, s_particle_2b96 const *other, real scale, vector3f *result)
 {
     vector3f a = particle->velocity;
     vector3f b = other->velocity;
     normalize_particle_vector_2b(&a);
-    normalize_particle_vector_2b(&b);
+    normalize_particle_direction_2b(&b);
     result->i += (b.i - a.i) * scale;
     result->j += (b.j - a.j) * scale;
     result->k += (b.k - a.k) * scale;
 }
 
-PRIVATE __forceinline real particle_separation_squared_values(real z, real y, real x)
+PRIVATE __forceinline real particle_distance_estimate_2b(real squared)
 {
-    real squared = z * z;
-    squared += y * y;
-    squared += x * x;
-    return squared;
+    union { real value; long bits; } estimate;
+    estimate.value = squared;
+    estimate.bits = (estimate.bits >> 1) + 0x1fc00000;
+    return estimate.value;
 }
 
 // @retail 0x2b9750
@@ -143,33 +162,20 @@ void function_2b9750(s_particle_2b96 const *other, s_particle_2b96 const *partic
     if (fabs(scale) < 0.0001f)
         return;
     vector3f delta;
-    delta.i = other->position.x - particle->position.x;
-    delta.k = other->position.z - particle->position.z;
-    delta.j = other->position.y - particle->position.y;
-    real initial_squared = particle_separation_squared_values(delta.k, delta.j, delta.i);
+    vector3d_from_points3d(&particle->position, &other->position, &delta);
+    real initial_squared = dot3f(&delta, &delta);
     real bounded_radius = radius > 0.1f ? radius : 0.1f;
-    radius = initial_squared;
-    *(long *)&radius = (*(long *)&radius >> 1) + 0x1fc00000;
-    real ratio = radius / bounded_radius;
-    delta.k = particle->position.z - other->position.z;
-    delta.i = particle->position.x - other->position.x;
-    delta.j = particle->position.y - other->position.y;
-    real normalized_squared = particle_separation_squared_values(delta.k, delta.j, delta.i);
-    if (normalized_squared != 0.0f)
-    {
-        real inverse = inverse_sqrt_2b96(normalized_squared);
-        delta.k *= inverse;
-        delta.i *= inverse;
-        delta.j *= inverse;
-    }
+    real ratio = particle_distance_estimate_2b(initial_squared) / bounded_radius;
+    vector3d_from_points3d(&other->position, &particle->position, &delta);
+    normalize_particle_direction_2b(&delta);
+    vector3f force;
     if (ratio < 1.0f)
-        scale = 0.0f - ratio * scale;
-    delta.i *= scale;
-    delta.j *= scale;
-    delta.k *= scale;
-    result->i += delta.i;
-    result->j += delta.j;
-    result->k += delta.k;
+        vector3f_scale(&delta, 0.0f - ratio * scale, &force);
+    else
+        vector3f_scale(&delta, scale, &force);
+    result->i += force.i;
+    result->j += force.j;
+    result->k += force.k;
 }
 
 #include "globals.h"
@@ -292,14 +298,6 @@ void function_2ba100(s_particle_properties_2ba const *definition, void *system, 
 
 #include "unknown_0259a0.h"
 
-PRIVATE __forceinline real particle_direction_squared_2b(vector3f const *v)
-{
-    real squared = v->k * v->k;
-    squared += v->j * v->j;
-    squared += v->i * v->i;
-    return squared;
-}
-
 // @retail 0x2b9a00
 void function_2b9a00(s_particle_2b96 const *particle, real distance, vector3f *result)
 {
@@ -323,14 +321,6 @@ void function_2b9a00(s_particle_2b96 const *particle, real distance, vector3f *r
         result->j += ((vector3f const *)(collision.storage + 0x28))->j;
         result->k += ((vector3f const *)(collision.storage + 0x28))->k;
     }
-}
-
-PRIVATE __forceinline real particle_distance_estimate_2b(real squared)
-{
-    union { real value; long bits; } estimate;
-    estimate.value = squared;
-    estimate.bits = (estimate.bits >> 1) + 0x1fc00000;
-    return estimate.value;
 }
 
 PRIVATE __forceinline void normalize_particle_velocity_2b(vector3f *v)
@@ -568,9 +558,7 @@ void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void
     s_particle_property_entry_2ba *properties = definition->properties;
     c_particle_collision_interface_2b *material = (c_particle_collision_interface_2b *)function_137bd0(
         ((s_particle_system_datum *)system)->function_1751d0()->tag_index);
-    dword remaining = definition->constant_mask;
-    long next;
-    real coefficients[2];
+    long next = first;
     union
     {
         s_collision_result_1697c0 value;
@@ -581,9 +569,8 @@ void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void
     cache.current_system = 0;
     cache.current_emitter = 0;
     cache.current_particle = 0;
-    coefficients[0] = 0.0f;
-    coefficients[1] = 0.0f;
-    next = first;
+    real coefficients[2] = { 0.0f, 0.0f };
+    dword remaining = definition->constant_mask;
     if (system)
     {
         cache.current_system = system;
@@ -611,7 +598,7 @@ void __stdcall function_2b9060(s_particle_properties_2ba const *definition, void
         word countdown = *flags >> 13;
         if (countdown == 0)
         {
-            if (cache.current_particle != particle)
+            if (particle != cache.current_particle)
             {
                 cache.current_particle = particle;
                 cache.valid &= 0xffff07f0;

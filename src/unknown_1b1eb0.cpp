@@ -185,7 +185,7 @@ bool __stdcall function_1b1f70(long actor_index, s_slot *slot)
         {
             long other_index = NONE;
             if (!state->unknown0d)
-                *(short *)state->unknown0e = actor->unknown086 < 2 ? 2 : 0xff;
+                *(short *)state->unknown0e = actor->unknown086 >= 2 ? 2 : 0xff;
             s_2605d0_request request;
             memset(&request, 0, sizeof(request));
             request.type = 4;

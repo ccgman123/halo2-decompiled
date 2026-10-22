@@ -78,6 +78,12 @@ public:
 };
 
 // @retail 0x2efe60
+// score 23 (was 23): retail loads the second body's position, then its shape,
+// then the first body's shape, and keeps the offset in xmm1; ours loads them
+// in the other order and keeps them in other registers. Seventy source
+// shapes (the loads in every order, the radii split and summed in other
+// ways, the values cached in locals) and the permuter's 280 tries all scored
+// 23 or worse.
 void sphere_contact_2efe60::function_2efe60(body_2efe60 const *a, body_2efe60 const *b, input_2efe60 const *input, results_2efe60 *results)
 {
 	timer_add_2ebc80("TtSphereSphere");

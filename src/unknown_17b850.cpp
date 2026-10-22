@@ -407,14 +407,11 @@ void function_17bc40(real dt)
 				contrail->scale = scale;
 			}
 			if (active)
-			{
 				contrail->flag0 = true;
-				function_17c0e0(contrail_index, function_17c040(contrail_index, dt), true);
-			}
 			else
-			{
 				contrail->flag0 = false;
-			}
+			if (active)
+				function_17c0e0(contrail_index, function_17c040(contrail_index, dt), true);
 		}
 		if (elapsed > 0.0f && (definition->unknown24 > 0.0f || definition->unknown28 > 0.0f))
 		{

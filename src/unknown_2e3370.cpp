@@ -94,7 +94,8 @@ __forceinline void find_range_2e3370(endpoints_2e0f80 *axis, unsigned long low, 
 __forceinline void keep_2e3370(element_2e1090 *box, unsigned long const *range, longs_2e1ab0 *found)
 {
 	unsigned long const *slots = (unsigned long const *)box->slots;
-	if (((range[1] - slots[0]) | (slots[1] - range[0])) & 0x80008000)
+	unsigned long const outside = ((range[1] - slots[0]) | (slots[1] - range[0])) & 0x80008000;
+	if (outside)
 	{
 		return;
 	}
@@ -106,6 +107,17 @@ __forceinline void keep_2e3370(element_2e1090 *box, unsigned long const *range, 
 	found->size++;
 }
 
+// score 575 (was 591): retail's order of steps. The y/z overlap test
+// keeps its masked result in a local, which retail stores to the stack (into
+// the y/z slots' home). Still: the element count is kept in edi and the bits
+// in ebx where retail has them the other way round, so each bit's word gets
+// its address from lea instead of retail's [edi+eax*4] (re-reading the count
+// or folding the size computation does not swap them); retail's frame puts
+// the y/z slots at 0x30 and other spills 8-12 bytes higher than ours; in the
+// gather loop retail keeps the y/z slot words in ebx/esi and the found bits in
+// memory (ours keeps the bits in edx and reloads one slot word; passing the
+// words by value compiles alike) and biases the box pointer by 0x24 (ours
+// 0x1c).
 // the endpoints of every box the bounds overlap (not the grid cells'), one
 // list per axis, each sorted between a sentinel at each end
 // @retail 0x2e3370

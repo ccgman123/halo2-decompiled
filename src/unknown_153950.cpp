@@ -449,9 +449,8 @@ void function_154df0(long index, s_speed_bounds *bounds, s_speed_slot *slot, vec
 			slot->forward.i = (real)cos(angle);
 			slot->forward.j = (real)sin(angle);
 
-			s_random_globals *random = g_4e7408;
-			real scale = function_259d0(&random->seed, __FILE__, __LINE__, slot->bounds.lower, slot->bounds.upper);
-			real rotation = function_259d0(&random->seed, __FILE__, __LINE__, 0.0f, 6.2831855f);
+			real scale = function_259d0(&g_4e7408->seed, __FILE__, __LINE__, slot->bounds.lower, slot->bounds.upper);
+			real rotation = function_259d0(&g_4e7408->seed, __FILE__, __LINE__, 0.0f, 6.2831855f);
 			vector3f *up = g_4687b0;
 			vector3f *e = &slot->forward;
 			vector3f *u = &slot->vector;

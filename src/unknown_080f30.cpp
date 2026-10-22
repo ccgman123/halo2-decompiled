@@ -187,12 +187,18 @@ void function_81050(s_pending_message_header *header, long result)
 	{
 		short local_0 = *(short *)&header->unknown0c;
 		old_flags |= header->flags & 4;
-		bool (__stdcall *callback)(s_pending_message_header *) = 0;
+		bool rejected = false;
 		if (local_0 == 2)
-			callback = definition->sent;
+		{
+			if (definition->sent && !definition->sent(header))
+				rejected = true;
+		}
 		else if (local_0 == 1)
-			callback = definition->received;
-		if (callback && !callback(header))
+		{
+			if (definition->received && !definition->received(header))
+				rejected = true;
+		}
+		if (rejected)
 		{
 			header->flags = old_flags;
 			goto retry;
