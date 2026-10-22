@@ -19,6 +19,7 @@ short function_219110(s_set_ref *ref, short offset, dword *used_mask, short prev
 
 // score 3: retail sets up the function_219110 argument registers (lea esi,
 // mov ecx) before pushing function_219370's result; ours pushes it first.
+// Manual variants could not change the ordering.
 // @retail 0x219070
 short function_219070(long set_index, s_sound_definition const *definition)
 {
