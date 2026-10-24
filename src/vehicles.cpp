@@ -1683,6 +1683,9 @@ bool function_f12e0(long vehicle_index)
 
 /* whether the vehicle, with its flag 2 at +0x10a set, is a type 5 vehicle
    or a type 4 one of kind 1 */
+// score 1 (was 1): ours reuses the kind comparison's flags with a jmp to the
+// shared jne; retail re-tests the type. Nested conditions, a named kind local,
+// a switch and a 300 s permuter run all scored 1.
 // @retail 0xf1320
 bool function_f1320(long vehicle_index)
 {
