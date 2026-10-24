@@ -1527,11 +1527,11 @@ void function_f0fd0(long vehicle_index, bool set)
 
 		if (set)
 		{
-			vehicle->flags348 |= 4;
+			((s_vehicle_word_flag_bits *)&vehicle->flags348)->bit2 = true;
 		}
 		else
 		{
-			vehicle->flags348 &= ~4;
+			((s_vehicle_word_flag_bits *)&vehicle->flags348)->bit2 = false;
 		}
 		if (was_set != set && vehicle->havok_component_index != NONE)
 		{
