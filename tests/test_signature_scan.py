@@ -74,6 +74,13 @@ def test_self_move_is_a_nop():
     assert sig('8bffc3') == (0, ())  # mov edi, edi; ret
 
 
+def test_first_push_ecx_is_a_frame_slot():
+    """A leading `push ecx` allocates a four-byte local; ECX is not an
+    argument. A later `push ecx` still counts."""
+    assert sig('518bc0c3') == (0, ())        # push ecx; mov eax, eax; ret
+    assert sig('8bc051c3') == (0, ('ecx',))  # mov eax, eax; push ecx; ret
+
+
 def test_sub_registers_map_to_their_parent():
     """`cmp di, -1` reads the 16-bit DI, which is the EDI argument."""
     assert sig('6683ffffc3') == (0, ('edi',))  # cmp di, -1; ret

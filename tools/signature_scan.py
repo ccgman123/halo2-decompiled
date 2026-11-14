@@ -79,14 +79,18 @@ def _parent(register):
 SELF_ZERO = ('xor', 'xorps', 'xorpd', 'pxor', 'sub')
 
 
-def _reads_and_writes(insn):
+def _reads_and_writes(insn, first=False):
     """Capstone's reads and writes, with sub-registers mapped to their parents
     and `xor edx, edx`, `xorps xmm6, xmm6`, `or edx, -1`, `and edx, 0` counted
-    as writes only: they read their destination only to discard it."""
+    as writes only: they read their destination only to discard it. A leading
+    `push ecx` is MSVC's four-byte frame slot, not a read of an argument."""
     raw_reads, raw_writes = insn.regs_access()
     reads = tuple(_parent(r) for r in raw_reads)
     writes = tuple(_parent(r) for r in raw_writes)
     ops = insn.operands
+    if (first and insn.mnemonic == 'push' and len(ops) == 1
+            and ops[0].type == X86_OP_REG and _parent(ops[0].reg) == X86_REG_ECX):
+        reads = tuple(r for r in reads if r != X86_REG_ECX)
     if (insn.mnemonic == 'mov' and len(ops) == 2 and ops[0].type == X86_OP_REG
             and ops[1].type == X86_OP_REG and ops[0].reg == ops[1].reg):
         # `mov edi, edi` is MSVC's two-byte NOP: it reads and writes nothing.
@@ -111,9 +115,9 @@ def signature(md, data, base):
     ret = 0
     names = []
     written = set()
-    for insn in md.disasm(data, base):
+    for n, insn in enumerate(md.disasm(data, base)):
         if insn.mnemonic != 'call':
-            reads, writes = _reads_and_writes(insn)
+            reads, writes = _reads_and_writes(insn, n == 0)
             for r in REGISTERS:
                 if r in reads and r not in written and md.reg_name(r) not in names:
                     names.append(md.reg_name(r))
