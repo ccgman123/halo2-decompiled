@@ -1984,7 +1984,16 @@ long g_4858b8;
 // end of the file, and reordering the parameters to (color, depth, stencil, flags)
 // through every declaration, the selected_source_pass.h header and all nine call sites
 // all leave the full code identical (the mangled name changes; the `push ecx` does not).
-// The pad is tied to the `function_14ac0()` call, as the 0x44370 note records. Enabling it costs five functions:
+// The pad is tied to the `function_14ac0()` call, as the 0x44370 note records.
+// Caller/alignment map: direct callers are 0x132d0, 0x289e0, 0x2bcd0, 0x3c3c0,
+// 0x3fdf0, 0x41cc0, 0x423c0 and 0x44370; their entry prologues match retail. At
+// 0x2bcd0's call retail is `push 0 x3; mov eax,edi; call`; with the stub ours is
+// `push 0 x3; push edi; call`. The real body removes that 4-byte push, shifting
+// every caller's stack by 4 and re-aligning the descendants (0x14ac0 0x30 -> 0x34,
+// 0x13c20 0x10 -> 0x18, 0x335e0 0x280 -> 0x284, 0x133790 0x1ec -> 0x1f4). The
+// callers are still todo (0x2bcd0, 0x41cc0, 0x423c0, 0x44370), so the layout does
+// not settle on retail's; matching those passes is the prerequisite.
+// Enabling it costs five functions:
 // 0x13c20, 0x31c80, 0x335e0 and 0x133790 (matched -> todo) and 0x14ac0 (0 -> near),
 // with 0x44370 85 -> 89; game 10,622 -> 10,617. The clear stub convention is not the
 // cause; the slot is a whole-program home decision, not a body error.
